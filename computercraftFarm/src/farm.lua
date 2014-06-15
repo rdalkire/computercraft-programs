@@ -1,17 +1,19 @@
---[[
-    com.ape42.turtle.Farm
-    tested on computercraft 1.63
-    @author R David Alkire, IGN ian_xw
-     Farms X rows that are spaced one
-     row apart, then sleeps, repeats.
+--[[ com.ape42.turtle.Farm
+  For computercraft 1.63
+  Farms X rows, trying to alternate
+     crops according to the reference
+     slots, The first contiguous slots
+     that have seeds.  If it doesn't
+     have enough seed to alternate it
+     will leave a gap.  Sleeps, repeats.
+  Note, the x.x.0 releases are
+    untested and almost always defective.
+  @author R David Alkire, IGN ian_xw
      
 TODO:
 - Ensure that there's enough fuel to
     return from a given point, and use
     it when needed.
-- Estimate fuel required for harvest,
-    given row length & number of rows.
-    Display.
 - Given fuel and field size, estimate
     the number of harvests.
 - Allow use of blocks instead of row
@@ -302,18 +304,28 @@ else
   -- three times, if enough fuel
   local n = 1
   local okSoFar = true
+  local fuelStart = turtle.getFuelLevel()
   while n<3 and okSoFar do
     local startTime = os.clock();
     local zeroStopped = reapAndSow( rowCntFromUsr )
     if zeroStopped > 0 then
       okSoFar = returnAndStore(rowCntFromUsr)
       if okSoFar then
+     
+        local fuelLevel = turtle.getFuelLevel()
+        print("after harvest: "..(n).." of 3")
+        print("fuelLevel ".. fuelLevel)
+        local fuelPerTurn = (fuelStart-fuelLevel)/n
+        print( "fuelPerTurn ".. fuelPerTurn )
+        if fuelLevel< fuelPerTurn then
+          print("not enough for another go")
+          okSoFar = false
+        end
         local endTime = os.clock()
         local duration = endTime - startTime
-        local waitTime = (60* 60)-duration
+        local waitTime = (40* 60)-duration
         local nextTime = endTime+ waitTime
-        print("harvest: "..(n).." of 3")
-        if n < 3 then
+        if (n < 3) and okSoFar then
           os.sleep(waitTime)
         end
       end --okSofar
@@ -321,9 +333,9 @@ else
       okSoFar = false
     end
     n = n + 1
-  end -- of three times.
+  end -- of three times loop
  
   if okSoFar == false then
-    print("Out of fuel or other stop.")
+    print("Unplanned stop.")
   end
 end
