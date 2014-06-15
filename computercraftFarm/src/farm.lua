@@ -9,7 +9,7 @@
   Note, the x.x.0 releases are
     untested and almost always defective.
   @author R David Alkire, IGN ian_xw
-     
+  
 TODO:
 - Ensure that there's enough fuel to
     return from a given point, and use
@@ -36,6 +36,9 @@ This work is licensed under the
  444 Castro Street, Suite 900, Mountain
  View, California, 94041, USA.
 ]]
+ 
+-- The wait time between beginning of each harvest, in minutes.
+GROW_WAIT = 40
  
 -- Initial slots indicate what items
 -- the user deems plantable.
@@ -270,72 +273,77 @@ local function returnAndStore(rows)
   return canGo
 end
  
-local tArgs = {...}
-local rowCntFromUsr = 0
+local function main( tArgs )
+  local rowCntFromUsr = 0
  
---[[ If user supplies a good number,
-this uses it as row count.  If user
-supplied a bad argument, it indicates.
-]]
-local argCount = table.getn(tArgs)
-local badArg = false
-local badArgMsg = "Argument OK"
-if argCount > 0 then
-  rowCntFromUsr = tArgs[1]
-  if tonumber(rowCntFromUsr)==nil then
-    badArg = true
-    badArgMsg = "Argument not a number"
-  else
-    rowCntFromUsr = tonumber(rowCntFromUsr)
-  end
- 
-else
-  badArg = true
-  badArgMsg = "Supply how many rows"
-end
- 
-if badArg then
-  print( badArgMsg )
-  print("Put at least 1 of something" )
-  print(" plantable in first few slots.")
-else
- 
-  --[[ Start ]]
-  -- three times, if enough fuel
-  local n = 1
-  local okSoFar = true
-  local fuelStart = turtle.getFuelLevel()
-  while n<3 and okSoFar do
-    local startTime = os.clock();
-    local zeroStopped = reapAndSow( rowCntFromUsr )
-    if zeroStopped > 0 then
-      okSoFar = returnAndStore(rowCntFromUsr)
-      if okSoFar then
-     
-        local fuelLevel = turtle.getFuelLevel()
-        print("after harvest: "..(n).." of 3")
-        print("fuelLevel ".. fuelLevel)
-        local fuelPerTurn = (fuelStart-fuelLevel)/n
-        print( "fuelPerTurn ".. fuelPerTurn )
-        if fuelLevel< fuelPerTurn then
-          print("not enough for another go")
-          okSoFar = false
-        end
-        local endTime = os.clock()
-        local duration = endTime - startTime
-        local waitTime = (40* 60)-duration
-        local nextTime = endTime+ waitTime
-        if (n < 3) and okSoFar then
-          os.sleep(waitTime)
-        end
-      end --okSofar
+  --[[ If user supplies a good number,
+  this uses it as row count.  If user
+  supplied a bad argument, it indicates.
+  ]]
+  local argCount = table.getn(tArgs)
+  local badArg = false
+  local badArgMsg = "Argument OK"
+  if argCount > 0 then
+    rowCntFromUsr = tArgs[1]
+    if tonumber(rowCntFromUsr)==nil then
+      badArg = true
+      badArgMsg = "Argument not a number"
     else
-      okSoFar = false
+      rowCntFromUsr = tonumber(rowCntFromUsr)
     end
-    n = n + 1
-  end -- of three times loop
- 
-  if okSoFar == false then
-    print("Unplanned stop.")
+   
+  else
+    badArg = true
+    badArgMsg = "Supply how many rows"
   end
+   
+  if badArg then
+    print( badArgMsg )
+    print("Put at least 1 of something" )
+    print(" plantable in first few slots.")
+  else
+   
+    --[[ Start ]]
+    -- three times, if enough fuel
+    local n = 1
+    local okSoFar = true
+    local fuelStart = turtle.getFuelLevel()
+    while n<=3 and okSoFar do
+      local startTime = os.clock();
+      local zeroStopped = reapAndSow( rowCntFromUsr )
+      if zeroStopped > 0 then
+        okSoFar = returnAndStore(rowCntFromUsr)
+        if okSoFar then
+       
+          local fuelLevel = turtle.getFuelLevel()
+          print("after harvest: "..(n).." of 3")
+          print("fuelLevel ".. fuelLevel)
+          local fuelPerTurn = (fuelStart-fuelLevel)/n
+          print( "fuelPerTurn ".. fuelPerTurn )
+          if fuelLevel< fuelPerTurn and n < 3 then
+            print("not enough for another go")
+            okSoFar = false
+          end
+          local endTime = os.clock()
+          local duration = endTime - startTime
+          local waitTime = ( GROW_WAIT*60)-duration
+          local nextTime = endTime+ waitTime
+          if (n < 3) and okSoFar then
+            os.sleep(waitTime)
+          end
+        end --okSofar
+      else
+        okSoFar = false
+      end
+      n = n + 1
+    end -- of three times loop
+   
+    if okSoFar == false then
+      print("Unplanned stop.")
+    end
+  end
+ 
 end
+ 
+local tArgs = {...}
+main(tArgs)
