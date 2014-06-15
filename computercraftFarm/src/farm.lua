@@ -4,18 +4,6 @@
     @author R David Alkire, IGN ian_xw
      Farms X rows that are spaced one
      row apart, then sleeps, repeats.
-Changes by version:
-     0.1.0: Reaps one row.
-     0.2.0: Reaps & sows X rows, then
-      retrieves the harvest.
-     0.2.1: Seed selection defect is
-      corrected, so that you now get
-      a whole row of a given plantable,
-      if there are enough seeds.
-     0.2.2: Better stoppage for out-of
-      -fuel or if blocked.
-     0.3.0: Sleeps and runs twice more
-     0.3.1: Fixes a return-stop bug
      
 TODO:
 - Ensure that there's enough fuel to
@@ -26,7 +14,7 @@ TODO:
     Display.
 - Given fuel and field size, estimate
     the number of harvests.
-- Allow use of block instead of row
+- Allow use of blocks instead of row
     parameter.
 - Allow the turtle to start at right
     corner, depending which way is
@@ -90,19 +78,23 @@ end
 -- Decides what to plant based the
 --  reference slots (plntblCnt)
 -- @param rowIndex the current row
-local function sow( rowIndex )
+-- @block block # within the row,
+--  starting with 1.
+-- @param prevRow an array of crop
+--  types for previous row
+local function sow( rowIndex, block, prevRow )
   local seedy = false
  
   -- Alternate among the plantables:
   -- loop through reference slots.
   local i = 0
+  local refSlt = 0
   while i < plntblCnt and seedy == false do
     --use what was for a given reference slot
-    local othr = ( (rowIndex + i )% plntblCnt) + 1
---    print( "rIdx="..rowIndex, "i="..i,
---        "othr="..othr)
-    turtle.select(othr)
-    if turtle.getItemCount(othr) > 1 then
+    refSlt = ( (rowIndex + i )% plntblCnt) + 1
+   
+    turtle.select(refSlt)
+    if turtle.getItemCount(refSlt) > 1 then
       seedy = true
     else
       seedy = selectNonRefSlot()
@@ -111,8 +103,13 @@ local function sow( rowIndex )
   end
  
   if seedy then
-    turtle.place()
-  end
+    if prevRow[block]== refSlt then
+      prevRow[block] = 0
+    else
+      prevRow[block] = refSlt
+      turtle.place()
+    end -- if matches
+  end -- if seedy
  
   return seedy
 end
@@ -160,19 +157,22 @@ end
 -- Backs up, tilling & planting
 -- @param lnth row length
 -- @param indx which row
-local function sowRow(lnth, indx)
+-- @param prevRow array of crop plantings
+--  for the previous row
+local function sowRow(lnth, indx, prevRow)
         print( "Sowing a row." )
   local block = 1
   local seedy = true
+ 
   -- while it has length & seeds
   while block < lnth and seedy do
    
     seedy = turtle.back()
     turtle.dig()
-   
+ 
     -- if there are still seeds
     if seedy then
-      seedy = sow(indx)
+      seedy = sow(indx, block, prevRow)
     else
         print("sowRow(): seedy== false" )
     end
@@ -193,14 +193,17 @@ local function reapAndSow( rows )
   -- Find out how many slots are for
   -- reference.
   local plntbl = initPlntblCnt()
+ 
   print("The first "..plntbl..
     " slots \nare deemed plantable")
-   
+ 
+  local prevRow = {}
   print("rows = ".. rows)
   local rowLength = 0
   local rowIndex = 0
   local isSeedy = true
   local isFirst = true
+ 
   while (rowIndex< rows) and isSeedy do
     print( "rowIndex ".. rowIndex )
    
@@ -217,19 +220,24 @@ local function reapAndSow( rows )
         -- Move to the next row
         turtle.turnRight()
         turtle.forward()
-        turtle.forward()
         turtle.turnLeft()
       end
       rowLength = reapRow( rowLength )
+      if isFirst then
+        -- initializes previous array
+        for i = 1, rowLength do
+          prevRow[i] = 0
+        end
+      end
       if rowLength > 0 then
-        isSeedy=sowRow(rowLength, rowIndex)
+        isSeedy=sowRow(rowLength, rowIndex, prevRow)
         -- if stopped, zero-out.
         rowLength= isSeedy and rowLength or 0
       end
-    end
+    end --else
     isFirst = false
     rowIndex = rowIndex + 1
-  end
+  end -- while
   return rowLength
 end
  
@@ -238,7 +246,7 @@ local function returnAndStore(rows)
  
   turtle.turnLeft()
   local canGo = true
-  local forwards = (rows - 1) * 2
+  local forwards = (rows - 1)
   for i= 1, forwards do
     canGo = turtle.forward()
   end
@@ -302,7 +310,7 @@ else
       if okSoFar then
         local endTime = os.clock()
         local duration = endTime - startTime
-        local waitTime = (40* 60)-duration
+        local waitTime = (60* 60)-duration
         local nextTime = endTime+ waitTime
         print("harvest: "..(n).." of 3")
         if n < 3 then
