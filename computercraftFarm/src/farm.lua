@@ -1,22 +1,28 @@
---[[ com.ape42.turtle.Farm
+--[[ com.ape42.turtle.Farm 0.7.1
   For computercraft 1.63
   Farms X rows, trying to alternate
      crops according to the reference
-     slots, The first contiguous slots
-     that have seeds.  If it doesn't
-     have enough seed to alternate it
-     will leave a gap.  Sleeps, repeats.
-  Note, the x.x.0 releases are
-    untested and almost always defective.
+     slots, which are the first
+     contiguous slots that have seeds.
+     If it doesn't have enough seed to
+     alternate,  it will leave a gap.
+     There are two globals constants -
+     to sleep GROW_WAIT minutes, and
+     repeat MAX_REPEATS or until out
+     of fuel.
   @author R David Alkire, IGN ian_xw
-  
+     
 TODO:
-- Ensure that there's enough fuel to
-    return from a given point, and use
-    it when needed.
-- Given fuel and field size, estimate
-    the number of harvests.
-- Allow use of blocks instead of row
+- Estimate max field size plantable
+    for two harvests, given the fuel.
+- After run - Estimate how many more
+    runs & rows it'll be able to do
+    with current fuel level.
+- Change param meaning so that the
+  result is N rows, N blocks long
+- Add melon/pumpkin slots, handling.
+- Give more explicit usage instructions
+- Allow use of blockers instead of row
     parameter.
 - Allow the turtle to start at right
     corner, depending which way is
@@ -24,8 +30,6 @@ TODO:
 - Create a routine for automated field
     creation, given flat grassy area,
     a bucket and a source of water.
-  - Estimate max field size plantable
-    for two harvests, given the fuel.
  
 This work is licensed under the
  Creative Commons Attribution 4.0
@@ -37,8 +41,13 @@ This work is licensed under the
  View, California, 94041, USA.
 ]]
  
--- The wait time between beginning of each harvest, in minutes.
+-- The wait time between beginning of
+-- each harvest, in minutes.
 GROW_WAIT = 40
+ 
+-- The number of times to farm the
+-- field, baring other constraints
+MAX_REPEATS = 3
  
 -- Initial slots indicate what items
 -- the user deems plantable.
@@ -87,7 +96,8 @@ end
 --  starting with 1.
 -- @param prevRow an array of crop
 --  types for previous row
-local function sow( rowIndex, block, prevRow )
+local function sow( rowIndex, block,
+    prevRow )
   local seedy = false
  
   -- Alternate among the plantables:
@@ -119,6 +129,14 @@ local function sow( rowIndex, block, prevRow )
   return seedy
 end
  
+-- Harvests a row: Digs (hoes) and
+-- moves forward the length or until
+-- the way is blocked
+-- @param lth the expected length of
+--  the row or 0 if not yet determined
+-- @return how long the row was, or
+--  0 if there was an unexpected stop
+--  due to fuel outage after first row.
 local function reapRow( lth )
   print( "Reaping a row ")
  
@@ -130,11 +148,18 @@ local function reapRow( lth )
 -- lth 0 just means that really
 -- the length is not yet determined
   local firstRow = lth == 0
+  if firstRow then
+    local fuel = turtle.getFuelLevel()
+    lth = fuel/2 - 1
+    print(string.format("First row. "
+        .."fuel %d, max length %d",
+        fuel, lth))
+  end
   while keepGoing do
    
     turtle.dig() -- reaps
     keepGoing = turtle.forward()
-   
+ 
     -- sees if it can keepGoing
     if keepGoing then
       placeR = placeR + 1
@@ -164,6 +189,9 @@ end
 -- @param indx which row
 -- @param prevRow array of crop plantings
 --  for the previous row
+-- @return true if successful.  False
+--  means seeds or fuel ran out, or
+--  there was a blockage.
 local function sowRow(lnth, indx, prevRow)
         print( "Sowing a row." )
   local block = 1
@@ -189,10 +217,92 @@ local function sowRow(lnth, indx, prevRow)
  
 end
  
--- Harvests and plants every other row
+-- Determines whether there's enough
+-- fuel to: move to another row,
+-- reap it, sow it, and return to
+-- base
+-- @param rowIndex, rowLength
+local function isFuelOKForNextRow(
+    rowIndex, rowLength)
+ 
+  local fuelNeed = 1 + rowIndex
+      + ( rowLength * 2 )
+ 
+  local fuelLevel = turtle.getFuelLevel()
+ 
+  local isEnough= fuelLevel >= fuelNeed
+  if isEnough ~= true then
+    print("Not enough fuel for next "
+        .."row and return trip.")
+    print( string.format(
+        "fuelNeed %d, rowIndex %d, "
+        .."rowLength %d", fuelNeed,
+        rowIndex, rowLength ) )
+       
+    print( string.format( "fuelLevel %d",
+        fuelLevel ) )
+   
+  end
+ 
+  return isEnough
+ 
+end
+ 
+-- Checks fuel, and if good, moves to
+--    next row, reaps and sows.
+-- @param rowLength, isFirst, prevRow,
+--    rowIndex.
+--    prevRow is array of ints, each
+--    a reference item slot, from, you
+--    guessed it: the previous row.
+-- @return isFuelOK, rowLength, isSeedy
+local function moveOnAndDoOne( rowLength,
+    isFirst, prevRow, rowIndex )
+ 
+  local isFuelOK = true
+ 
+  -- After the first row
+  if isFirst == false then
+ 
+    isFuelOK = isFuelOKForNextRow(rowIndex,
+        rowLength)
+   
+    if isFuelOK then
+      -- Move to the next row
+      turtle.turnRight()
+      turtle.forward()
+      turtle.turnLeft()
+    end
+   
+  end -- if after first
+ 
+  local isSeedy = true
+  if isFuelOK then
+    rowLength= reapRow( rowLength )
+    if isFirst then
+      -- initializes previous array
+      for i = 1, rowLength do
+        prevRow[i] = 0
+      end
+    end
+   
+    if rowLength > 0 then
+      isSeedy=sowRow( rowLength, rowIndex, prevRow)
+      -- if stopped, zeroes-out.
+      rowLength= isSeedy and rowLength or 0
+    end -- if rowLength
+   
+  end -- if fuel OK
+ 
+  return isFuelOK, rowLength, isSeedy
+ 
+end
+ 
+-- Harvests and plants the rows
 -- @param rows number of plantable rows
--- @return found row length. If stopped
---  unexpectedly this will be 0.
+-- @return number of rows planted.
+--  If stopped unexpectedly this will
+--  be 0.
 local function reapAndSow( rows )
   print("beginning reapAndSow()")
   -- Find out how many slots are for
@@ -207,9 +317,11 @@ local function reapAndSow( rows )
   local rowLength = 0
   local rowIndex = 0
   local isSeedy = true
+  local isFuelOK = true
   local isFirst = true
  
-  while (rowIndex< rows) and isSeedy do
+  while (rowIndex< rows) and isSeedy
+      and isFuelOK do
     print( "rowIndex ".. rowIndex )
    
     -- If there was an unexpected
@@ -217,46 +329,74 @@ local function reapAndSow( rows )
     -- rowLength will be its initial
     -- value, 0
     if rowLength<= 0 and isFirst== false then  
-      -- Stop loop
+      -- Stops loop
       isSeedy = false
     else
-      -- After the first row
-      if isFirst == false then
-        -- Move to the next row
-        turtle.turnRight()
-        turtle.forward()
-        turtle.turnLeft()
-      end
-      rowLength = reapRow( rowLength )
-      if isFirst then
-        -- initializes previous array
-        for i = 1, rowLength do
-          prevRow[i] = 0
-        end
-      end
-      if rowLength > 0 then
-        isSeedy=sowRow(rowLength, rowIndex, prevRow)
-        -- if stopped, zero-out.
-        rowLength= isSeedy and rowLength or 0
-      end
-    end --else
+     
+      isFuelOK, rowLength, isSeedy =
+          moveOnAndDoOne(rowLength,
+              isFirst, prevRow,
+              rowIndex )
+     
+      print( string.format(  
+          "in farm(), after "
+          .."moveOnAndDoOne( rowLength %d, "
+          .."isFirst %s, rowIndex %d)",
+          rowLength, tostring(isFirst),
+          rowIndex ) )
+     
+      print( string.format(
+          "Which returned isFuelOK %s, "
+          .."rowLength %d, isSeedy %s",
+          tostring( isFuelOK ), rowLength,
+          tostring(isSeedy) ) )
+     
+    end -- if rowLength > 0 & not first
+   
     isFirst = false
     rowIndex = rowIndex + 1
-  end -- while
-  return rowLength
+   
+  end -- while rows & isSeedy
+ 
+  -- The number of rows traversed
+  -- or 0 if unexpected problem
+  local rtrnVal = 0
+  if rowLength > 0 then
+    -- If fuel was too low, it did not
+    -- move to next row, so therefore
+    -- its row is one less than otherwise
+    rtrnVal = isFuelOK and rowIndex or rowIndex - 1
+  else
+    rtrnVal = 0
+  end
+ 
+  return rtrnVal
+ 
 end
  
+-- Returns to the start and drops all
+-- inventory except one of each
+-- reference item. (It's assumed there
+-- are hoppers & a chest.)
+-- @param rows how many rows are
+--  planted.
+-- @return true if successful. False
+--  means there was blockage or fuel
+--  outage.
 local function returnAndStore(rows)
   print( "Returning to the start.")
  
   turtle.turnLeft()
   local canGo = true
   local forwards = (rows - 1)
-  for i= 1, forwards do
+  local stp = 1
+  while (stp <= forwards) and canGo do
     canGo = turtle.forward()
+    stp = stp + 1
   end
  
   turtle.turnLeft()
+ 
   if canGo then
     for i = 16, 1, -1 do
       turtle.select(i)
@@ -267,10 +407,70 @@ local function returnAndStore(rows)
             turtle.getItemCount(i)- 1)
       end
     end
+  else
+    print( string.format(
+        "returnAndStore(rows) "
+        .."couldn't store.  rows %d, "
+        .."forwards %d", rows, forwards ))
   end --canGo
   turtle.turnLeft()
   turtle.turnLeft()
   return canGo
+end
+ 
+-- Farms the field repeatedly up to
+-- MAX_REPEATS, or the fuel runs out,
+-- or there's some unexpected stop.
+-- @param rowCntFromUsr is the number
+-- of rows to farm, according to user
+local function farm( rowCntFromUsr )
+ 
+    --[[ Start ]]
+    -- three times, if enough fuel
+    local n = 1
+    local okSoFar = true
+    while n<= MAX_REPEATS and okSoFar do
+      local startTime = os.clock();
+      turtle.select(9)
+      turtle.refuel()
+      local fuelStart = turtle.getFuelLevel()
+      print("fuelStart = ".. fuelStart)
+      local rowsDone = reapAndSow( rowCntFromUsr )
+      okSoFar = returnAndStore(rowsDone)
+      if rowsDone == rowCntFromUsr then
+        if okSoFar then
+       
+          local fuelLevel = turtle.getFuelLevel()
+         
+          print("after harvest: "..(n)
+              .." of ".. MAX_REPEATS)
+             
+          print("fuelLevel ".. fuelLevel)
+          local fuelPerTurn = (fuelStart-fuelLevel)
+          print( "fuelPerTurn ".. fuelPerTurn )
+          if fuelLevel< fuelPerTurn and n < MAX_REPEATS then
+            print("Next harvest will be partial,")
+            print("unless enough more fuel is added.")
+            print("Use slot 9 (first slot of 3rd row).")
+          end
+          local endTime = os.clock()
+          local duration = endTime - startTime
+          local waitTime = ( GROW_WAIT*60)-duration
+          local nextTime = endTime+ waitTime
+          if (n < MAX_REPEATS) and okSoFar then
+            os.sleep(waitTime)
+          end
+        end --okSofar
+      else
+        okSoFar = false
+      end
+      n = n + 1
+    end -- of MAX_REPEATS loop
+   
+    if okSoFar == false then
+      print("Stopped.")
+    end
+ 
 end
  
 local function main( tArgs )
@@ -302,45 +502,7 @@ local function main( tArgs )
     print("Put at least 1 of something" )
     print(" plantable in first few slots.")
   else
-   
-    --[[ Start ]]
-    -- three times, if enough fuel
-    local n = 1
-    local okSoFar = true
-    local fuelStart = turtle.getFuelLevel()
-    while n<=3 and okSoFar do
-      local startTime = os.clock();
-      local zeroStopped = reapAndSow( rowCntFromUsr )
-      if zeroStopped > 0 then
-        okSoFar = returnAndStore(rowCntFromUsr)
-        if okSoFar then
-       
-          local fuelLevel = turtle.getFuelLevel()
-          print("after harvest: "..(n).." of 3")
-          print("fuelLevel ".. fuelLevel)
-          local fuelPerTurn = (fuelStart-fuelLevel)/n
-          print( "fuelPerTurn ".. fuelPerTurn )
-          if fuelLevel< fuelPerTurn and n < 3 then
-            print("not enough for another go")
-            okSoFar = false
-          end
-          local endTime = os.clock()
-          local duration = endTime - startTime
-          local waitTime = ( GROW_WAIT*60)-duration
-          local nextTime = endTime+ waitTime
-          if (n < 3) and okSoFar then
-            os.sleep(waitTime)
-          end
-        end --okSofar
-      else
-        okSoFar = false
-      end
-      n = n + 1
-    end -- of three times loop
-   
-    if okSoFar == false then
-      print("Unplanned stop.")
-    end
+    farm( rowCntFromUsr )
   end
  
 end
