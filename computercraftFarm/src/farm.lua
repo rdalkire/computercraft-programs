@@ -1,4 +1,4 @@
---[[ com.ape42.turtle.Farm 0.7.1
+--[[ com.ape42.turtle.Farm 0.8.0
   For computercraft 1.63
   Farms X rows, trying to alternate
      crops according to the reference
@@ -124,6 +124,8 @@ local function sow( rowIndex, block,
       prevRow[block] = refSlt
       turtle.place()
     end -- if matches
+  else
+    print("Apparently, out of seeds")
   end -- if seedy
  
   return seedy
@@ -134,10 +136,11 @@ end
 -- the way is blocked
 -- @param lth the expected length of
 --  the row or 0 if not yet determined
+-- @param firstRow
 -- @return how long the row was, or
 --  0 if there was an unexpected stop
 --  due to fuel outage after first row.
-local function reapRow( lth )
+local function reapRow( lth, firstRow )
   print( "Reaping a row ")
  
 -- Loop until length is reached or
@@ -145,9 +148,6 @@ local function reapRow( lth )
   local keepGoing = true
   local placeR = 1
  
--- lth 0 just means that really
--- the length is not yet determined
-  local firstRow = lth == 0
   if firstRow then
     local fuel = turtle.getFuelLevel()
     lth = fuel/2 - 1
@@ -198,16 +198,14 @@ local function sowRow(lnth, indx, prevRow)
   local seedy = true
  
   -- while it has length & seeds
-  while block < lnth and seedy do
+  while block < lnth do
    
-    seedy = turtle.back()
+    turtle.back()
     turtle.dig()
  
     -- if there are still seeds
     if seedy then
       seedy = sow(indx, block, prevRow)
-    else
-        print("sowRow(): seedy== false" )
     end
     block = block + 1
   end
@@ -256,11 +254,13 @@ end
 --    a reference item slot, from, you
 --    guessed it: the previous row.
 -- @return isFuelOK, rowLength, isSeedy
+--  
 local function moveOnAndDoOne( rowLength,
     isFirst, prevRow, rowIndex )
  
   local isFuelOK = true
- 
+  local isSeedy = true
+  
   -- After the first row
   if isFirst == false then
  
@@ -270,15 +270,15 @@ local function moveOnAndDoOne( rowLength,
     if isFuelOK then
       -- Move to the next row
       turtle.turnRight()
-      turtle.forward()
+      isSeedy = turtle.forward()
       turtle.turnLeft()
     end
    
   end -- if after first
  
-  local isSeedy = true
-  if isFuelOK then
-    rowLength= reapRow( rowLength )
+  
+  if isFuelOK and isSeedy then
+    rowLength= reapRow( rowLength, isFirst )
     if isFirst then
       -- initializes previous array
       for i = 1, rowLength do
@@ -288,8 +288,12 @@ local function moveOnAndDoOne( rowLength,
    
     if rowLength > 0 then
       isSeedy=sowRow( rowLength, rowIndex, prevRow)
-      -- if stopped, zeroes-out.
-      rowLength= isSeedy and rowLength or 0
+      -- if stopped during sowRow, 
+      --  zeroes-out.
+      -- TODO: maybe confusing matters
+      -- when it's truly run out of 
+      -- seeds. fix.
+      -- rowLength= isSeedy and rowLength or 0
     end -- if rowLength
    
   end -- if fuel OK
@@ -299,7 +303,8 @@ local function moveOnAndDoOne( rowLength,
 end
  
 -- Harvests and plants the rows
--- @param rows number of plantable rows
+-- @param width/ rows number of 
+--  expected plantable rows
 -- @return number of rows planted.
 --  If stopped unexpectedly this will
 --  be 0.
@@ -314,7 +319,7 @@ local function reapAndSow( rows )
  
   local prevRow = {}
   print("rows = ".. rows)
-  local rowLength = 0
+  local rowLength = rows
   local rowIndex = 0
   local isSeedy = true
   local isFuelOK = true
@@ -338,6 +343,7 @@ local function reapAndSow( rows )
               isFirst, prevRow,
               rowIndex )
      
+      --[[ TODO clean out when ready
       print( string.format(  
           "in farm(), after "
           .."moveOnAndDoOne( rowLength %d, "
@@ -350,6 +356,7 @@ local function reapAndSow( rows )
           .."rowLength %d, isSeedy %s",
           tostring( isFuelOK ), rowLength,
           tostring(isSeedy) ) )
+      ]]
      
     end -- if rowLength > 0 & not first
    
@@ -365,7 +372,13 @@ local function reapAndSow( rows )
     -- If fuel was too low, it did not
     -- move to next row, so therefore
     -- its row is one less than otherwise
-    rtrnVal = isFuelOK and rowIndex or rowIndex - 1
+    -- TODO maybe out-of-seed does not
+    -- have same effect?  test.
+    if isFuelOK --[[ and isSeedy]] then
+      rtrnVal = rowIndex
+    else
+      rtrnVal = rowIndex - 1
+    end
   else
     rtrnVal = 0
   end
@@ -421,9 +434,12 @@ end
 -- Farms the field repeatedly up to
 -- MAX_REPEATS, or the fuel runs out,
 -- or there's some unexpected stop.
--- @param rowCntFromUsr is the number
--- of rows to farm, according to user
-local function farm( rowCntFromUsr )
+-- @param widthFromUsr is the width 
+--  of the square farm, according to 
+--  user.  If 0, this will estimate
+--  the maximum width according to
+--  fuel.
+local function farm( widthFromUsr )
  
     --[[ Start ]]
     -- three times, if enough fuel
@@ -434,7 +450,7 @@ local function farm( rowCntFromUsr )
       turtle.select(9)
       turtle.refuel()
       local fuelStart = turtle.getFuelLevel()
-      print("fuelStart = ".. fuelStart)
+      print("fuel at start = ".. fuelStart)
       
       local maxLnth = math.floor( 
           math.sqrt(2* fuelStart)/ 2)
@@ -443,9 +459,13 @@ local function farm( rowCntFromUsr )
           .. "side \nfor full cycle: "
           .. maxLnth)
       
-      local rowsDone = reapAndSow( rowCntFromUsr )
+      if widthFromUsr == 0 then
+        widthFromUsr = maxLnth
+      end
+      
+      local rowsDone = reapAndSow( widthFromUsr )
       okSoFar = returnAndStore(rowsDone)
-      if rowsDone == rowCntFromUsr then
+      if rowsDone > 0 then
         if okSoFar then
        
           local fuelLevel = turtle.getFuelLevel()
@@ -482,7 +502,7 @@ local function farm( rowCntFromUsr )
 end
  
 local function main( tArgs )
-  local rowCntFromUsr = 0
+  local widthFromUsr = 0
  
   --[[ If user supplies a good number,
   this uses it as row count.  If user
@@ -492,17 +512,17 @@ local function main( tArgs )
   local badArg = false
   local badArgMsg = "Argument OK"
   if argCount > 0 then
-    rowCntFromUsr = tArgs[1]
-    if tonumber(rowCntFromUsr)==nil then
+    widthFromUsr = tArgs[1]
+    if tonumber(widthFromUsr)==nil then
       badArg = true
       badArgMsg = "Argument not a number"
     else
-      rowCntFromUsr = tonumber(rowCntFromUsr)
+      widthFromUsr = tonumber(widthFromUsr)
     end
    
   else
     badArg = true
-    badArgMsg = "Supply how many rows"
+    badArgMsg = "Supply width of farm."
   end
    
   if badArg then
@@ -510,7 +530,7 @@ local function main( tArgs )
     print("Put at least 1 of something" )
     print(" plantable in first few slots.")
   else
-    farm( rowCntFromUsr )
+    farm( widthFromUsr )
   end
  
 end
