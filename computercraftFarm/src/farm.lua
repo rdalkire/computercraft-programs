@@ -12,14 +12,14 @@
      of fuel.
   @author R David Alkire, IGN ian_xw
      
-TODO:
+TODO/WIP:
+- Change param meaning so that the
+  result is N rows, N blocks long
 - Estimate max field size plantable
     for two harvests, given the fuel.
 - After run - Estimate how many more
     runs & rows it'll be able to do
     with current fuel level.
-- Change param meaning so that the
-  result is N rows, N blocks long
 - Add melon/pumpkin slots, handling.
 - Give more explicit usage instructions
 - Allow use of blockers instead of row
@@ -435,6 +435,14 @@ local function farm( rowCntFromUsr )
       turtle.refuel()
       local fuelStart = turtle.getFuelLevel()
       print("fuelStart = ".. fuelStart)
+      
+      local maxLnth = math.floor( 
+          math.sqrt(2* fuelStart)/ 2)
+      
+      print("Estimated max field "
+          .. "side \nfor full cycle: "
+          .. maxLnth)
+      
       local rowsDone = reapAndSow( rowCntFromUsr )
       okSoFar = returnAndStore(rowsDone)
       if rowsDone == rowCntFromUsr then
