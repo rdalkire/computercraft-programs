@@ -20,6 +20,9 @@ TODO/WIP:
 - After run - Estimate how many more
     runs & rows it'll be able to do
     with current fuel level.
+- Make it so the 'running' column is
+    farmland.  Turn robot around and 
+    till backwards.
 - Add melon/pumpkin slots, handling.
 - Give more explicit usage instructions
 - Allow use of blockers instead of row
@@ -141,7 +144,7 @@ end
 --  0 if there was an unexpected stop
 --  due to fuel outage after first row.
 local function reapRow( lth, firstRow )
-  print( "Reaping a row ")
+  -- print( "Reaping a row ")
  
 -- Loop until length is reached or
 -- the way is blocked
@@ -150,10 +153,13 @@ local function reapRow( lth, firstRow )
  
   if firstRow then
     local fuel = turtle.getFuelLevel()
-    lth = fuel/2 - 1
-    print(string.format("First row. "
-        .."fuel %d, max length %d",
-        fuel, lth))
+    local maxLth = fuel/2 - 1
+    if lth > maxLth then
+      lth = maxLth
+      print(string.format("First row. "
+          .."fuel %d, max length %d",
+          fuel, lth))
+    end
   end
   while keepGoing do
    
@@ -193,7 +199,7 @@ end
 --  means seeds or fuel ran out, or
 --  there was a blockage.
 local function sowRow(lnth, indx, prevRow)
-        print( "Sowing a row." )
+  -- print( "Sowing a row." )
   local block = 1
   local seedy = true
  
@@ -327,7 +333,8 @@ local function reapAndSow( rows )
  
   while (rowIndex< rows) and isSeedy
       and isFuelOK do
-    print( "rowIndex ".. rowIndex )
+    
+    -- print( "rowIndex ".. rowIndex )
    
     -- If there was an unexpected
     -- stop in previous row, then
@@ -373,7 +380,8 @@ local function reapAndSow( rows )
     -- move to next row, so therefore
     -- its row is one less than otherwise
     -- TODO maybe out-of-seed does not
-    -- have same effect?  test.
+    -- have same effect? Or fuel 
+    -- doesn't really matter? test.
     if isFuelOK --[[ and isSeedy]] then
       rtrnVal = rowIndex
     else
@@ -397,11 +405,16 @@ end
 --  means there was blockage or fuel
 --  outage.
 local function returnAndStore(rows)
-  print( "Returning to the start.")
  
   turtle.turnLeft()
   local canGo = true
   local forwards = (rows - 1)
+  
+  print( string.format(
+        "returnAndStore(rows): "
+        .."rows %d, forwards %d", 
+        rows, forwards ))
+  
   local stp = 1
   while (stp <= forwards) and canGo do
     canGo = turtle.forward()
@@ -421,10 +434,7 @@ local function returnAndStore(rows)
       end
     end
   else
-    print( string.format(
-        "returnAndStore(rows) "
-        .."couldn't store.  rows %d, "
-        .."forwards %d", rows, forwards ))
+    print("couldn't store")
   end --canGo
   turtle.turnLeft()
   turtle.turnLeft()
