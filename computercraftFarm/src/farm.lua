@@ -16,8 +16,9 @@ TODO/WIP:
 - Make it so the 'running' column is
     farmland.  Turn robot around and 
     till backwards.
-- Add melon/pumpkin slots, handling.
 - Give more explicit usage instructions
+    and include a readme
+- Add melon/pumpkin slots, handling.
 - Allow the turtle to start at right
     corner, depending which way is
     open.
