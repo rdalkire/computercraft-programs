@@ -15,7 +15,7 @@
 TODO/WIP:
 - Make it so the 'running' column is
     farmland.  Turn robot around and 
-    till backwards. 
+    till backwards.
 - Give more explicit usage instructions
     and include a readme
 - Add melon/pumpkin slots, handling.
