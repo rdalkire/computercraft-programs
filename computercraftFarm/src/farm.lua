@@ -17,8 +17,10 @@ TODO/WIP:
     farmland.  Turn robot around and 
     till backwards.
 - Give more explicit usage instructions
+=======
     and include a readme
 - Add melon/pumpkin slots, handling.
+		Also adjusted TODO priorities.
 - Allow the turtle to start at right
     corner, depending which way is
     open.
