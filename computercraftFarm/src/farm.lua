@@ -13,13 +13,13 @@
   @author R David Alkire, IGN ian_xw
      
 TODO/WIP:
-- Make it so the 'running' column is
-    farmland.  Turn robot around and 
-    till backwards.
 - Give more explicit usage instructions
     and include a readme
+- Change pattern so it zigzags.  Be up
+    one block so it doesn't have to
+    turn around at each step.  This
+    should be almost twice as efficient.
 - Add melon/pumpkin slots, handling.
-		Also adjusted TODO priorities.
 - Allow the turtle to start at right
     corner, depending which way is
     open.
@@ -399,22 +399,23 @@ end
 --  outage.
 local function returnAndStore(rows)
  
-  turtle.turnLeft()
+  turtle.turnRight()
   local canGo = true
-  local forwards = (rows - 1)
+  local steps = (rows - 1)
   
   print( string.format(
         "returnAndStore(rows): "
-        .."rows %d, forwards %d", 
-        rows, forwards ))
+        .."rows %d, steps %d", 
+        rows, steps ))
   
   local stp = 1
-  while (stp <= forwards) and canGo do
-    canGo = turtle.forward()
+  while (stp <= steps) and canGo do
+    canGo = turtle.back()
+    turtle.dig()
     stp = stp + 1
   end
  
-  turtle.turnLeft()
+  turtle.turnRight()
  
   if canGo then
     for i = 16, 1, -1 do
