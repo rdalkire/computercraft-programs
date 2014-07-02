@@ -1,5 +1,4 @@
---[[ com.ape42.turtle.Farm 0.8.1
-  For computercraft 1.63
+--[[ 
   Farms X rows, trying to alternate
      crops according to the reference
      slots, which are the first
@@ -13,12 +12,11 @@
   @author R David Alkire, IGN ian_xw
      
 TODO/WIP:
-- Give more explicit usage instructions
-    and include a readme
 - Change pattern so it zigzags.  Be up
     one block so it doesn't have to
     turn around at each step.  This
-    should be almost twice as efficient.
+    should be almost twice as fuel 
+    efficient.
 - Add melon/pumpkin slots, handling.
 - Allow the turtle to start at right
     corner, depending which way is
