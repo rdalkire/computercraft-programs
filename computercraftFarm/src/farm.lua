@@ -18,6 +18,8 @@ TODO/WIP:
     should be almost twice as fuel 
     efficient.
 - Add melon/pumpkin slots, handling.
+- Sugarcane.
+- Cocoa beans, maybe.
 - Allow the turtle to start at right
     corner, depending which way is
     open.
