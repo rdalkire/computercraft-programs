@@ -3,12 +3,15 @@
      crops according to the reference
      slots, which are the first
      contiguous slots that have seeds.
-     If it doesn't have enough seed to
-     alternate,  it will leave a gap.
+     
+  See the README file for how-to-use
+     
+  Also: 
      There are two globals constants -
      to sleep GROW_WAIT minutes, and
      repeat MAX_REPEATS or until out
      of fuel.
+     
   @author R David Alkire, IGN ian_xw
      
 TODO/WIP:
@@ -118,7 +121,7 @@ local function sow( rowIndex, block,
       prevRow[block] = 0
     else
       prevRow[block] = refSlt
-      turtle.place()
+      turtle.placeDown()
     end -- if matches
   else
     print("Apparently, out of seeds")
@@ -156,7 +159,7 @@ local function reapRow( lth, firstRow )
   end
   while keepGoing do
    
-    turtle.dig() -- reaps
+    turtle.digDown() -- reaps
     keepGoing = turtle.forward()
  
     -- sees if it can keepGoing
@@ -200,7 +203,7 @@ local function sowRow(lnth, indx, prevRow)
   while block < lnth do
    
     turtle.back()
-    turtle.dig()
+    turtle.digDown()
  
     -- if there are still seeds
     if seedy then
@@ -317,7 +320,9 @@ local function reapAndSow( rows )
  
   print("The first "..plntbl..
     " slots \nare deemed plantable")
- 
+  
+  turtle.up()
+  
   local prevRow = {}
   print("rows = ".. rows)
   local rowLength = rows
@@ -330,7 +335,7 @@ local function reapAndSow( rows )
   while (rowIndex< rows) and isSeedy
       and isFuelOK and not isBlocked do
     
-    -- print( "rowIndex ".. rowIndex )
+    print( "rowIndex ".. rowIndex )
    
     -- If there was an unexpected
     -- stop in previous row, then
@@ -411,11 +416,13 @@ local function returnAndStore(rows)
   local stp = 1
   while (stp <= steps) and canGo do
     canGo = turtle.back()
-    turtle.dig()
+    turtle.digDown()
     stp = stp + 1
   end
  
   turtle.turnRight()
+  
+  turtle.down()
  
   if canGo then
     for i = 16, 1, -1 do
