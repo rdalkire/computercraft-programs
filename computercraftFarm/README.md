@@ -22,6 +22,11 @@ of the largest square field that it can
 harvest and re-plant, given the amount
 of fuel.
 
+Another way to use the 0 param is if 
+you block the robot at the corners.
+Note to make the blocks two-high, since
+the robot now works from there.
+
 If you only use one crop and only the
 first slot, the robot will leave a gap
 of farmland between rows, since the 
