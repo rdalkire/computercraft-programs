@@ -328,22 +328,7 @@ local function moveOnAndDoOne( rowLength,
     rowLength, isSeedy= sowAndReapRow( 
         rowLength, isFirst, prevRow, 
         rowIndex )
-    
-    --[[ XXX
-    rowLength= reapRow( rowLength, isFirst )
-    if isFirst then
-      -- initializes previous array
-      for i = 1, rowLength do
-        prevRow[i] = 0
-      end
-    end ]]
-   
-    --[[ 
-    if rowLength > 0 then
-      isSeedy=sowRow( rowLength, 
-          rowIndex, prevRow)
-    end ]]
-   
+
   end -- if fuel OK
 
   return isFuelOK, rowLength, isSeedy,
