@@ -1,4 +1,4 @@
-# farm.lua 0.8.2 for computercraft 1.63
+# farm.lua 0.9.x for computercraft 1.63
 
 ## Basic Usage
 
