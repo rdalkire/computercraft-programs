@@ -17,6 +17,9 @@
   @author R David Alkire, IGN ian_xw
      
 TODO/WIP:
+- Select the waiting time depending
+    on whether the reference slots are
+    gapless.
 - Add melon/pumpkin slots, handling.
 - Sugarcane.
 - Cocoa beans, maybe.
@@ -202,6 +205,9 @@ local function sowAndReapRow( lth,
     end
    
   end -- while loop
+ 
+  -- TODO print the prevRow, to
+  --  troubleshoot row alternating
  
   lth = placeR - 1
   return lth, isSeedy
