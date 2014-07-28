@@ -1,5 +1,4 @@
---[[ V. 0.9.1: Now Bidirectional.  Fuel
-    efficiency nearly doubled.
+--[[ 092: crop-alternating regression
 
   Farms X rows, trying to alternate
      crops according to the reference
@@ -88,8 +87,8 @@ local function selectNonRefSlot()
   return seedy
 end
  
--- Decides what to plant based the
---  reference slots (plntblCnt)
+-- Decides what to plant based on the
+--  reference slots (plntblCnt).
 -- @param rowIndex the current row
 -- @block block # within the row,
 --  starting with 0, closest to start
@@ -174,11 +173,12 @@ local function sowAndReapRow( lth,
       prevRow[placeR - 1] = 0
     end
     
+    local placeIdx = placeR-1
     local block = 0
-    if rowIdx % 2 then  --Even
-      block = placeR - 1
+    if rowIdx % 2 == 0 then  --Even
+      block = placeIdx
     else
-      block = (lth-1) - (placeR-1) 
+      block = (lth-1) - placeIdx 
     end
     
     isSeedy = sow(rowIdx, block,
@@ -250,10 +250,7 @@ end
 local function moveToNext(rowIndex, 
     isFuelOK )
 
-  -- Since this is called before the 
-  -- actual farming, we need the
-  -- *previous* rowIndex
-  local isEven= (rowIndex - 1)% 2== 0
+  local isEven= rowIndex % 2== 0
     
   print( string.format(
           "moveToNext( isEven %s, "
@@ -269,21 +266,24 @@ local function moveToNext(rowIndex,
       turtle.turnRight()
       
       isBlocked=turtle.forward()==false
-      if isBlocked then
-        turtle.turnLeft()
-      else
+      -- TODO clean up if working
+--      if isBlocked then
+--        turtle.turnLeft()
+--      else
         turtle.turnRight()
-      end -- blocked vs not
+--      end -- blocked vs not
       
     else -- is odd
       turtle.turnLeft()
       
       isBlocked=turtle.forward()==false
-      if isBlocked then
-        turtle.turnRight()
-      else
+      
+        --XXX clean when ready
+--      if isBlocked then
+--        turtle.turnRight()
+--      else
         turtle.turnLeft()
-      end --blocked or no
+--      end --blocked or no
       
     end -- even vs odd
   end -- isFuelOK
@@ -310,23 +310,15 @@ end
 --    when moving from one row to the 
 --    next, which is meant to be a 
 --    normal scene.
-local function moveOnAndDoOne( rowLength,
+local function doOneAndMoveOn( rowLength,
     isFirst, prevRow, rowIndex )
  
   local isFuelOK = true
   local isSeedy = true
   local isBlocked = false
-  
-  -- After the first row
-  if isFirst == false then
  
-    isFuelOK = isFuelOKForNextRow( 
-        rowIndex, rowLength )
-
-    isBlocked = moveToNext( rowIndex, 
-        isFuelOK )
-   
-  end -- if after first
+  isFuelOK = isFuelOKForNextRow( 
+      rowIndex, rowLength )
  
   if isFuelOK and isSeedy and 
       not isBlocked then
@@ -336,6 +328,9 @@ local function moveOnAndDoOne( rowLength,
         rowIndex )
 
   end -- if fuel OK
+  
+  isBlocked = moveToNext( rowIndex, 
+      isFuelOK )
 
   return isFuelOK, rowLength, isSeedy,
       isBlocked
@@ -348,7 +343,7 @@ end
 -- @return number of rows planted.
 --  If stopped unexpectedly this will
 --  be 0. 
--- Also returns row length
+-- Also returns row length, & isBlocked
 local function reapAndSow( rows )
   -- print("beginning reapAndSow()")
   -- Find out how many slots are for
@@ -385,13 +380,13 @@ local function reapAndSow( rows )
      
       isFuelOK, rowLength, isSeedy, 
           isBlocked =
-          moveOnAndDoOne( rowLength,
+          doOneAndMoveOn( rowLength,
           isFirst, prevRow, rowIndex )
      
       -- XXX for troubleshooting
       print( string.format(
           "in farm(), after "
-          .."moveOnAndDoOne( rowLength %d, "
+          .."doOneAndMoveOn( rowLength %d, "
           .."isFirst %s, rowIndex %d)",
           rowLength, tostring(isFirst),
           rowIndex ) )
@@ -416,21 +411,23 @@ local function reapAndSow( rows )
  
   -- The number of rows traversed
   -- or 0 if unexpected problem
-  local rtrnVal = 0
+  local rowsDone = 0
   if rowLength > 0 then
     -- If fuel was too low, it did not
     -- move to next row, so therefore
     -- its row is one less than otherwise
-    if isFuelOK and not isBlocked then
-      rtrnVal = rowIndex
+    
+    -- XXX remove 'not isBlocked' cmt
+    if isFuelOK --[[and not isBlocked]] then
+      rowsDone = rowIndex
     else
-      rtrnVal = rowIndex - 1
+      rowsDone = rowIndex - 1
     end
   else
-    rtrnVal = 0
+    rowsDone = 0
   end
  
-  return rtrnVal, rowLength
+  return rowsDone, rowLength, isBlocked
  
 end
  
@@ -442,31 +439,43 @@ end
 --  planted.
 -- @param length in case we're at the
 --  other end of a row, how many 
+-- @param isBlocked indicates that
+--  we could *not* move to next row.
 -- @return true if successful. False
 --  means there was blockage or fuel
 --  outage.
 local function returnAndStore( rows, 
-    length )
+    length, isBlocked )
   
   local canGo = true
-  local steps = (rows - 1)
+  
+  -- TODO if this works, get rid of 
+  -- steps variable and just use rows
+  local steps = rows
+  if isBlocked then 
+    steps = rows - 1
+  end
   
   print( string.format(
         "returnAndStore(): rows %d,"
-        .. " steps %d, length %d", 
-        rows, steps, length ))
+        .. " steps %d, length %d, "
+        .. "isBlocked %s", 
+        rows, steps, length, 
+        tostring(isBlocked) ))
  
-  -- If steps is even, turtle is at
+  -- If rows is odd, turtle is at
   -- opposite end so it must return
-  if steps % 2 == 0 then   -- Even
-    turtle.turnRight()
-    turtle.turnRight()
+  if rows % 2 == 1 then   -- odd
+    -- XXX remove.  turtle shld be here
+    -- turtle.turnRight()
+    -- turtle.turnRight()
     for i = 1, length - 1 do
       turtle.forward()
     end
+    turtle.turnRight()
+  else
+    turtle.turnLeft()
   end
-  
-  turtle.turnRight()
   
   local stp = 1
   while (stp <= steps) and canGo do
@@ -576,11 +585,11 @@ local function farm( widthFromUsr )
         widthFromUsr = maxLnth
       end
       
-      local rowsDone, lngth = 
+      local rowsDone, lngth, isBlocked = 
           reapAndSow( widthFromUsr )
       
       okSoFar = returnAndStore(
-          rowsDone, lngth )
+          rowsDone, lngth, isBlocked )
 
       if rowsDone > 0 then
         if okSoFar then
