@@ -1,11 +1,11 @@
---[[ 092: crop-alternating regression
+--[[ 093 2014-07-29-a sow() re-worked
 
   Farms X rows, trying to alternate
      crops according to the reference
      slots, which are the first
      contiguous slots that have seeds.
-     
-  See the README file for how-to-use
+  
+  See the HOWTO file for how-to-use
      
   Also: 
      There are two globals constants -
@@ -42,7 +42,7 @@ This work is licensed under the
 -- The wait time between beginning of
 -- each harvest, in minutes.
 GROW_WAIT = 40
- 
+
 -- The number of times to farm the
 -- field, baring other constraints
 MAX_REPEATS = 3
@@ -96,36 +96,61 @@ end
 --  types for previous row
 local function sow( rowIndex, block,
     prevRow )
-  local seedy = false
+  local seedy = true
  
   -- Alternate among the plantables:
   -- loop through reference slots.
   local i = 0
   local refSlt = 0
-  while i < plntblCnt and seedy == false do
+  local strRefs = "" --NOTE trblshtng
+  local isPlanted = false
+  local isAvailable = false
+  local isAppropriate = false
+  local unavailCount = 0
+  while i < plntblCnt and not isPlanted do
     --use what was for a given reference slot
     refSlt = ( (rowIndex + i )% plntblCnt) + 1
    
-    turtle.select(refSlt)
-    if turtle.getItemCount(refSlt) > 1 then
-      seedy = true
-    else
-      seedy = selectNonRefSlot()
+    if i > 0 then
+      strRefs = strRefs.. ", "
     end
-    i = i + 1
-  end
- 
-  if seedy then
-    if prevRow[block]== refSlt then
-      prevRow[block] = 0
+    strRefs = strRefs.. tostring(refSlt)
+   
+    turtle.select(refSlt)
+    -- leave 1 in each reference slot
+    if turtle.getItemCount(refSlt) > 1 then
+      isAvailable = true
     else
+      isAvailable = selectNonRefSlot()
+    end
+    
+    isAppropriate = 
+        not( prevRow[block]== refSlt )
+    
+    if isAvailable and isAppropriate then
       prevRow[block] = refSlt
       turtle.placeDown()
-    end -- if matches
-  else
-    print("Apparently, out of seeds")
-  end -- if seedy
- 
+      isPlanted = true
+    else
+      if not isAvailable then
+        unavailCount= unavailCount + 1
+      end
+    end
+    
+    i = i + 1
+  end
+  
+  if not isPlanted then
+    prevRow[block] = 0
+    strRefs = strRefs.. " (0)"
+    if unavailCount >= plntblCnt then
+      seedy = false
+      print("Apparently, out of seeds")
+    end
+  end
+  
+  print("strRefs: ".. strRefs)
+  
   return seedy
 end
  
@@ -206,9 +231,6 @@ local function sowAndReapRow( lth,
    
   end -- while loop
  
-  -- TODO print the prevRow, to
-  --  troubleshoot row alternating
- 
   lth = placeR - 1
   return lth, isSeedy
 end
@@ -266,24 +288,15 @@ local function moveToNext(rowIndex,
       turtle.turnRight()
       
       isBlocked=turtle.forward()==false
-      -- TODO clean up if working
---      if isBlocked then
---        turtle.turnLeft()
---      else
+
         turtle.turnRight()
---      end -- blocked vs not
       
     else -- is odd
       turtle.turnLeft()
       
       isBlocked=turtle.forward()==false
-      
-        --XXX clean when ready
---      if isBlocked then
---        turtle.turnRight()
---      else
+
         turtle.turnLeft()
---      end --blocked or no
       
     end -- even vs odd
   end -- isFuelOK
@@ -383,7 +396,7 @@ local function reapAndSow( rows )
           doOneAndMoveOn( rowLength,
           isFirst, prevRow, rowIndex )
      
-      -- XXX for troubleshooting
+      -- for troubleshooting
       print( string.format(
           "in farm(), after "
           .."doOneAndMoveOn( rowLength %d, "
@@ -413,12 +426,12 @@ local function reapAndSow( rows )
   -- or 0 if unexpected problem
   local rowsDone = 0
   if rowLength > 0 then
+  
     -- If fuel was too low, it did not
     -- move to next row, so therefore
     -- its row is one less than otherwise
-    
-    -- XXX remove 'not isBlocked' cmt
-    if isFuelOK --[[and not isBlocked]] then
+    -- TODO re-test
+    if isFuelOK then
       rowsDone = rowIndex
     else
       rowsDone = rowIndex - 1
@@ -448,9 +461,6 @@ local function returnAndStore( rows,
     length, isBlocked )
   
   local canGo = true
-  
-  -- TODO if this works, get rid of 
-  -- steps variable and just use rows
   local steps = rows
   if isBlocked then 
     steps = rows - 1
@@ -466,9 +476,6 @@ local function returnAndStore( rows,
   -- If rows is odd, turtle is at
   -- opposite end so it must return
   if rows % 2 == 1 then   -- odd
-    -- XXX remove.  turtle shld be here
-    -- turtle.turnRight()
-    -- turtle.turnRight()
     for i = 1, length - 1 do
       turtle.forward()
     end
