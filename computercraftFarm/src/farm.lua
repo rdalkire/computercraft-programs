@@ -1,4 +1,4 @@
---[[ 093 2014-07-29-a sow() re-worked
+--[[ 2014-08-06 xtra prints rmvd
 
   Farms X rows, trying to alternate
      crops according to the reference
@@ -102,7 +102,6 @@ local function sow( rowIndex, block,
   -- loop through reference slots.
   local i = 0
   local refSlt = 0
-  local strRefs = "" --NOTE trblshtng
   local isPlanted = false
   local isAvailable = false
   local isAppropriate = false
@@ -110,11 +109,6 @@ local function sow( rowIndex, block,
   while i < plntblCnt and not isPlanted do
     --use what was for a given reference slot
     refSlt = ( (rowIndex + i )% plntblCnt) + 1
-   
-    if i > 0 then
-      strRefs = strRefs.. ", "
-    end
-    strRefs = strRefs.. tostring(refSlt)
    
     turtle.select(refSlt)
     -- leave 1 in each reference slot
@@ -142,14 +136,11 @@ local function sow( rowIndex, block,
   
   if not isPlanted then
     prevRow[block] = 0
-    strRefs = strRefs.. " (0)"
     if unavailCount >= plntblCnt then
       seedy = false
       print("Apparently, out of seeds")
     end
   end
-  
-  print("strRefs: ".. strRefs)
   
   return seedy
 end
