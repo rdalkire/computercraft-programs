@@ -1,5 +1,5 @@
-
 -- assign fake/real turtle
+-- NOTE Not yet complete
 local t
 if turtle then
   t = turtle
@@ -156,18 +156,36 @@ local crftSlts = { 1, 2, 3, 5, 6, 7,
     9, 10, 11 }
 
 --[[ Transfers from the selected slot
-to any crafting-table slot that doesnt
-yet have the amount needed. ]]
+to any crafting-table slot that doesn't
+yet have the amount needed.
+@param rightAmt is the amount that the
+    current slot should have
+@param blCnt is number of items per
+    crafting table slot, which will
+    be the number of blocks produced ]]
 local function trnsfr(rightAmt, blCnt)
   
   local slcCount = t.getItemCount()
   local toTrnsfr = slcCount - rightAmt
+  
   -- Until down to rightAmt
-  while toTrnsfr > 0 do
+  while(toTrnsfr> 0) do
   
     -- Finds a crafting table slot that
     -- has less than blCnt
-    
+    local i = 1
+    local cSlt = 0
+    local isFound = false
+    local csWants = 0
+    while i <= 9 and isFound==false do
+      cSlt = crftSlts[i]
+      local csAmt= t.getItemCount(cSlt)
+      csWants = blCnt - csAmt
+      if csWants > 0 then
+        isFound = true
+      end
+      i = i + 1
+    end
     -- Transfers needed amount
     
     -- updates toTransfr
