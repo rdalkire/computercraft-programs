@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>computercraftFarm</name>
+	<name>turtle programming</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -14,4 +14,11 @@
 	<natures>
 		<nature>org.eclipse.koneki.ldt.nature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>quickluatour.lua</name>
+			<type>1</type>
+			<location>C:/Program Files (x86)/Lua/5.1/examples/quickluatour.lua</location>
+		</link>
+	</linkedResources>
 </projectDescription>
