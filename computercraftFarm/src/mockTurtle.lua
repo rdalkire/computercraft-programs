@@ -39,6 +39,13 @@ local slts =
 
 mockTurtle.selected = 1 -- Slot Num
 
+mockTurtle.craft = function()
+  print("Pretending to craft.")
+  for i, v in ipairs(slts) do
+    print(i, v)
+  end
+end
+
 mockTurtle.drop = function( amt )
   if amt then
     slts[mockTurtle.selected] = 

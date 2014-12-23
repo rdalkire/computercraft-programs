@@ -1,5 +1,10 @@
+--[[ Takes the items from the chest
+fore of it, puts non-melon to the port
+chest, melon blocks to the starboard.
+Melon slices are crafted to melon 
+blocks. ]]
+
 -- assign fake/real turtle
--- NOTE Not yet complete
 local t
 if turtle then
   t = turtle
@@ -22,7 +27,7 @@ deadReckoner.bearTo= function(target)
 
   local WAYS = {}
   WAYS[deadReckoner.FORE] = "FORE"
-  WAYS[deadReckoner.STARBOARD] = "STARBOARD"
+  WAYS[deadReckoner.STARBOARD]= "STARBOARD"
   WAYS[deadReckoner.AFT] = "AFT"
   WAYS[deadReckoner.PORT] = "PORT"
 
@@ -186,9 +191,19 @@ local function trnsfr(rightAmt, blCnt)
       end
       i = i + 1
     end
+    
     -- Transfers needed amount
+    local thisTrnsf = 0
+    if csWants > toTrnsfr then
+      thisTrnsf = toTrnsfr
+    else
+      thisTrnsf = csWants
+    end
+    
+    t.transferTo( cSlt, thisTrnsf )
     
     -- updates toTransfr
+    toTrnsfr = toTrnsfr - thisTrnsf
     
   end -- trnsfr loop
     
@@ -216,10 +231,12 @@ local function craftBlocks( count )
   
   --[[Loops through the craftable slts]]
   for i = 1, 9 do
-    local slotIndx = emptySlts[i]
+    local slotIndx = crftSlts[i]
     t.select(slotIndx)
     trnsfr( blCnt, blCnt )
   end
+  
+  t.craft()
   
 end
 
@@ -239,6 +256,10 @@ local function main( tArgs )
   -- If there are enough slices, craft!
   if sliceCnt >= 9 then
     craftBlocks( sliceCnt )
+    -- Put away the resulting blocks
+    dr.bearTo(dr.STARBOARD)
+    t.drop()
+    dr.bearTo(dr.FORE)
   end
  
 end
