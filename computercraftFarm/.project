@@ -16,6 +16,11 @@
 	</natures>
 	<linkedResources>
 		<link>
+			<name>README.md</name>
+			<type>1</type>
+			<location>C:/Users/Public/git/computercraftScripts/README.md</location>
+		</link>
+		<link>
 			<name>quickluatour.lua</name>
 			<type>1</type>
 			<location>C:/Program Files (x86)/Lua/5.1/examples/quickluatour.lua</location>

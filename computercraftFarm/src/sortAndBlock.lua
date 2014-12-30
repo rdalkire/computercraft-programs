@@ -1,8 +1,14 @@
---[[ Takes the items from the chest
-fore of it, puts non-melon to the port
-chest, melon blocks to the starboard.
-Melon slices are crafted to melon 
-blocks. ]]
+--[[ SortAndBlock 1.0.0
+
+Takes the items from the chest
+fore of it, puts non-blockable to the 
+port chest, Nine-block blocks to the 
+starboard. Blockables are crafted to 
+blocks. 
+
+CopyLeft (MIT License) 2014
+Robert David Alkire II
+]]
 
 -- assign fake/real turtle
 local t
@@ -31,18 +37,11 @@ deadReckoner.bearTo= function(target)
   WAYS[deadReckoner.AFT] = "AFT"
   WAYS[deadReckoner.PORT] = "PORT"
 
-  print("heading ".. 
-      WAYS[deadReckoner.heading], 
-      "target heading "..
-      WAYS[ target ] )
-
   local trnsRght = 
       target - deadReckoner.heading
   
   local trns = math.abs( trnsRght )
-  if trns == 0 then
-    print("No need to turn.")
-  else
+  if trns ~= 0 then
     local i = 0
     while i < trns do
       if trnsRght >= 0 then
@@ -52,7 +51,6 @@ deadReckoner.bearTo= function(target)
       end -- which way
       i = i + 1
     end -- turn loop
-    print("done turning this time.")
   end -- there were any turns
   
   deadReckoner.heading = target
@@ -87,46 +85,110 @@ local function dropFromInv( cntToDrop )
   
 end
 
+  -- From Table (list) of blockables
+  local blockables = {}
+  blockables["minecraft:melon"] = 0
+  blockables["minecraft:wheat"] = 0
+  blockables["minecraft:diamond"] = 0
+  blockables["minecraft:iron_ingot"]=0
+  blockables["minecraft:gold_ingot"]=0
+  blockables["minecraft:redstone"] = 0
+  blockables["minecraft:coal"] = 0
+
+--[[ For items in the turtle's 
+inventory, which one would be best for 
+crafting into 9-item blocks.
+@return table with name = blockable 
+  item, and nameBlock name of the item
+  which is the block. ]]
+local function findBlockable()
+  
+--  NOTE to check for lapis, would 
+--  have to check for data value 4
+  
+  -- Tracks the blockable counts
+  for i = 1, 16 do --through inventory
+    local itm =  t.getItemDetail(i)
+    
+    if itm ~= nill then
+      local nme = itm.name
+      
+      -- If item name is in the list
+      if blockables[ nme ]~= nill then
+        -- Add the count
+        blockables[ nme ] = 
+            blockables[ nme ] + 
+            itm.count
+            
+      end -- if blckble
+    end -- not nill
+  end --invtry loop
+
+  -- Loop through blockable list
+  local max = 0
+  local rtrn = nill
+  for nme, cnt in pairs(blockables) do
+    -- If found count > max
+    if cnt > max then
+      -- Assign result name
+      max = cnt
+      rtrn = nme
+    end -- if higher is found
+    
+  end --blockable loop
+
+  if rtrn ~= nill then
+    print("Most blockable item: ".. rtrn)
+  end
+  
+  return rtrn
+  
+end
+
 --[[ From its inventory, removes all 
 but the most blockable kind of item
-(At time of this edit: only melons),
-putting all non-wanted items into the
-appropriate chests: already-blocked 
-into the right one, non-blockable
-into left one, and remaining blockable
-back to the source chest.
+according to quantity, putting all 
+non-wanted items into the appropriate 
+chests: already-blocked into the right
+one, non-blockable into left one, and
+remaining blockable back to the source
+chest.
 @return number of remaining items,
   evenly divisible by 9 ]]
 local function sortAllButBlockables()
 
-  --[[ TODO Find the most 'blockable' 
-    item - ie, which blockable is
-    the most plentiful. Use separate
-    function ]]
+  local blckbl = findBlockable()
   
   -- Going through the inventory
-  local sliceCnt = 0
+  local blckblCnt = 0
   for i = 1, 16 do
     local itm = t.getItemDetail(i)
     
     if itm ~= nill then
-      print(i, itm.name)
       
-      
-      --[[ TODO Use whatever is _most_
-      blockable.  Put other blockables
-      back into the source chest. ]]
-      
-      if itm.name=="minecraft:melon" then 
+--      Uses whatever is most 
+--      blockable to craft.
+      if itm.name == blckbl then 
         -- add to the slice count
-        sliceCnt = sliceCnt + itm.count
+        blckblCnt = blckblCnt + itm.count
+      
+      -- If it's blockable, yet not
+      -- the *most* blockable
+      elseif blockables[ itm.name ] ~= 
+          nill then
+         -- put it back into the source
+        dr.bearTo( dr.FORE )
+        t.select(i)
+        t.drop()
         
-      elseif itm.name==
-          "minecraft:melon_block" then
+      -- If item name has "_block" 
+      elseif string.find( itm.name,
+          "_block", 1, true ) then
         -- put stack in starboard chest
         dr.bearTo(dr.STARBOARD)
         t.select(i)
         t.drop()
+      
       else
         -- put stack in the port chest
         dr.bearTo(dr.PORT)
@@ -134,26 +196,26 @@ local function sortAllButBlockables()
         t.drop()
       end
     
-    else -- itm is nill
-      print(i, "nill")
     end -- if there are items
     
-  end -- loop of items
+  end -- loop of slots
 
   dr.bearTo(dr.FORE)
   
   -- Limit is 64 * 9 for crafting
-  local rmndr = sliceCnt % 9
-  print( "sliceCnt pre", sliceCnt )
-  if sliceCnt > 576 then
-    dropFromInv( sliceCnt - 576 )
-    sliceCnt = 576
+  local rmndr = blckblCnt % 9
+  if blckblCnt > 576 then
+    dropFromInv( blckblCnt - 576 )
+    blckblCnt = 576
   elseif rmndr > 0 then
     dropFromInv( rmndr )
-    sliceCnt = sliceCnt - rmndr
+    blckblCnt = blckblCnt - rmndr
+    print("Returned: ".. rmndr)
   end
   
-  return sliceCnt
+  print("Blockable: ".. blckblCnt )
+  
+  return blckblCnt
 end
 
 --[[ Slots used as crafting table ]]
@@ -218,6 +280,8 @@ local function craftBlocks( count )
   -- Set up the slots and craft
   local blCnt = math.floor(count / 9)
   
+  print("Block count: ".. blCnt)
+  
   --[[ Slots that must be empty ]]
   local emptySlts = {4, 8, 12, 13, 14,
       15, 16 }
@@ -249,18 +313,18 @@ local function main( tArgs )
     stillSucks = t.suck()
   end
   
-  local sliceCnt= sortAllButBlockables()
-  
-  print("sliceCnt", sliceCnt )
+  local blckblCnt=sortAllButBlockables()
   
   -- If there are enough slices, craft!
-  if sliceCnt >= 9 then
-    craftBlocks( sliceCnt )
+  if blckblCnt >= 9 then
+    craftBlocks( blckblCnt )
     -- Put away the resulting blocks
     dr.bearTo(dr.STARBOARD)
     t.drop()
     dr.bearTo(dr.FORE)
   end
+ 
+  print("Finished sorting; see chests.")
  
 end
 

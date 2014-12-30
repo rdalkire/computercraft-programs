@@ -20,7 +20,7 @@ itms[1] = {
   damage = 0,
 }
 itms[2] = {
-  name = "minecraft:something_else",
+  name = "minecraft:iron_ingot",
   count = 0,
   damage = 0,
 }
@@ -32,9 +32,9 @@ itms[3] = nill
 --}
 
 local slts = 
-    { 25, 1, 0, 42,
-      25, 1, 0, 42,
-      25, 1, 0, 42,
+    { 25, 50, 0, 42,
+      25, 50, 0, 42,
+      25, 50, 0, 42,
       25, 1, 0, 42 }
 
 mockTurtle.selected = 1 -- Slot Num
@@ -55,7 +55,7 @@ mockTurtle.drop = function( amt )
     slts[mockTurtle.selected] = 0
   end
   
-  print("Dropped ", amt)
+  print("Pretended to drop: ", amt)
 end
 
 mockTurtle.getItemCount= function( slotNum )
@@ -68,7 +68,8 @@ mockTurtle.getItemCount= function( slotNum )
   return rtrn
 end
 
-mockTurtle.getItemDetail = function( slot )
+mockTurtle.getItemDetail = function( 
+    slot )
   local r = slot % 4
   local stuff = mockTurtle.itms[r]
   if stuff then
@@ -98,11 +99,11 @@ mockTurtle.suck = function()
 end -- end suck
 
 mockTurtle.turnRight = function()
-  print("Turning right.")
+  print("Play-turning right.")
 end
 
 mockTurtle.turnLeft = function()
-  print("Turning left.")
+  print("Play-turning left.")
 end
 
 mockTurtle.transferTo = function( slot,
