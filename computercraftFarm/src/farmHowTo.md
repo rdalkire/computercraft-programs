@@ -4,7 +4,7 @@ for computercraft 1.63 and above
 ## Basic Usage
 
 Place the robot at the field's lower 
-left corner. 
+left corner, and put a chest behind it.
 
 Put wheat seeds, carrots and/or 
 potatoes in the turtle's first few 
