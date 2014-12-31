@@ -1,4 +1,4 @@
---[[ SortAndBlock 1.0.0
+--[[ SortAndBlock 1.0.1
 
 Takes the items from the chest
 fore of it, puts non-blockable to the 
@@ -90,8 +90,10 @@ end
   blockables["minecraft:melon"] = 0
   blockables["minecraft:wheat"] = 0
   blockables["minecraft:diamond"] = 0
+  blockables["minecraft:emerald"] = 0
   blockables["minecraft:iron_ingot"]=0
   blockables["minecraft:gold_ingot"]=0
+  blockables["minecraft:gold_nugget"]=0
   blockables["minecraft:redstone"] = 0
   blockables["minecraft:coal"] = 0
 

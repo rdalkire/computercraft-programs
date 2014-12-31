@@ -1,7 +1,6 @@
-# sortAndBlock.lua 1.0.0 
+# How to Use sortAndBlock.lua 1.0.1
 For computercraft 1.6.5
 
-## Usage
 If already set up:  To launch, just 
 type the name of the script file, for 
 example "srt".  It does not need any 
@@ -19,10 +18,10 @@ The initial usage sites are automated
 iron factories, melon producers and 
 wheat farms.
 
-Version 1.0.0 can deal with these item 
-types: melon, wheat, diamond, 
-iron ingot, gold ingot, redstone, and 
-coal.
+Version 1.0.1 can deal with these item 
+types: melon, wheat, diamond, emerald,
+iron ingot, gold nugget, gold ingot, 
+redstone, and coal.
 
 Note, lapis lazuli is not (yet) 
 supported.
