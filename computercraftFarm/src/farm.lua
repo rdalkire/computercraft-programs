@@ -1,4 +1,4 @@
---[[ 2014-08-06 xtra prints rmvd
+--[[ 2014-12-31
 
   Farms X rows, trying to alternate
      crops according to the reference
@@ -12,8 +12,6 @@
      to sleep GROW_WAIT minutes, and
      repeat MAX_REPEATS or until out
      of fuel.
-     
-  @author R David Alkire, IGN ian_xw
      
 TODO/WIP:
 - Select the waiting time depending
@@ -29,14 +27,11 @@ TODO/WIP:
     creation, given flat grassy area,
     a bucket and a source of water.
  
-This work is licensed under the
- Creative Commons Attribution 4.0
- International License. To view a copy
- of this license, visit
- http://creativecommons.org/licenses/by/4.0/
- or send a letter to Creative Commons,
- 444 Castro Street, Suite 900, Mountain
- View, California, 94041, USA.
+Copyright (c) 2014 
+Robert David Alkire II, IGN ian_xw
+Distributed under the MIT License.
+(See accompanying file LICENSE or copy
+at http://opensource.org/licenses/MIT)
 ]]
 
 -- The wait time between beginning of
@@ -491,8 +486,11 @@ local function returnAndStore( rows,
       if i > plntblCnt then
         turtle.drop()
       else
+        -- In reference slots, leave
+        -- at least 2 so that the first
+        -- can be planted.
         turtle.drop(
-            turtle.getItemCount(i)- 1)
+            turtle.getItemCount(i)- 2)
       end
     end
   else
