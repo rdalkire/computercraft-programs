@@ -1,1 +1,7 @@
 /troubleshootingNotes.txt
+<<<<<<< HEAD
+*.html
+
+=======
+/.README.md.html
+>>>>>>> refs/remotes/github/master

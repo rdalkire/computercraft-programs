@@ -1,9 +1,10 @@
-# farm.lua 0.8.2 for computercraft 1.63
+# farm.lua 1.0.x
+for computercraft 1.63 and above
 
 ## Basic Usage
 
 Place the robot at the field's lower 
-left corner. 
+left corner, and put a chest behind it.
 
 Put wheat seeds, carrots and/or 
 potatoes in the turtle's first few 
@@ -21,6 +22,11 @@ the program will estimate the width
 of the largest square field that it can 
 harvest and re-plant, given the amount
 of fuel.
+
+Another way to use the 0 param is if 
+you block the robot at the corners.
+Note to make the blocks two-high, since
+the robot now works from there.
 
 If you only use one crop and only the
 first slot, the robot will leave a gap
