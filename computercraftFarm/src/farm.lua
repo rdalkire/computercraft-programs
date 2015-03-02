@@ -37,14 +37,6 @@ TODO/WIP:
     of newer computercraft features,
     be sure to update the 
     documentation to match.
-- Modify frm to use mockturtle for 
-    offline simulation-testing.
-- Fix the problem where the bot fails 
-    to harvest because slots aren't open
-    properly.  Maybe there should be a
-    consolidate function that is called
-    after each row if there are more 
-    than n reference crops.
 - Refactor:  Add the use of a logically
     independent runtime dead-reckoner,
     and delegate all maneuvering to 
@@ -55,7 +47,7 @@ TODO/WIP:
     same-crop gapless.
 - Add special melon/pumpkin slots, 
     handling.
-- Sugarcane. 
+- Sugarcane
 - Cocoa beans, maybe.
 - Allow the turtle to start at right
     corner, depending which way is
@@ -72,6 +64,8 @@ Distributed under the MIT License.
 (See accompanying file LICENSE or copy
 at http://opensource.org/licenses/MIT)
 ]]
+
+local frm = {}
 
 -- The wait time between beginning of
 -- each harvest, in minutes.
@@ -92,13 +86,20 @@ local DEFAULT_MAX_LENGTH = 32
  
 -- Initial slots indicate what items
 -- the user deems plantable.
-local plntblCnt = 1
+local plntblCnt = 0
 
 local isMockUp = false
-local turtle = turtle
+
+-- TODO in DEV, require directly
+--local turtle=require "mockTurtle"
+local turtle=turtle
 if not turtle then
   turtle = require "mockTurtle"
   isMockUp = true
+end
+
+frm.getTurtle = function()
+  return turtle
 end
 
 -- Initializes the Plantable Count.
@@ -108,17 +109,52 @@ end
 -- will be used as reference.
 -- @return plntblCnt
 local function initPlntblCnt()
-  local indx = 0
-  local isPlntbl = true
-  while isPlntbl and indx < 16 do
-    indx = indx + 1
-    turtle.select(indx)
-    isPlntbl= turtle.getItemCount()> 0
+  -- To ensure it only runs once
+  if plntblCnt == 0 then
+    local indx = 0
+    local isPlntbl = true
+    while isPlntbl and indx < 16 do
+      indx = indx + 1
+      turtle.select(indx)
+      isPlntbl=turtle.getItemCount()>0
+    end
+    plntblCnt = indx - 1
   end
-  plntblCnt = indx - 1
   return plntblCnt
 end
- 
+
+
+frm.consolidate = function()
+  local lowestToMove=initPlntblCnt()+1
+  local sltToMove = 16
+  local isMoving = true
+  local trnsfrs =  0
+  while isMoving do
+    
+    local isChecking =
+        turtle.getItemCount(
+            sltToMove ) > 0
+    local chckSlt = 1
+    while isChecking do 
+      turtle.select(sltToMove)
+      if turtle.transferTo( 
+          chckSlt ) then
+        trnsfrs= trnsfrs+ 1
+        if turtle.getItemCount(
+            sltToMove) <= 0 or
+            chckSlt+1>= sltToMove then
+          isChecking = false
+        end
+      end
+      chckSlt= chckSlt + 1
+    end
+    sltToMove = sltToMove - 1
+    isMoving=sltToMove>=lowestToMove
+  end
+  print( "invntry cnsldtion trnsfrs: ", 
+      trnsfrs )
+end
+
 -- For the non - reference slots,
 -- find one that matches the
 -- currently selected and match that.
@@ -440,7 +476,8 @@ local function reapAndSow( rows )
     -- stop in previous row, then
     -- rowLength will be its initial
     -- value, 0
-    if rowLength<= 0 and isFirst== false then  
+    if rowLength<= 0 and 
+        isFirst== false then  
       -- Stops loop
       isSeedy = false
     else
@@ -449,6 +486,12 @@ local function reapAndSow( rows )
           isBlocked =
           doOneAndMoveOn( rowLength,
           isFirst, prevRow, rowIndex )
+     
+      if plntblCnt>3 and 
+          rowIndex % 3 == 0 then
+        frm.consolidate()
+      end
+      
      
       -- for troubleshooting
       print( string.format(
@@ -740,4 +783,8 @@ local function main( tArgs )
 end
  
 local tArgs = {...}
+
+-- TODO for TEST comment-out main()
 main(tArgs)
+
+return frm

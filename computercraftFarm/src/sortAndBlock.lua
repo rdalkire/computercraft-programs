@@ -25,7 +25,7 @@ deadReckoner.STARBOARD = 1
 deadReckoner.AFT = 2
 deadReckoner.PORT = 3
 
-deadReckoner.heading= deadReckoner.FORE
+deadReckoner.heading=deadReckoner.FORE
 
 -- Turns as needed to face the 
 -- target direction indicated
@@ -33,7 +33,8 @@ deadReckoner.bearTo= function(target)
 
   local WAYS = {}
   WAYS[deadReckoner.FORE] = "FORE"
-  WAYS[deadReckoner.STARBOARD]= "STARBOARD"
+  WAYS[deadReckoner.STARBOARD]= 
+      "STARBOARD"
   WAYS[deadReckoner.AFT] = "AFT"
   WAYS[deadReckoner.PORT] = "PORT"
 
@@ -140,7 +141,8 @@ local function findBlockable()
   end --blockable loop
 
   if rtrn ~= nill then
-    print("Most blockable item: ".. rtrn)
+    print("Most blockable item: ".. 
+        rtrn)
   end
   
   return rtrn
@@ -172,7 +174,8 @@ local function sortAllButBlockables()
 --      blockable to craft.
       if itm.name == blckbl then 
         -- add to the slice count
-        blckblCnt = blckblCnt + itm.count
+        blckblCnt = blckblCnt + 
+            itm.count
       
       -- If it's blockable, yet not
       -- the *most* blockable
@@ -295,7 +298,7 @@ local function craftBlocks( count )
     trnsfr( 0, blCnt )
   end --empty slots loop
   
-  --[[Loops through the craftable slts]]
+  --[[Loops through craftable slts]]
   for i = 1, 9 do
     local slotIndx = crftSlts[i]
     t.select(slotIndx)
@@ -315,7 +318,8 @@ local function main( tArgs )
     stillSucks = t.suck()
   end
   
-  local blckblCnt=sortAllButBlockables()
+  local blckblCnt =
+      sortAllButBlockables()
   
   -- If there are enough slices, craft!
   if blckblCnt >= 9 then
