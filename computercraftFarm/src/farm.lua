@@ -37,6 +37,9 @@ TODO/WIP:
     of newer computercraft features,
     be sure to update the 
     documentation to match.
+- Make so it accepts an optional 2nd 
+    parameter so that it can have
+    rectangular plots without blocking. 
 - Refactor:  Add the use of a logically
     independent runtime dead-reckoner,
     and delegate all maneuvering to 
@@ -66,6 +69,9 @@ at http://opensource.org/licenses/MIT)
 ]]
 
 local frm = {}
+
+local CONSOLIDATE_THRESHOLD = 3
+local CONSOLIDATE_FREQCY = 1
 
 -- The wait time between beginning of
 -- each harvest, in minutes.
@@ -487,8 +493,10 @@ local function reapAndSow( rows )
           doOneAndMoveOn( rowLength,
           isFirst, prevRow, rowIndex )
      
-      if plntblCnt>3 and 
-          rowIndex % 3 == 0 then
+      if plntblCnt > 
+          CONSOLIDATE_THRESHOLD and 
+          rowIndex % 
+          CONSOLIDATE_FREQCY == 0 then
         frm.consolidate()
       end
       
