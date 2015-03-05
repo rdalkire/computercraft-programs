@@ -27,10 +27,10 @@ For further coding, and to report bugs,
   & lua development tools here:
 https://github.com/rdalkire/computercraft-programs
 
-NOTE: There are two globals constants:
-   one to sleep GROW_WAIT minutes, and
+NOTE: There are some globals constants.
+   One is to sleep GROW_WAIT minutes,
    one to repeat MAX_REPEATS or until 
-   out of fuel.
+   out of fuel, and others below.
 
 TODO/WIP:
 - Remember, if updates include the use
@@ -70,7 +70,12 @@ at http://opensource.org/licenses/MIT)
 
 local frm = {}
 
+-- After this many seed slots 
+-- as indicated by plntblCnt, run the
+-- consolidate() function
 local CONSOLIDATE_THRESHOLD = 3
+
+-- How many rows between consolidations 
 local CONSOLIDATE_FREQCY = 1
 
 -- The wait time between beginning of
