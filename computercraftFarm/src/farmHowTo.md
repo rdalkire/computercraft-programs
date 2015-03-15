@@ -1,7 +1,11 @@
-# farm.lua 1.0.x
+# farm.lua 1.2.x
 for computercraft 1.63 and above
 
 ## Basic Usage
+
+I assume that you're lazy like me, and
+have dowloaded this as a file called 
+"frm".
 
 Place the robot at the field's lower 
 left corner, and put a chest behind it.
@@ -9,24 +13,32 @@ left corner, and put a chest behind it.
 Put wheat seeds, carrots and/or 
 potatoes in the turtle's first few 
 inventory slots, some fuel in its 9th 
-slot, then launch with:
+slot, launch with:
 
-		farm.lua <field-width>
+        frm length [rows]
 
 For example for a 10 x 10 field, type:
 
-		farm.lua 10
+        frm 10
 
-You can use 0 for field-width, and 
-the program will estimate the width 
-of the largest square field that it can 
-harvest and re-plant, given the amount
-of fuel.
+If you want to use a rectangular field
+without blocking, also specify rows:
 
-Another way to use the 0 param is if 
-you block the robot at the corners.
-Note to make the blocks two-high, since
-the robot now works from there.
+        frm 10 12
+
+Or you can use 0 as the sole parameter 
+if you block the robot at the corners.
+Note: Make the blocks two-high, since
+the robot now works from there.  
+
+        frm 0
+
+If it isn't blocked, the program will 
+estimate the width of the largest 
+square field that it can harvest and 
+re-plant, given the amount of fuel. 
+This may not be appropriate for worlds
+where fuel is not needed/unlimited.
 
 If you only use one crop and only the
 first slot, the robot will leave a gap

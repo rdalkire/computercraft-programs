@@ -37,9 +37,6 @@ TODO/WIP:
     of newer computercraft features,
     be sure to update the 
     documentation to match.
-- Make so it accepts an optional 2nd 
-    parameter so that it can have
-    rectangular plots without blocking. 
 - Refactor:  Add the use of a logically
     independent runtime dead-reckoner,
     and delegate all maneuvering to 
@@ -452,13 +449,16 @@ local function doOneAndMoveOn( rowLength,
 end
  
 -- Harvests and plants the rows
--- @param width/ rows number of 
---  expected plantable rows
+-- @param rowlength
+-- @param rows number of expected 
+--    plantable rows.  If 0, then 
+--    it's reset to rowlength.
 -- @return number of rows planted.
 --  If stopped unexpectedly this will
 --  be 0. 
 -- Also returns row length, & isBlocked
-local function reapAndSow( rows )
+local function reapAndSow( rowLength, 
+    rows )
   -- print("beginning reapAndSow()")
   -- Find out how many slots are for
   -- reference.
@@ -470,8 +470,10 @@ local function reapAndSow( rows )
   turtle.up()
   
   local prevRow = {}
+  if rows == 0 then
+    rows = rowlength
+  end
   print("rows = ".. rows)
-  local rowLength = rows
   local rowIndex = 0
   local isSeedy = true
   local isFuelOK = true
@@ -687,7 +689,8 @@ end
 --  user.  If 0, this will estimate
 --  the maximum width according to
 --  fuel.
-local function farm( widthFromUsr )
+-- @param rows for non-square field
+local function farm( widthFromUsr, rows )
  
     --[[ Start ]]
     -- three times, if enough fuel
@@ -716,7 +719,7 @@ local function farm( widthFromUsr )
       end
       
       local rowsDone, lngth, isBlocked = 
-          reapAndSow( widthFromUsr )
+          reapAndSow( widthFromUsr, rows )
       
       okSoFar = returnAndStore(
           rowsDone, lngth, isBlocked )
@@ -750,7 +753,7 @@ end
  
 local function main( tArgs )
   local widthFromUsr = 0
- 
+  local rowsFromUsr = 0
   --[[ If user supplies a good number,
   this uses it as row count.  If user
   supplied a bad argument, it indicates.
@@ -762,18 +765,31 @@ local function main( tArgs )
     widthFromUsr = tArgs[1]
     if tonumber(widthFromUsr)==nil then
       badArg = true
-      badArgMsg = "Argument not a number"
+      badArgMsg = "Arg 1 not a number"
     else
       widthFromUsr = tonumber(widthFromUsr)
     end
    
-  else
+   -- TODO get usr's row count limit
+   -- and use it
+  if argCount > 1 then
+    rowsFromUsr = tArgs[2]
+    if tonumber(rowsFromUsr)==nil then
+      badArgMsg = badArgMsg.. 
+          "... Arg 2 not a number"
+    else
+      rowsFromUsr= tonumber(rowsFromUsr)
+    end  
+   
+  end -- multpl args
+   
+  else -- There were no arguments
     badArg = true
     badArgMsg = 
-"Supply width of farm as param or 0\n"
-.."to use blockage instead."
+"Supply width and length of farm as \n"
+.."params or 0 to use blockage instead."
 
-  end
+  end -- argCount
    
   if badArg then
     print( badArgMsg )
@@ -781,7 +797,7 @@ local function main( tArgs )
         " of something")
 
     print(
-"plantable in each of the first few "
+"plantable in each of the first few \n"
 .. "slots (top row)")
 
     print(
@@ -790,7 +806,7 @@ local function main( tArgs )
     print(" down, leftmost)")
 
   else
-    farm( widthFromUsr )
+    farm( widthFromUsr, rowsFromUsr )
   end
  
 end
