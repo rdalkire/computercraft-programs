@@ -449,10 +449,10 @@ local function doOneAndMoveOn( rowLength,
 end
  
 -- Harvests and plants the rows
--- @param rowlength
+-- @param rowLength
 -- @param rows number of expected 
 --    plantable rows.  If 0, then 
---    it's reset to rowlength.
+--    it's reset to rowLength.
 -- @return number of rows planted.
 --  If stopped unexpectedly this will
 --  be 0. 
@@ -471,7 +471,7 @@ local function reapAndSow( rowLength,
   
   local prevRow = {}
   if rows == 0 then
-    rows = rowlength
+    rows = rowLength
   end
   print("rows = ".. rows)
   local rowIndex = 0
