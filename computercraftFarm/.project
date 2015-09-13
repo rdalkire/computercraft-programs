@@ -13,12 +13,13 @@
 	</buildSpec>
 	<natures>
 		<nature>org.eclipse.koneki.ldt.nature</nature>
+		<nature>org.eclipse.ldt.nature</nature>
 	</natures>
 	<linkedResources>
 		<link>
 			<name>quickluatour.lua</name>
 			<type>1</type>
-			<location>C:/Program Files (x86)/Lua/5.1/examples/quickluatour.lua</location>
+			<location>/Users/davealkire/eclipse/jee-mars/Eclipse.app/Contents/Eclipse/C::/Program Files (x86)/Lua/5.1/examples/quickluatour.lua</location>
 		</link>
 	</linkedResources>
 </projectDescription>
