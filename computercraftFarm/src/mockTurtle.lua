@@ -103,6 +103,16 @@ mockTurtle.getItemDetail = function(
   return itms[slot]
 end
 
+mockTurtle.getItemSpace= function(slt)
+  local rtrn = 0
+  if slt then
+    rtrn = 64 - slts[slt]
+  else
+    rtrn= 64- slts[mockTurtle.selected]
+  end
+  return rtrn
+end
+
 mockTurtle.getSelectedSlot = function()
   return mockTurtle.selected
 end

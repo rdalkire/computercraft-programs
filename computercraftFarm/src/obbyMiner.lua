@@ -1,77 +1,138 @@
-local MXLTH, MxSlt, canDig, canGo, cntFwds, gotBckt, i, lp, sltDone
+local trtl
+--if turtle then 
+--  trtl = turtle
+--else
+  trtl = require "mockTurtle" 
+--end
+
+local oMnr = {}
+
 -- Fills the groove with lava:
-MXLTH = 50
-MxSlt = 11
-sltDone = false
-i = 0
-lp = false
-while not sltDone do
-  -- Fetches a bucket-full
-  gotBckt = false
-  canGo = true
-  cntFwds = 0
-  -- Until it has a bucket or is obstructed
-  while not gotBckt and canGo do
-    canGo = turtle.forward()
+oMnr.MxSlt = 11
+oMnr.MXLTH = 50
+
+local slotLngth = 0
+
+oMnr.fillSlot = function()
+
+  local sltDone = false
+  local lp = false
+  local theresLava = false
+  
+  while not sltDone do
+  
+    -- Fetches a bucket-full
+    local gotBckt = false
+    local canGo = true
+    local cntFwds = 0
+    -- Until has bucket or obstructed
+    while not gotBckt and canGo do
+      canGo = trtl.forward()
+      if canGo then
+        cntFwds = cntFwds + 1
+        -- Tries to get bucket of lava
+        gotBckt = trtl.placeDown()
+        if gotBckt then
+          theresLava = true
+        end
+      end
+      -- Limits any robot run-away
+      if cntFwds >= oMnr.MXLTH then
+        canGo = false
+      end
+    end
+    
+    -- Takes the lava back to the slot
+    for bk = 1, cntFwds do
+      trtl.back()
+    end
+    
+    -- Into slot, places lava, rises
+    trtl.down()
+    lp = trtl.placeDown()
+    trtl.up()
+    -- Tries to get to next place in slot
+    trtl.turnLeft()
+    canGo = trtl.forward()
+    trtl.turnRight()
     if canGo then
-      cntFwds = cntFwds + 1
-      -- Tries to get a bucket-load of lava
-      gotBckt = turtle.placeDown()
+      slotLngth = slotLngth + 1
     end
-    -- Limits any robot run-away
-    if cntFwds >= MXLTH then
-      canGo = false
+    -- Sees whether slot is done
+    if slotLngth >= oMnr.MxSlt or 
+        not canGo then
+      sltDone = true
     end
+    
   end
-  -- Takes the lava back to the slot
-  for bk = 1, cntFwds do
-    turtle.back()
+  return theresLava
+end
+
+oMnr.getAndPlaceWater = function()
+
+  -- Goe to the infinite water source
+  for n = 1, 2 do
+    trtl.forward()
   end
-  -- Goes down into slot, places lava, rises
-  turtle.down()
-  lp = turtle.placeDown()
-  turtle.up()
-  -- Tries to get to the next place in slot
-  turtle.turnLeft()
-  canGo = turtle.forward()
-  turtle.turnRight()
-  if canGo then
-    i = i + 1
+  lp = trtl.placeDown() -- gets water
+  
+  -- TODO Improve water place choice
+  for n = 1, 5 do
+    trtl.back()
   end
-  -- Sees whether slot is done
-  if i >= MxSlt or not canGo then
-    sltDone = true
+  lp = trtl.placeDown()
+  
+  -- Back to start again
+  for n = 1, 3 do
+    trtl.forward()
   end
+  trtl.turnLeft()
+
 end
--- Back to beginning of slot
-turtle.turnRight()
-for bk = 1, i do
-  turtle.forward()
+
+oMnr.mineObby = function()
+  -- Mine the obby
+  trtl.turnLeft()
+  trtl.down()
+  local canDig = false
+  for mn = 1, slotLngth do
+    canDig = trtl.digDown()
+    trtl.forward()
+  end
+  trtl.digDown()
+  trtl.up()
+  -- Come on back
+  for b = 1, slotLngth do
+    trtl.back()
+  end
+  trtl.turnRight()
 end
--- Get and place water
-for n = 1, 2 do
-  turtle.forward()
+
+oMnr.go = function()
+  
+  local theresLava = false;
+  local invHasSpace = false;
+  
+  while theresLava and invHasSpace do
+    
+    -- TODO Allow longer slots
+    oMnr.fillSlot()
+    
+    -- Back to beginning of slot
+    trtl.turnRight()
+    for bk = 1, slotLngth do
+      trtl.forward()
+    end
+    
+    oMnr.getAndPlaceWater()  
+    oMnr.mineObby()
+    
+    -- Checks inventory space
+    local frSpace = 0
+    for i = 1, 16 do
+      frSpace= frSpace+ trtl.getItemSpace(i)
+    end
+    invHasSpace= frSpace >= slotLngth
+  end
+  
 end
-lp = turtle.placeDown()
-for n = 1, 5 do
-  turtle.back()
-end
-lp = turtle.placeDown()
-for n = 1, 3 do
-  turtle.forward()
-end
-turtle.turnLeft()
--- Mine the obby
-turtle.turnLeft()
-turtle.down()
-for mn = 1, i do
-  canDig = turtle.digDown()
-  turtle.forward()
-end
-turtle.digDown()
-turtle.up()
--- Come on back
-for b = 1, i do
-  turtle.back()
-end
-turtle.turnRight()
