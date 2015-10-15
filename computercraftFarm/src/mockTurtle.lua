@@ -3,7 +3,7 @@
 from IDEs outside of computercraft ]]
 local mockTurtle = {}
 
-local fuelLevel = 0 --or "unlimited"
+local fuelLevel = 100 --or "unlimited"
 
 mockTurtle.popCount = 5
 mockTurtle.itms = {}
@@ -58,6 +58,10 @@ local function checkAndDecrementFuel()
     end
   end
   return rtrn
+end
+
+mockTurtle.back = function()
+  return checkAndDecrementFuel()
 end
 
 mockTurtle.down = function()

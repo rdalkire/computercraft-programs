@@ -1,9 +1,17 @@
+--[[
+Copyright (c) 2015 
+Robert David Alkire II, IGN ian_xw
+Distributed under the MIT License.
+(See accompanying file LICENSE or copy
+at http://opensource.org/licenses/MIT)
+]]
+
 local trtl
---if turtle then 
---  trtl = turtle
---else
+if turtle then 
+  trtl = turtle
+else
   trtl = require "mockTurtle" 
---end
+end
 
 local oMnr = {}
 
@@ -74,7 +82,7 @@ oMnr.getAndPlaceWater = function()
   for n = 1, 2 do
     trtl.forward()
   end
-  lp = trtl.placeDown() -- gets water
+  local lp = trtl.placeDown() -- gets water
   
   -- TODO Improve water place choice
   for n = 1, 5 do
@@ -110,13 +118,15 @@ end
 
 oMnr.go = function()
   
-  local theresLava = false;
-  local invHasSpace = false;
+  local theresLava = true;
+  local invHasSpace = true;
+  
+  -- TODO watch fuel level
   
   while theresLava and invHasSpace do
     
     -- TODO Allow longer slots
-    oMnr.fillSlot()
+    theresLava = oMnr.fillSlot()
     
     -- Back to beginning of slot
     trtl.turnRight()
@@ -136,3 +146,7 @@ oMnr.go = function()
   end
   
 end
+
+oMnr.go()
+
+return oMnr
