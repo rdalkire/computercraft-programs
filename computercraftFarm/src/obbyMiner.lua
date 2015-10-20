@@ -22,7 +22,11 @@ oMnr.MXLTH = 50
 local slotLngth = 0
 
 oMnr.fillSlot = function()
-
+  
+  print("Starting fillSlot().")
+  
+  slotLngth = 0
+  
   local sltDone = false
   local lp = false
   local theresLava = false
@@ -33,6 +37,7 @@ oMnr.fillSlot = function()
     local gotBckt = false
     local canGo = true
     local cntFwds = 0
+    
     -- Until has bucket or obstructed
     while not gotBckt and canGo do
       canGo = trtl.forward()
@@ -44,11 +49,15 @@ oMnr.fillSlot = function()
           theresLava = true
         end
       end
+      
       -- Limits any robot run-away
       if cntFwds >= oMnr.MXLTH then
         canGo = false
       end
     end
+    
+    print("gotBckt, canGo: ", 
+        gotBckt, canGo )
     
     -- Takes the lava back to the slot
     for bk = 1, cntFwds do
@@ -70,15 +79,20 @@ oMnr.fillSlot = function()
     if slotLngth >= oMnr.MxSlt or 
         not canGo then
       sltDone = true
+      print( "slotLngth, canGo: ", 
+          slotLngth, canGo )
     end
     
   end
+  print( "theresLava: ", theresLava )
   return theresLava
 end
 
 oMnr.getAndPlaceWater = function()
 
-  -- Goe to the infinite water source
+  print("Starting getAndPlaceWater()")
+  
+  -- Go to the infinite water source
   for n = 1, 2 do
     trtl.forward()
   end
@@ -99,6 +113,7 @@ oMnr.getAndPlaceWater = function()
 end
 
 oMnr.mineObby = function()
+  print("Starting mineObby()")
   -- Mine the obby
   trtl.turnLeft()
   trtl.down()
@@ -120,10 +135,18 @@ oMnr.go = function()
   
   local theresLava = true;
   local invHasSpace = true;
+  local countGoRepeats = 0;
   
   -- TODO watch fuel level
   
-  while theresLava and invHasSpace do
+  while theresLava and invHasSpace and
+      (countGoRepeats <= oMnr.MXLTH) do
+    
+    print( "countGoRepeats: ", 
+        countGoRepeats )
+    
+    print("fuel level: ", 
+        trtl.getFuelLevel() )
     
     -- TODO Allow longer slots
     theresLava = oMnr.fillSlot()
@@ -143,6 +166,9 @@ oMnr.go = function()
       frSpace= frSpace+ trtl.getItemSpace(i)
     end
     invHasSpace= frSpace >= slotLngth
+    print("free space: ", frSpace)
+    
+    countGoRepeats= countGoRepeats+ 1
   end
   
 end
