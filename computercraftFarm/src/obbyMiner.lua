@@ -15,28 +15,28 @@ end
 
 local oMnr = {}
 
--- Fills the groove with lava:
 oMnr.MxSlt = 11
 oMnr.MXLTH = 50
 
 local slotLngth = 0
+local OKFuel = true
+local theresLava = false
 
-oMnr.fillSlot = function()
-  
-  print("Starting fillSlot().")
-  
-  slotLngth = 0
-  
-  local sltDone = false
-  local lp = false
-  local theresLava = false
-  
-  while not sltDone do
+-- Fetches a bucket of lava and places
+-- it into the slot.
+-- returns canGo (true if the turtle
+--  can move to the next place in the 
+--  slot), and sltDone (if this 
+-- position is more than MxSlt or it
+-- was blocked)
+oMnr.fetchLavaBucket = function()
   
     -- Fetches a bucket-full
     local gotBckt = false
-    local canGo = true
     local cntFwds = 0
+    local lp = false
+    
+    local canGo = true
     
     -- Until has bucket or obstructed
     while not gotBckt and canGo do
@@ -68,6 +68,7 @@ oMnr.fillSlot = function()
     trtl.down()
     lp = trtl.placeDown()
     trtl.up()
+    
     -- Tries to get to next place in slot
     trtl.turnLeft()
     canGo = trtl.forward()
@@ -75,7 +76,9 @@ oMnr.fillSlot = function()
     if canGo then
       slotLngth = slotLngth + 1
     end
+    
     -- Sees whether slot is done
+    local sltDone = false
     if slotLngth >= oMnr.MxSlt or 
         not canGo then
       sltDone = true
@@ -83,11 +86,61 @@ oMnr.fillSlot = function()
           slotLngth, canGo )
     end
     
+    return canGo, sltDone
+
+end
+
+-- Fills the slot.  With lava.
+-- Returns true if there was any lava
+-- to place in the slot.
+oMnr.fillSlot = function()
+  
+  print("Starting fillSlot().")
+  
+  slotLngth = 0
+  
+  local sltDone = false
+  local theresLava = false
+  
+  while OKFuel and not sltDone do
+    
+    local canGo = true
+    
+    -- Ensure there's enough fuel to
+    -- get the next bucket and finish
+    local fuelLvl= trtl.getFuelLevel()
+    
+    if fuelLvl ~= "unlimited" then
+      local fuelNeed = 
+          oMnr.MXLTH * 2 + -- a bucket
+          10 +          -- place water
+          24 +         -- to mine obby
+          slotLngth + 2 -- to get back
+      
+      if fuelNeed > fuelLvl then
+        OKFuel = false
+        canGo = false
+        print( "There may not be "..
+            "enough fuel to continue "..
+            "safely." )
+      end
+    end
+    
+    if canGo then
+      canGo, sltDone =
+          oMnr.fetchLavaBucket()
+    end
+    
   end
+  
   print( "theresLava: ", theresLava )
   return theresLava
 end
 
+-- Gets and places water, to turn lava
+-- into obsidian.  Distances are 
+-- currently hard-coded.
+-- Fuel cost: 10
 oMnr.getAndPlaceWater = function()
 
   print("Starting getAndPlaceWater()")
@@ -112,6 +165,9 @@ oMnr.getAndPlaceWater = function()
 
 end
 
+-- Mines obsidian.
+-- Fuel cost, assuming slotLngth is 
+-- MxSlt 11: 24
 oMnr.mineObby = function()
   print("Starting mineObby()")
   -- Mine the obby
@@ -137,9 +193,8 @@ oMnr.go = function()
   local invHasSpace = true;
   local countGoRepeats = 0;
   
-  -- TODO watch fuel level
-  
   while theresLava and invHasSpace and
+      OKFuel and
       (countGoRepeats <= oMnr.MXLTH) do
     
     print( "countGoRepeats: ", 
