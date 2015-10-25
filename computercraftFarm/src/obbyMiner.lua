@@ -20,7 +20,7 @@ oMnr.MXLTH = 50
 
 local slotLngth = 0
 local OKFuel = true
-local theresLava = false
+local theresLava = true
 
 -- Fetches a bucket of lava and places
 -- it into the slot.
@@ -91,16 +91,15 @@ oMnr.fetchLavaBucket = function()
 end
 
 -- Fills the slot.  With lava.
--- Returns true if there was any lava
--- to place in the slot.
+-- Also assigns the theresLava flag
 oMnr.fillSlot = function()
+  -- TODO Allow longer slots
   
   print("Starting fillSlot().")
   
   slotLngth = 0
-  
+  theresLava = false
   local sltDone = false
-  local theresLava = false
   
   while OKFuel and not sltDone do
     
@@ -134,7 +133,7 @@ oMnr.fillSlot = function()
   end
   
   print( "theresLava: ", theresLava )
-  return theresLava
+
 end
 
 -- Gets and places water, to turn lava
@@ -188,7 +187,6 @@ end
 
 oMnr.go = function()
   
-  local theresLava = true;
   local invHasSpace = true;
   local countGoRepeats = 0;
   
@@ -202,8 +200,7 @@ oMnr.go = function()
     print("fuel level: ", 
         trtl.getFuelLevel() )
     
-    -- TODO Allow longer slots
-    theresLava = oMnr.fillSlot()
+    oMnr.fillSlot()
     
     -- Back to beginning of slot
     trtl.turnRight()
