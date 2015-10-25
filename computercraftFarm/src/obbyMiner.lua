@@ -146,21 +146,20 @@ oMnr.getAndPlaceWater = function()
   print("Starting getAndPlaceWater()")
   
   -- Go to the infinite water source
-  for n = 1, 2 do
-    trtl.forward()
-  end
+  for n = 1, 2 do trtl.forward() end
   local lp = trtl.placeDown() -- gets water
   
-  -- TODO Improve water place choice
-  for n = 1, 5 do
-    trtl.back()
-  end
+  -- To start
+  for n = 1, 2 do trtl.back() end
+  
+  -- To middle of slot
+  local half = math.floor( slotLngth )
+  for n = 1, half do trtl.forward() end
+  
   lp = trtl.placeDown()
   
   -- Back to start again
-  for n = 1, 3 do
-    trtl.forward()
-  end
+  for n = 1, half do trtl.forward() end
   trtl.turnLeft()
 
 end
