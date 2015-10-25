@@ -211,18 +211,22 @@ oMnr.go = function()
       trtl.forward()
     end
     
-    oMnr.getAndPlaceWater()  
-    oMnr.mineObby()
-    
-    -- Checks inventory space
-    local frSpace = 0
-    for i = 1, 16 do
-      frSpace= frSpace+ trtl.getItemSpace(i)
+    if not theresLava then
+      trtl.turnLeft()
+    else
+      oMnr.getAndPlaceWater()  
+      oMnr.mineObby()
+      
+      -- Checks inventory space
+      local frSpace = 0
+      for i = 1, 16 do
+        frSpace= frSpace+ trtl.getItemSpace(i)
+      end
+      invHasSpace= frSpace >= slotLngth
+      print("free space: ", frSpace)
+      
+      countGoRepeats= countGoRepeats+ 1
     end
-    invHasSpace= frSpace >= slotLngth
-    print("free space: ", frSpace)
-    
-    countGoRepeats= countGoRepeats+ 1
   end
   
 end
