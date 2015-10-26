@@ -152,9 +152,8 @@ oMnr.getAndPlaceWater = function()
   for n = 1, 2 do trtl.back() end
   
   -- To middle of slot
-  local half = math.floor( slotLngth )
-  for n = 1, half do trtl.forward() end
-  
+  local half = math.floor( slotLngth/2 )
+  for n = 1, half do trtl.back() end
   lp = trtl.placeDown()
   
   -- Back to start again
