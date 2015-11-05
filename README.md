@@ -1,17 +1,12 @@
 computercraft-programs
 ======================
 
-Lua scripts for computercraft, dan200's minecraft mod. 
+Lua scripts for [computercraft](http://www.computercraft.info/), dan200's minecraft mod. 
 
 ## The Turtle Apps
-So far, all the focus of this work has been for the robot; you can find the programs and other useful files under the turtleApps/src directory.
+So far, all the focus of this work has been for the robot; you can find the programs and other files under the turtleApps/src directory, for food-farming, block-making
+and obby-making.
 
-Script farm.lua is there to plant and harvest the basic food crops.
-
-The sortAndBlock.lua script is for quickly making blocks from a mix of blockable
-and non-blockable items.
-
-<TODO> Obby Miner: 
 
 ## The Operation Manuals, Launchers, Test Stubs and Harnesses
 
@@ -19,6 +14,6 @@ Each of the completed programs has its own help document in markdown format: far
 
 There's a launcher called startup.lua, so that a player might launch a turtle program with a button-click or by opening a trapped chest.
 
-Test harnesses include testFarm.lua and testMockTurtle, to help unit test the programs within eclipse instead of launching the Minecraft client.
+Test harnesses include testFarm.lua and testMockTurtle, so you can unit test and debug before migrating code to your Minecraft client.
 
-mockTurtle.lua is a "stub" for the test harnesses.
+mockTurtle.lua is a "stub" for the test harnesses.  
