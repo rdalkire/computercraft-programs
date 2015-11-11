@@ -1,11 +1,17 @@
-# obbyMiner: Why and How-To
+# Why and How
 
 The purpose of obbyMiner is to make
 obsidian-mining safer and less boring.
 
+<iframe width="560" height="315" 
+src="https://www.youtube.com/embed/hCrqiZm8ShQ?rel=0&amp;showinfo=0" 
+frameborder="0" allowfullscreen>
+</iframe>
+
 ## Before You Run It
-Assuming you're facing the lava 
-pool when I say left or right, follow
+When I say left or right, I'm assuming 
+you're facing the lava pool, from 
+behind where the robot starts. Follow
 these five steps to prepare:
 
 1) Dig a groove two blocks deep next
