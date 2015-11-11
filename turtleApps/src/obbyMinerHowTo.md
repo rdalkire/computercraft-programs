@@ -8,7 +8,19 @@ src="https://www.youtube.com/embed/hCrqiZm8ShQ?rel=0&amp;showinfo=0"
 frameborder="0" allowfullscreen>
 </iframe>
 
-## Before You Run It
+## Usage:
+
+Of course you need a [mining turtle](http://www.computercraft.info/wiki/Turtle#Mining).
+
+Installing
+
+    pastebin get sbaukMdH obby
+
+Running
+
+    obby
+
+## BUT: Before You Run It
 When I say left or right, I'm assuming 
 you're facing the lava pool, from 
 behind where the robot starts. Follow
