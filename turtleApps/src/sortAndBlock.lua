@@ -321,7 +321,7 @@ local function main( tArgs )
   local blckblCnt =
       sortAllButBlockables()
   
-  -- If there are enough slices, craft!
+  -- If there are enough items, craft!
   if blckblCnt >= 9 then
     craftBlocks( blckblCnt )
     -- Put away the resulting blocks

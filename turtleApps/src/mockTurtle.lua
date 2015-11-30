@@ -44,6 +44,10 @@ mockTurtle.craft = function()
   end
 end
 
+mockTurtle.dig = function()
+  return true
+end
+
 mockTurtle.digDown = function()
   return true
 end
@@ -119,6 +123,22 @@ end
 
 mockTurtle.getSelectedSlot = function()
   return mockTurtle.selected
+end
+
+mockTurtle.inspect = function()
+  local itm = {}
+  itm.name = "minecraft:log"
+  return true, itm
+end
+mockTurtle.inspectDown = function()
+  local itm = {}
+  itm.name = "minecraft:log"
+  return true, itm
+end
+mockTurtle.inspectUp = function()
+  local itm = {}
+  itm.name = "minecraft:log"
+  return true, itm
 end
 
 mockTurtle.placeDown = function()
