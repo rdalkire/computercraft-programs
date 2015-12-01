@@ -9,11 +9,13 @@ Distributed under the MIT License.
 at http://opensource.org/licenses/MIT)
 ]]
 local dr = require "deadReckoner"
-t = require "mockTurtle"
-
-local MOVESPERCUBE = 10
+local t = require "mockTurtle"
 
 local veinMiner = {}
+local vm = veinMiner
+
+veinMiner.MOVESPERCUBE = 10
+
 -- If part of larger task, from caller
 veinMiner.previousDistance = 0
 veinMiner.targetBlockName = ""
@@ -34,23 +36,23 @@ veinMiner.cubeInspectionSequence = {
   {-1, 1,0}, {-1,-1, 0}, {-1,0, 1},
   {-1, 1,1}, {-1,-1, 1}
 }
-    
+
 -- Collection of "cubes", which are
 -- spaces to explore, defined by 
 -- central locations.
-local cubeStack = {}
+veinMiner.cubeStack = {}
 
-local function isVeinExplored()
+veinMiner.isVeinExplored= function()
   local isExplored = false
 
-  if table.maxn( cubeStack ) == 0 then
+  if table.maxn(vm.cubeStack)== 0 then
     isExplored = true
   end
   
   return isExplored
 end
 
-local function isFuelOK()
+veinMiner.isFuelOK = function()
   local isOK = false
   local fuel = t.getFuelLevel()
   if fuel == "unlimited" then
@@ -59,41 +61,51 @@ local function isFuelOK()
     local fuelNeed = 
         veinMiner.previousDistance +
         dr.howFarFromHome +
-        MOVESPERCUBE
+        vm.MOVESPERCUBE
   end
   return true
 end
 
+
+
 -- Moves, checks, pushes to stack
 -- when applicable.
-local function  exploreAhead(moves)
-  -- TODO implement exploreAhead()
+veinMiner.exploreAhead= function(moves)
+  -- TODO change to explore(way), where
+  -- way is dr.AHEAD, UP or DOWN
+  
   for i = 1, moves do
     local isAble, whynot
     isAble, whynot = dr.moveAhead()
+    
     -- if cannot, because obstructed
     if not isAble then
       if whynot=="Movement obstructed"
           then
         -- Check for match.  If good
         
+        -- TODO use param instead
+        if checks( dr.AHEAD ) then
           -- dig
           -- move forward
           -- add this location to stack
         -- else
           -- move forward
+        end
       else
         print( "Stuck. ".. whynot )
       end
     end
-  end
+    
+  end -- end for loop
   -- TODO return success status
 end
+
 -- Moves starboard, port, fore or aft, 
 -- depending on where dest is compared 
 -- to the robot's current location.  
 -- Inspects and/or breaks when needed.
-local function exploreToX( dest )
+veinMiner.exploreToX= function( dest )
 
   -- TODO implement exploreToX
   local diff = dest.x - dr.place.x
@@ -104,17 +116,17 @@ local function exploreToX( dest )
     dr.bearTo(dr.PORT)
   end
   
-  exploreAhead(moves)
+  vm.exploreAhead(moves)
   
 end
 
 -- Up or down
-local function exploreToY( dest )
+veinMiner.exploreToY= function( dest )
   -- TODO implement exploreToY
 end
 
 -- Fore or aft
-local function exploreToZ( dest )
+veinMiner.exploreToZ= function( dest )
   -- TODO implement exploreToZ
 end
 
@@ -122,22 +134,22 @@ end
 -- pushing and breaking when needed
 -- @param place is location relative
 -- to turtle's original location
-local function exploreTo( place )
-  exploreToX( place )
-  exploreToZ( place )
-  exploreToY( place )
+veinMiner.exploreTo= function( place )
+  vm.exploreToX( place )
+  vm.exploreToZ( place )
+  vm.exploreToY( place )
 end
 
 -- Pulls a location from the stack,
 -- inspects it surrounding blocks. Each
 -- matching location gets added to the
 -- stack.
-local function inspectACube()
+veinMiner.inspectACube= function()
   
   -- TODO implement inspectACube()...
   
   -- Pops one
-  local cube = table.remove(cubeStack)
+  local cube= table.remove(vm.cubeStack)
   
   -- Moves to the cube central locus
   exploreTo( cube )
@@ -173,11 +185,11 @@ veinMiner.mine= function()
     
     local cube = Locus.new(0, 0, 0)
     
-    table.insert(cubeStack, cube)
+    table.insert(vm.cubeStack, cube)
     
-    while isFuelOK() and 
-        not isVeinExplored() do
-      inspectACube()
+    while vm.isFuelOK() and 
+        not vm.isVeinExplored() do
+      vm.inspectACube()
     end
   else
     print( "To start, there must \n"..

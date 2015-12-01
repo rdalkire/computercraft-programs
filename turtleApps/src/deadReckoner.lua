@@ -32,6 +32,7 @@ end
 local deadReckoner = {}
 local dr = deadReckoner
 
+-- relative to turtle heading at start 
 deadReckoner.FORE = 0
 deadReckoner.STARBOARD = 1
 deadReckoner.AFT = 2
@@ -40,6 +41,11 @@ deadReckoner.PORT = 3
 deadReckoner.heading=deadReckoner.FORE
 
 deadReckoner.place=Locus.new(0, 0, 0)
+
+-- forward regardless of heading
+deadReckoner.AHEAD = 4
+deadReckoner.UP = 5
+deadReckoner.DOWN = 6
 
 -- TODO calculate howFarFromHome
 -- with each move
@@ -82,6 +88,10 @@ end
 -- Else, it returns false and the
 -- reason why not.
 deadReckoner.moveAhead= function()
+  
+  -- TODO change this to move(way)
+  -- where way is dr.AHEAD, UP or DOWN
+  
   local isAble, whynot = t.forward()
   
   if isAble then
