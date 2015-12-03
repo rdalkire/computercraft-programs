@@ -81,31 +81,45 @@ deadReckoner.bearTo= function(target)
   deadReckoner.heading = target
 end
 
--- Tries to move ahead. If successful,
+-- Tries to move ahead, up or down. 
+-- If successful,
 -- it updates its current location
 -- relative to where it started and 
 -- returns true.
 -- Else, it returns false and the
 -- reason why not.
-deadReckoner.moveAhead= function()
+-- @param way is either dr.AHEAD, dr.UP 
+-- or dr.DOWN, where dr is deadReckoner
+deadReckoner.move= function( way )
   
-  -- TODO change this to move(way)
   -- where way is dr.AHEAD, UP or DOWN
-  
-  local isAble, whynot = t.forward()
-  
-  if isAble then
-    if dr.heading== dr.AFT then
-      dr.place.z= dr.place.z - 1
-    elseif dr.heading== dr.FORE then
-      dr.place.z= dr.place.z + 1
-    elseif dr.heading== dr.PORT then
-      dr.place.x= dr.place.x- 1
-    else
-      dr.place.x= dr.place.x+ 1
-    end
+  local isAble, whynot
+  if way== dr.AHEAD then
+    isAble, whynot = t.forward()
     
-  end
+    if isAble then
+      if dr.heading== dr.AFT then
+        dr.place.z= dr.place.z - 1
+      elseif dr.heading== dr.FORE then
+        dr.place.z= dr.place.z + 1
+      elseif dr.heading== dr.PORT then
+        dr.place.x= dr.place.x- 1
+      else
+        dr.place.x= dr.place.x+ 1
+      end
+      
+    end -- isAble
+  elseif way== dr.UP then
+    isAble, whynot = t.up()
+    if isAble then
+      dr.place.y = dr.place.y + 1
+    end
+  elseif way== dr.DOWN then
+    isAble, whynot = t.down()
+    if isAble then
+      dr.place.y = dr.place.y - 1
+    end
+  end -- AHEAD, UP or DOWN
   
   return isAble, whynot
 end

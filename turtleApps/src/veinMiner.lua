@@ -42,6 +42,10 @@ veinMiner.cubeInspectionSequence = {
 -- central locations.
 veinMiner.cubeStack = {}
 
+-- Array of locations which have been
+-- inspected.
+veinMiner.inspected = {}
+
 veinMiner.isVeinExplored= function()
   local isExplored = false
 
@@ -66,32 +70,61 @@ veinMiner.isFuelOK = function()
   return true
 end
 
+veinMiner.check= function(way)
+  -- TODO write checks(way) method:
+  -- (It checks. before inspecting,
+  -- it sees that it hasn't already
+  -- been inspected.
+--  local iTarget= Locus.new( dr.place.x,
+--      dr.place.y, dr.place.z )
+  local ix = dr.place.x
+  local iy = dr.place.y
+  local iz = dr.place.z
+  if way== dr.AHEAD then
+    if dr.heading== dr.AFT then
+      iz= iz - 1
+    elseif dr.heading== dr.FORE then
+      iz= iz + 1
+    elseif dr.heading== dr.PORT then
+      ix= ix- 1
+    else
+      ix= ix+ 1
+    end
+  elseif way== dr.UP then
+    iy= iy + 1
+  elseif way== dr.DOWN then
+    iy= iy - 1
+  end
+  -- If it still needs inspecting,
+  if vm.inspected[x][y][z]== nill then
+    -- after checking, it adds to
+    -- the inspected stack.
+  end
 
+  -- If the block is wanted,
+  -- add it location to cube stack)
+end
 
 -- Moves, checks, pushes to stack
 -- when applicable.
-veinMiner.exploreAhead= function(moves)
-  -- TODO change to explore(way), where
-  -- way is dr.AHEAD, UP or DOWN
+-- @param way is either dr.AHEAD, dr.UP 
+-- or dr.DOWN where dr is deadReckoner
+-- @param moves
+veinMiner.explore= function(way, moves)
+  -- TODO finish explore()
   
   for i = 1, moves do
     local isAble, whynot
-    isAble, whynot = dr.moveAhead()
+    isAble, whynot = dr.move(dr.AHEAD)
     
     -- if cannot, because obstructed
     if not isAble then
       if whynot=="Movement obstructed"
           then
-        -- Check for match.  If good
-        
-        -- TODO use param instead
-        if checks( dr.AHEAD ) then
-          -- dig
-          -- move forward
-          -- add this location to stack
-        -- else
-          -- move forward
-        end
+        -- Check for match.
+        checks( dr.AHEAD )
+        -- TODO dig
+        -- move to that
       else
         print( "Stuck. ".. whynot )
       end
@@ -107,7 +140,6 @@ end
 -- Inspects and/or breaks when needed.
 veinMiner.exploreToX= function( dest )
 
-  -- TODO implement exploreToX
   local diff = dest.x - dr.place.x
   local moves = math.abs(diff)
   if diff > 0 then
@@ -116,7 +148,7 @@ veinMiner.exploreToX= function( dest )
     dr.bearTo(dr.PORT)
   end
   
-  vm.exploreAhead(moves)
+  vm.explore( dr.AHEAD, moves)
   
 end
 
