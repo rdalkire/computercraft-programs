@@ -46,6 +46,9 @@ veinMiner.cubeStack = {}
 -- inspected.
 veinMiner.inspected = {}
 
+-- The kind of block it's looking for
+veinMiner.wantedBlock = {}
+
 veinMiner.isVeinExplored= function()
   local isExplored = false
 
@@ -70,8 +73,17 @@ veinMiner.isFuelOK = function()
   return true
 end
 
+-- If the target has not already been 
+-- inspected it gets checked here.
+-- If so it gets added to the inspected
+-- array, to avoid redundancy.
+-- If inspection shows block is wanted,
+-- its location gets added to the 
+-- cubeStack
+-- @param way is dr.AHEAD, dr.UP or
+-- dr.DOWN
 veinMiner.check= function(way)
-  -- TODO write checks(way) method:
+  local isWanted = false
   -- (It checks. before inspecting,
   -- it sees that it hasn't already
   -- been inspected.
@@ -95,14 +107,29 @@ veinMiner.check= function(way)
   elseif way== dr.DOWN then
     iy= iy - 1
   end
+  
   -- If it still needs inspecting,
-  if vm.inspected[x][y][z]== nill then
-    -- after checking, it adds to
-    -- the inspected stack.
+  if vm.inspected[ix][iy][iz]== nill then
+    local item
+    if way== dr.AHEAD then
+      item= t.inspect()
+    elseif way== dr.UP then
+      item= t.inspectUp()
+    else
+      item= t.inspectDown()
+    end
+    
+    if item.name== wantedBlock.name then
+      isWanted = true
+      local locus= Locus.new(ix,iy,iz)
+      table.insert(vm.cubeStack, locus)
+    end
+    
+    -- adds to the inspected array.
+    vm.inspected[ix][iy][iz]= isWanted
   end
 
-  -- If the block is wanted,
-  -- add it location to cube stack)
+  return isWanted
 end
 
 -- Moves, checks, pushes to stack
@@ -115,14 +142,14 @@ veinMiner.explore= function(way, moves)
   
   for i = 1, moves do
     local isAble, whynot
-    isAble, whynot = dr.move(dr.AHEAD)
+    isAble, whynot = dr.move(way)
     
     -- if cannot, because obstructed
     if not isAble then
       if whynot=="Movement obstructed"
           then
         -- Check for match.
-        checks( dr.AHEAD )
+        vm.checks( way )
         -- TODO dig
         -- move to that
       else
@@ -138,6 +165,8 @@ end
 -- depending on where dest is compared 
 -- to the robot's current location.  
 -- Inspects and/or breaks when needed.
+-- @param dest a target location on
+-- the same x/z plane
 veinMiner.exploreToX= function( dest )
 
   local diff = dest.x - dr.place.x
