@@ -18,6 +18,8 @@ veinMiner.MOVESPERCUBE = 10
 
 -- If part of larger task, from caller
 veinMiner.previousDistance = 0
+
+-- The kind of block it's looking for
 veinMiner.targetBlockName = ""
 
 -- Defines cube's surrounding loci, in
@@ -45,9 +47,6 @@ veinMiner.cubeStack = {}
 -- Array of locations which have been
 -- inspected.
 veinMiner.inspected = {}
-
--- The kind of block it's looking for
-veinMiner.wantedBlock = {}
 
 veinMiner.isVeinExplored= function()
   local isExplored = false
@@ -119,7 +118,7 @@ veinMiner.check= function(way)
       item= t.inspectDown()
     end
     
-    if item.name== wantedBlock.name then
+    if item.name== vm.targetBlockName then
       isWanted = true
       local locus= Locus.new(ix,iy,iz)
       table.insert(vm.cubeStack, locus)
@@ -213,7 +212,7 @@ veinMiner.inspectACube= function()
   local cube= table.remove(vm.cubeStack)
   
   -- Moves to the cube central locus
-  exploreTo( cube )
+  vm.exploreTo( cube )
   
   -- For each surrounding locus
     -- If not already inspected
@@ -225,19 +224,6 @@ end
 veinMiner.mine= function()
   local isOK = false
   local block = {}
-  local isUp = false 
-  local isDown = false
-  
-  -- TODO make it only for front, to
-  -- avoid confusion
-  
-  isOK, block = t.inspect()
-  if not isOK then
-    isOK, block = t.inspectDown()
-  end
-  if not isOK then
-    isOK, block = t.inspectUp()
-  end
   
   if isOK then
   
@@ -255,8 +241,7 @@ veinMiner.mine= function()
   else
     print( "To start, there must \n"..
       "be a block of interest \n"..
-      "in front, right beneath, or\n".. 
-      "right above the turtle." )
+      "in front of the turtle." )
   end
 end
 
