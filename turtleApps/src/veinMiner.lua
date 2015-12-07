@@ -16,13 +16,13 @@ local vm = veinMiner
 
 veinMiner.MOVESPERCUBE = 10
 
--- If part of larger task, from caller
+--- If part of larger task, from caller
 veinMiner.previousDistance = 0
 
--- The kind of block it's looking for
+--- The kind of block it's looking for
 veinMiner.targetBlockName = ""
 
--- Defines cube's surrounding loci, in
+--- Defines cube's surrounding loci, in
   -- the order in which they are to
   -- be inspected.
 veinMiner.cubeInspectionSequence = {
@@ -39,15 +39,17 @@ veinMiner.cubeInspectionSequence = {
   {-1, 1,1}, {-1,-1, 1}
 }
 
--- Collection of "cubes", which are
+--- Collection of "cubes", which are
 -- spaces to explore, defined by 
 -- central locations.
 veinMiner.cubeStack = {}
 
--- Array of locations which have been
+--- Array of locations which have been
 -- inspected.
 veinMiner.inspected = {}
 
+--- Determines whether the mining/
+-- felling task is complete.
 veinMiner.isVeinExplored= function()
   local isExplored = false
 
@@ -58,6 +60,9 @@ veinMiner.isVeinExplored= function()
   return isExplored
 end
 
+--- If there's enough fuel to explore
+-- one last cube and move back to the
+-- original place.
 veinMiner.isFuelOK = function()
   local isOK = false
   local fuel = t.getFuelLevel()
@@ -72,7 +77,7 @@ veinMiner.isFuelOK = function()
   return true
 end
 
--- If the target has not already been 
+--- If the target has not already been 
 -- inspected it gets checked here.
 -- If so it gets added to the inspected
 -- array, to avoid redundancy.
@@ -108,7 +113,8 @@ veinMiner.check= function(way)
   end
   
   -- If it still needs inspecting,
-  if vm.inspected[ix][iy][iz]== nill then
+  if vm.inspected[ix][iy][iz]== nill 
+      then
     local item
     if way== dr.AHEAD then
       item= t.inspect()
@@ -131,7 +137,7 @@ veinMiner.check= function(way)
   return isWanted
 end
 
--- Moves, checks, pushes to stack
+--- Moves, checks, and pushes to stack
 -- when applicable.
 -- @param way is either dr.AHEAD, dr.UP 
 -- or dr.DOWN where dr is deadReckoner
@@ -160,7 +166,7 @@ veinMiner.explore= function(way, moves)
   -- TODO return success status
 end
 
--- Moves starboard, port, fore or aft, 
+--- Moves starboard, port, fore or aft, 
 -- depending on where dest is compared 
 -- to the robot's current location.  
 -- Inspects and/or breaks when needed.
@@ -180,17 +186,17 @@ veinMiner.exploreToX= function( dest )
   
 end
 
--- Up or down
+--- Up or down
 veinMiner.exploreToY= function( dest )
   -- TODO implement exploreToY
 end
 
--- Fore or aft
+--- Fore or aft
 veinMiner.exploreToZ= function( dest )
   -- TODO implement exploreToZ
 end
 
--- Moves to the location, inspecting,
+--- Moves to the location, inspecting,
 -- pushing and breaking when needed
 -- @param place is location relative
 -- to turtle's original location
@@ -200,7 +206,7 @@ veinMiner.exploreTo= function( place )
   vm.exploreToY( place )
 end
 
--- Pulls a location from the stack,
+--- Pulls a location from the stack,
 -- inspects it surrounding blocks. Each
 -- matching location gets added to the
 -- stack.
@@ -214,16 +220,28 @@ veinMiner.inspectACube= function()
   -- Moves to the cube central locus
   vm.exploreTo( cube )
   
-  -- For each surrounding locus
+  -- For each surrounding locus sl
+  for sl= 1, table.maxn( vm.cubeInspectionSequence )
+      do
+    local x= cube.x + sl[0]
+    local y= cube.y + sl[1]
+    local z= cube.z + sl[2]
     -- If not already inspected
-      -- Inspect it, moving if needed
+    if not(inspected[x][y][z]==nil)then
+      -- TODO Inspect it, moving if needed
       -- (push matching loci)
-  
+    end -- if not inspected
+  end
 end
 
+--- The main function: Inspects the 
+-- block in front of it and sets its
+-- name of that as the target material.
 veinMiner.mine= function()
   local isOK = false
   local block = {}
+  
+  isOK, block = t.inspect()
   
   if isOK then
   
