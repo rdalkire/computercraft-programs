@@ -71,7 +71,7 @@ veinMiner.isFuelOK = function()
   else
     local fuelNeed = 
         veinMiner.previousDistance +
-        dr.howFarFromHome +
+        dr.howFarFromHome() +
         vm.MOVESPERCUBE
   end
   return true
@@ -206,6 +206,64 @@ veinMiner.exploreTo= function( place )
   vm.exploreToY( place )
 end
 
+--- Inspects block at the given 
+-- coordinates, moving if needed.
+-- Pushes matching loci
+veinMiner.goLookAt= function(x, y, z)
+  -- dimension constants
+-- XXX local IX = 1...
+--  local IY = 2
+--  local IZ = 3
+  
+  local dest = {x, y, z}
+  
+  local diffs= {x- dr.place.x,
+                y- dr.place.y,
+                z- dr.place.z }
+  -- TODO finish goLookAt
+  local nzCount = 0
+  for i = 1, 3 do
+    if diffs[i] ~= 0 then
+      nzCount= nzCount+ 1
+    end
+  end
+  
+  local direction = 0
+  local dist = 0
+  local dest = Locus.new(x,y,z)
+  if nzCount > 2 then
+    -- Explore the farthest way
+    direction, dist= dr.furthestWay(dest)
+    -- TODO Turn turtle if needed 
+    -- and explore AHEAD, up or down 
+    -- (separate method?)
+  end
+  
+  -- If diff count > 1
+    -- Explore (what is now) the 
+    -- farthest way
+    
+  -- If diff count > 0
+    -- Explore *Up To* dest, farthest
+    -- Check it
+  
+-- XXX Compares dest with current place
+--  local cntDiffs = 0
+--  local xd= x- dr.place.x
+--  local yd= y- dr.place.y
+--  local zd= z- dr.place.z
+--  
+--  local dists= { math.abs(xd), 
+--      math.abs(yd), math.abs(zd) }
+--  
+--  -- Find which dimension is farthest
+--  if dists[2] > dists[1] then 
+--      iMax = 2 end
+--  if dists[3] > dists[iMax] then
+--      iMax = 3 end
+  
+end
+
 --- Pulls a location from the stack,
 -- inspects it surrounding blocks. Each
 -- matching location gets added to the
@@ -221,14 +279,16 @@ veinMiner.inspectACube= function()
   vm.exploreTo( cube )
   
   -- For each surrounding locus sl
-  for sl= 1, table.maxn( vm.cubeInspectionSequence )
-      do
+  for sl= 1, table.maxn( 
+      vm.cubeInspectionSequence ) do
     local x= cube.x + sl[0]
     local y= cube.y + sl[1]
     local z= cube.z + sl[2]
     -- If not already inspected
-    if not(inspected[x][y][z]==nil)then
+    if not(vm.inspected[x][y][z]==nil)
+        then
       -- TODO Inspect it, moving if needed
+      vm.goLookAt( x, y, z )
       -- (push matching loci)
     end -- if not inspected
   end

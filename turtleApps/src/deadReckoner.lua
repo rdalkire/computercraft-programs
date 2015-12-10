@@ -6,7 +6,7 @@ Distributed under the MIT License.
 at http://opensource.org/licenses/MIT)
 ]]
 
--- assigns fake/real turtle
+--- assigns fake/real turtle
 local t
 if turtle then
   t = turtle
@@ -19,8 +19,8 @@ Locus.__index = Locus
 Locus.x = 0
 Locus.y = 0
 Locus.z = 0
--- Sets the location for the center
--- block
+--- A constructor which sets the 
+-- current location
 Locus.new= function( x, y, z )
   local self = setmetatable({}, Locus)
   self.x = x
@@ -32,7 +32,7 @@ end
 local deadReckoner = {}
 local dr = deadReckoner
 
--- relative to turtle heading at start 
+--- relative to turtle heading at start 
 deadReckoner.FORE = 0
 deadReckoner.STARBOARD = 1
 deadReckoner.AFT = 2
@@ -42,16 +42,23 @@ deadReckoner.heading=deadReckoner.FORE
 
 deadReckoner.place=Locus.new(0, 0, 0)
 
--- forward regardless of heading
+--- forward regardless of heading
 deadReckoner.AHEAD = 4
 deadReckoner.UP = 5
 deadReckoner.DOWN = 6
 
--- TODO calculate howFarFromHome
--- with each move
-deadReckoner.howFarFromHome = 0
+--- Calculates distance from starting
+-- place, considering that turtles
+-- do not move diagonally in their 
+-- present form.
+-- @return number of moves to get back
+deadReckoner.howFarFromHome=function()
+  return math.abs(place.x)+ 
+      math.abs(place.y)+ 
+      math.abs(place.z)
+end
 
--- Turns as needed to face the 
+--- Turns as needed to face the 
 -- target direction indicated
 deadReckoner.bearTo= function(target)
 
@@ -81,7 +88,7 @@ deadReckoner.bearTo= function(target)
   deadReckoner.heading = target
 end
 
--- Tries to move ahead, up or down. 
+--- Tries to move ahead, up or down. 
 -- If successful,
 -- it updates its current location
 -- relative to where it started and 
@@ -122,6 +129,52 @@ deadReckoner.move= function( way )
   end -- AHEAD, UP or DOWN
   
   return isAble, whynot
+end
+
+--- Comparing destination with current
+-- location, this finds the dominant
+-- direction and distance in that
+-- direction. X - Z plane gets
+-- priority.
+-- @param dest destination coordinates
+-- @return direction: up, down, fore, 
+-- aft, port or starboard
+-- @return distance
+deadReckoner.furthestWay= function(dest)
+  
+  -- Dest - Current: +Srbrd -Port
+  local direction = 0
+  local dist = dest.x - dr.place.x
+  if dist >= 0 then
+    direction= dr.STARBOARD
+  else
+    direction= dr.PORT
+  end
+  
+  -- Find Z diff +fore -aft
+  local zDist = dest.x - dr.place.x
+  if math.abs(zDist)>math.abs(dist)then
+    dist= zDist
+    if dist >= 0 then
+      direction= dr.FORE
+    else
+      direction= dr.AFT
+    end
+  end
+  
+  -- Y:  +up -down
+  local yDist = dest.y - dr.place.y
+  if math.abs(yDist)>math.abs(dist)then
+    dist= yDist
+    if dist >= 0 then
+      direction= dr.UP
+    else
+      direction= dr.DOWN
+    end
+  end
+  
+  return direction, math.abs(dist)
+  
 end
 
 return deadReckoner
