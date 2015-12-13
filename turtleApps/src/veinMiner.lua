@@ -138,6 +138,26 @@ veinMiner.check= function(way)
   return isWanted
 end
 
+--- Digs.
+-- @param way must be dr.AHEAD, dr.UP
+-- or dr.DOWN
+-- @return isAble true if it really was able
+-- to dig
+-- @return whyNot if isAble, nil. Else,
+-- reason why not.
+veinMiner.dig= function( way )
+  local dug= false
+  local whyNot
+  if way== dr.AHEAD then
+    dug, whyNot= t.dig()
+  elseif way== dr.UP then
+    dug, whyNot= t.digUp()
+  elseif way== dr.DOWN then
+    dug, whyNot= t.digDown()
+  end
+  return dug, whyNot
+end
+
 --- Moves, checks, and pushes to stack
 -- when applicable.
 -- @param way is either dr.AHEAD, 
@@ -145,8 +165,11 @@ end
 -- dr.UP, or dr.DOWN where dr is 
 -- deadReckoner
 -- @param moves
+-- @return isAble true if it really was
+-- able to move and dig.
+-- @return whyNot if isAble, nil. Else,
+-- reason why not.
 veinMiner.explore= function(way, moves)
-  -- TODO finish explore()
   
   -- If way is fore, starboard, aft or
   -- port, then bear to that direction
@@ -155,25 +178,28 @@ veinMiner.explore= function(way, moves)
     way = dr.AHEAD
   end
   
+  local isAble, whynot
+  
   for i = 1, moves do
-    local isAble, whynot
     isAble, whynot = dr.move(way)
     
     -- if cannot, because obstructed
     if not isAble then
+    
       if whynot=="Movement obstructed"
           then
-        -- Check for match.
         vm.checks( way )
-        -- TODO dig
-        -- move to that
+        isAble, whynot = vm.dig( way )
+        isAble, whynot= dr.move( way )
       else
         print( "Stuck. ".. whynot )
       end
+      
     end
     
   end -- end for loop
-  -- TODO return success status
+  
+  return isAble, whynot
 end
 
 --- Moves starboard, port, fore or aft, 
@@ -220,19 +246,15 @@ end
 -- coordinates, moving if needed.
 -- Pushes matching loci
 veinMiner.goLookAt= function(x, y, z)
-  -- dimension constants
-  -- XXX local IX = 1...
-  --  local IY = 2
-  --  local IZ = 3
   
   local dest = {x, y, z}
   
   local diffs= {x- dr.place.x,
                 y- dr.place.y,
                 z- dr.place.z }
-                
-  -- TODO finish goLookAt
-  local nzCount = 0
+
+  -- count of non-zero dimensions
+  local nzCount= 0
   for i = 1, 3 do
     if diffs[i] ~= 0 then
       nzCount= nzCount+ 1
@@ -242,22 +264,36 @@ veinMiner.goLookAt= function(x, y, z)
   local direction = 0
   local dist = 0
   local dest = Locus.new(x,y,z)
+  
   if nzCount > 2 then
     -- Explore the farthest way
     direction, dist= 
         dr.furthestWay(dest)
-    
     vm.explore(direction, dist)    
   end
   
-  -- If diff count > 1
+  if nzCount > 1 then
     -- Explore (what is now) the 
     -- farthest way
-    
+    direction, dist= 
+        dr.furthestWay(dest)
+    vm.explore(direction, dist)
+  end
+  
   -- If diff count > 0
+  if nzCount > 0 then
     -- Explore *Up To* dest, farthest
+    direction, dist= 
+        dr.furthestWay(dest)
+    dist = dist - 1
+    vm.explore(direction, dist)
     -- Check it
-
+    if direction <= dr.PORT then
+      direction= dr.AHEAD
+    end
+    vm.check(direction)
+  end
+  
 end
 
 --- Pulls a location from the stack,
@@ -265,8 +301,6 @@ end
 -- matching location gets added to the
 -- stack.
 veinMiner.inspectACube= function()
-  
-  -- TODO implement inspectACube()...
   
   -- Pops one
   local cube= table.remove(vm.cubeStack)
@@ -283,9 +317,7 @@ veinMiner.inspectACube= function()
     -- If not already inspected
     if not(vm.inspected[x][y][z]==nil)
         then
-      -- TODO Inspect it, moving if needed
       vm.goLookAt( x, y, z )
-      -- (push matching loci)
     end -- if not inspected
   end
 end

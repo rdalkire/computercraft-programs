@@ -52,6 +52,10 @@ mockTurtle.digDown = function()
   return true
 end
 
+mockTurtle.digUp = function()
+  return true
+end
+
 local function checkAndDecrementFuel()
   local rtrn = true
   if fuelLevel ~= "unlimited" then
