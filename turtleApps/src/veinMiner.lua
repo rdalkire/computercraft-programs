@@ -124,7 +124,8 @@ veinMiner.check= function(way)
       item= t.inspectDown()
     end
     
-    if item.name== vm.targetBlockName then
+    if item.name== vm.targetBlockName 
+        then
       isWanted = true
       local locus= Locus.new(ix,iy,iz)
       table.insert(vm.cubeStack, locus)
@@ -139,11 +140,20 @@ end
 
 --- Moves, checks, and pushes to stack
 -- when applicable.
--- @param way is either dr.AHEAD, dr.UP 
--- or dr.DOWN where dr is deadReckoner
+-- @param way is either dr.AHEAD, 
+-- STARBOARD, PORT, FORE, or AFT 
+-- dr.UP, or dr.DOWN where dr is 
+-- deadReckoner
 -- @param moves
 veinMiner.explore= function(way, moves)
   -- TODO finish explore()
+  
+  -- If way is fore, starboard, aft or
+  -- port, then bear to that direction
+  if way < 4 then
+    dr.bearTo( way )
+    way = dr.AHEAD
+  end
   
   for i = 1, moves do
     local isAble, whynot
@@ -211,15 +221,16 @@ end
 -- Pushes matching loci
 veinMiner.goLookAt= function(x, y, z)
   -- dimension constants
--- XXX local IX = 1...
---  local IY = 2
---  local IZ = 3
+  -- XXX local IX = 1...
+  --  local IY = 2
+  --  local IZ = 3
   
   local dest = {x, y, z}
   
   local diffs= {x- dr.place.x,
                 y- dr.place.y,
                 z- dr.place.z }
+                
   -- TODO finish goLookAt
   local nzCount = 0
   for i = 1, 3 do
@@ -233,10 +244,10 @@ veinMiner.goLookAt= function(x, y, z)
   local dest = Locus.new(x,y,z)
   if nzCount > 2 then
     -- Explore the farthest way
-    direction, dist= dr.furthestWay(dest)
-    -- TODO Turn turtle if needed 
-    -- and explore AHEAD, up or down 
-    -- (separate method?)
+    direction, dist= 
+        dr.furthestWay(dest)
+    
+    vm.explore(direction, dist)    
   end
   
   -- If diff count > 1
@@ -246,22 +257,7 @@ veinMiner.goLookAt= function(x, y, z)
   -- If diff count > 0
     -- Explore *Up To* dest, farthest
     -- Check it
-  
--- XXX Compares dest with current place
---  local cntDiffs = 0
---  local xd= x- dr.place.x
---  local yd= y- dr.place.y
---  local zd= z- dr.place.z
---  
---  local dists= { math.abs(xd), 
---      math.abs(yd), math.abs(zd) }
---  
---  -- Find which dimension is farthest
---  if dists[2] > dists[1] then 
---      iMax = 2 end
---  if dists[3] > dists[iMax] then
---      iMax = 3 end
-  
+
 end
 
 --- Pulls a location from the stack,
