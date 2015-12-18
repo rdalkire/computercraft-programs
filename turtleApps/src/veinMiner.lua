@@ -86,16 +86,14 @@ end
 -- cubeStack
 -- @param way is dr.AHEAD, dr.UP or
 -- dr.DOWN
+-- @return true if target block matches
+-- what was wanted.
 veinMiner.check= function(way)
   local isWanted = false
-  -- (It checks. before inspecting,
-  -- it sees that it hasn't already
-  -- been inspected.
---  local iTarget= Locus.new( dr.place.x,
---      dr.place.y, dr.place.z )
   local ix = dr.place.x
   local iy = dr.place.y
   local iz = dr.place.z
+  
   if way== dr.AHEAD then
     if dr.heading== dr.AFT then
       iz= iz - 1
@@ -212,24 +210,45 @@ veinMiner.exploreToX= function( dest )
 
   local diff = dest.x - dr.place.x
   local moves = math.abs(diff)
+  local way = 0
   if diff > 0 then
-    dr.bearTo(dr.STARBOARD)
+    way = dr.STARBOARD
   elseif diff < 0 then
-    dr.bearTo(dr.PORT)
+    way = dr.PORT
   end
   
-  vm.explore( dr.AHEAD, moves)
+  vm.explore( way, moves)
   
 end
 
 --- Up or down
 veinMiner.exploreToY= function( dest )
-  -- TODO implement exploreToY
+
+  local diff = dest.y - dr.place.y
+  local moves = math.abs(diff)
+  local way = 0
+  if diff > 0 then
+    way = dr.UP
+  elseif diff < 0 then
+    way = dr.DOWN
+  end
+  
+  vm.explore( way, moves)
+  
 end
 
 --- Fore or aft
 veinMiner.exploreToZ= function( dest )
-  -- TODO implement exploreToZ
+  local diff = dest.z - dr.place.z
+  local moves = math.abs(diff)
+  local way = 0
+  if diff > 0 then
+    way = dr.FORE
+  elseif diff < 0 then
+    way = dr.AFT
+  end
+  
+  vm.explore( way, moves)
 end
 
 --- Moves to the location, inspecting,
@@ -244,7 +263,8 @@ end
 
 --- Inspects block at the given 
 -- coordinates, moving if needed.
--- Pushes matching loci
+-- Pushes matching loci via check()
+-- Digs matching loci via dig()
 veinMiner.goLookAt= function(x, y, z)
   
   local dest = {x, y, z}
@@ -265,6 +285,7 @@ veinMiner.goLookAt= function(x, y, z)
   local dist = 0
   local dest = Locus.new(x,y,z)
   
+  -- All three coordinates differ
   if nzCount > 2 then
     -- Explore the farthest way
     direction, dist= 
@@ -272,6 +293,7 @@ veinMiner.goLookAt= function(x, y, z)
     vm.explore(direction, dist)    
   end
   
+  -- Two or three coords were different
   if nzCount > 1 then
     -- Explore (what is now) the 
     -- farthest way
@@ -280,7 +302,7 @@ veinMiner.goLookAt= function(x, y, z)
     vm.explore(direction, dist)
   end
   
-  -- If diff count > 0
+  -- Unless it's to inspect self
   if nzCount > 0 then
     -- Explore *Up To* dest, farthest
     direction, dist= 
@@ -291,7 +313,9 @@ veinMiner.goLookAt= function(x, y, z)
     if direction <= dr.PORT then
       direction= dr.AHEAD
     end
-    vm.check(direction)
+    if vm.check(direction) then
+      vm.dig(direction)
+    end
   end
   
 end
@@ -308,18 +332,43 @@ veinMiner.inspectACube= function()
   -- Moves to the cube central locus
   vm.exploreTo( cube )
   
+  -- shorthand
+  local cis= vm.cubeInspectionSequence
+  
   -- For each surrounding locus sl
   for sl= 1, table.maxn( 
       vm.cubeInspectionSequence ) do
-    local x= cube.x + sl[0]
-    local y= cube.y + sl[1]
-    local z= cube.z + sl[2]
+    local x= cube.x + cis[sl][0]
+    local y= cube.y + cis[sl][1]
+    local z= cube.z + cis[sl][2]
     -- If not already inspected
     if not(vm.inspected[x][y][z]==nil)
         then
       vm.goLookAt( x, y, z )
     end -- if not inspected
   end
+end
+
+--- Sees if there's enough space in
+-- the inventory for another cube
+-- of target material
+veinMiner.isSpaceAvailable = function()
+  -- TODO finish isSpaceAvailable()
+  local frSpace = 0
+  for i = 1, 16 do
+    -- if slot is empty
+      -- 64 free to add
+    -- else
+      -- check slots material name
+      -- if matches target
+        -- count and add free space
+      -- end --match
+    -- end
+  end
+  
+  -- Assuming a cube could be no more
+  -- than 26 blocks, realistically
+  
 end
 
 --- The main function: Inspects the 
@@ -336,14 +385,21 @@ veinMiner.mine= function()
     veinMiner.targetBlockName = 
         block.name
     
-    local cube = Locus.new(0, 0, 0)
+    -- Includes place in the array of
+    -- inspected places
+    vm.inspected[0][0][0]= true
     
+    local cube = Locus.new(0, 0, 0)
     table.insert(vm.cubeStack, cube)
     
+    -- TODO also make sure inventory
+    -- isn't too full
     while vm.isFuelOK() and 
-        not vm.isVeinExplored() do
+        (not vm.isVeinExplored()) and
+        vm.isSpaceAvailable() do
       vm.inspectACube()
     end
+    -- TODO come back and face forward
   else
     print( "To start, there must \n"..
       "be a block of interest \n"..

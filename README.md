@@ -12,6 +12,8 @@ and obby-making.
 
 Each of the completed programs has its own help document in markdown format: farmHowTo.md, obbyMinerHowTo.md <TODO> and sortAndBlockHowTo.md
 
+TODO: Fill in wiki pages with links to the how-to markdown files.
+
 There's a launcher called startup.lua, so that a player might launch a turtle program with a button-click or by opening a trapped chest.
 
 Test harnesses include testFarm.lua and testMockTurtle, so you can unit test and debug before migrating code to your Minecraft client.

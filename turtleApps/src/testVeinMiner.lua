@@ -1,0 +1,3 @@
+
+vMiner = require "veinMiner"
+
