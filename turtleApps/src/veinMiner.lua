@@ -195,7 +195,7 @@ veinMiner.explore= function(way, moves)
       
     end
     
-  end -- end for loop
+  end -- end moves loop
   
   return isAble, whynot
 end
@@ -352,23 +352,36 @@ end
 --- Sees if there's enough space in
 -- the inventory for another cube
 -- of target material
-veinMiner.isSpaceAvailable = function()
-  -- TODO finish isSpaceAvailable()
+veinMiner.isInvtrySpaceAvail = function()
+  
+  local isAvail = false
   local frSpace = 0
   for i = 1, 16 do
-    -- if slot is empty
-      -- 64 free to add
-    -- else
-      -- check slots material name
-      -- if matches target
-        -- count and add free space
-      -- end --match
-    -- end
-  end
+    local itmCount = t.getItemCount(i)
+    
+    if itmCount == 0 then
+      frSpace= frSpace+ 64
+    else
+      local slName= 
+          t.getItemDetail(i).name
+          
+      if slName==vm.targetBlockName then
+        frSpace= frSpace+ 64- itmCount
+      end -- match
+    end -- count zero-else
+    
+  end -- inventory loop
   
   -- Assuming a cube could be no more
-  -- than 26 blocks, realistically
-  
+  -- than 25 blocks, realistically
+  if frSpace >= 25 then
+    isAvail = true
+  else
+    print( "There might not be ".. 
+    "enough inventory \nspace to ".. 
+    "hold the target material" )
+  end
+  return isAvail
 end
 
 --- The main function: Inspects the 
@@ -389,17 +402,28 @@ veinMiner.mine= function()
     -- inspected places
     vm.inspected[0][0][0]= true
     
+    -- Start to work on a stack
     local cube = Locus.new(0, 0, 0)
     table.insert(vm.cubeStack, cube)
-    
-    -- TODO also make sure inventory
-    -- isn't too full
-    while vm.isFuelOK() and 
-        (not vm.isVeinExplored()) and
-        vm.isSpaceAvailable() do
+    while vm.isFuelOK() and
+        vm.isInvtrySpaceAvail() and 
+        (not vm.isVeinExplored()) do
       vm.inspectACube()
     end
-    -- TODO come back and face forward
+    
+    -- Comes back and faces forward
+    vm.exploreTo( Locus.new(0,0,0) )
+    dr.bearTo( dr.FORE )
+    
+    -- Possibly more found on way back
+    -- If so, report it.
+    local cubesYet= 
+        table.maxn(vm.cubeStack)
+    if table.maxn(cubesYet) > 0 then
+      print( "There are still ".. 
+          cubesYet.. 
+          " cubes to be explored." )
+    end
   else
     print( "To start, there must \n"..
       "be a block of interest \n"..
