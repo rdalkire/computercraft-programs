@@ -53,9 +53,9 @@ deadReckoner.DOWN = 6
 -- present form.
 -- @return number of moves to get back
 deadReckoner.howFarFromHome=function()
-  return math.abs(place.x)+ 
-      math.abs(place.y)+ 
-      math.abs(place.z)
+  return math.abs(dr.place.x)+ 
+      math.abs(dr.place.y)+ 
+      math.abs(dr.place.z)
 end
 
 --- Turns as needed to face the 
