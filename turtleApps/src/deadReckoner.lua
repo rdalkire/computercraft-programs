@@ -152,7 +152,7 @@ deadReckoner.furthestWay= function(dest)
   end
   
   -- Find Z diff +fore -aft
-  local zDist = dest.x - dr.place.x
+  local zDist = dest.z - dr.place.z
   if math.abs(zDist)>math.abs(dist)then
     dist= zDist
     if dist >= 0 then

@@ -48,6 +48,20 @@ veinMiner.cubeStack = {}
 -- inspected.
 veinMiner.inspected = {}
 
+veinMiner.setInspected=function(x,y,z)
+  vm.inspected[
+      string.format("%d,%d,%d",x,y,z)]= 
+      true
+end
+
+veinMiner.isInspected=function(x,y,z)
+  local indx= string.format(
+      "%d,%d,%d", x, y, z )
+  local val= vm.inspected[indx]
+  local isInspctd = not ( val == nil )
+  return isInspctd
+end
+
 --- Determines whether the mining/
 -- felling task is complete.
 veinMiner.isVeinExplored= function()
@@ -73,8 +87,9 @@ veinMiner.isFuelOK = function()
         veinMiner.previousDistance +
         dr.howFarFromHome() +
         vm.MOVESPERCUBE
+    isOK= fuel > fuelNeed
   end
-  return true
+  return isOK
 end
 
 --- If the target has not already been 
@@ -110,27 +125,28 @@ veinMiner.check= function(way)
     iy= iy - 1
   end
   
-  -- If it still needs inspecting,
-  if vm.inspected[ix][iy][iz]== nill 
-      then
-    local item
+  -- If it still needs to be inspected,
+  if not vm.isInspected(ix,iy,iz) then
+    local ok, item
     if way== dr.AHEAD then
-      item= t.inspect()
+      ok, item= t.inspect()
     elseif way== dr.UP then
-      item= t.inspectUp()
+      ok, item= t.inspectUp()
     else
-      item= t.inspectDown()
+      ok, item= t.inspectDown()
     end
     
-    if item.name== vm.targetBlockName 
-        then
-      isWanted = true
-      local locus= Locus.new(ix,iy,iz)
-      table.insert(vm.cubeStack, locus)
-    end
+    if ok then
+      if item.name==vm.targetBlockName 
+          then
+        isWanted = true
+        local locus= Locus.new(ix,iy,iz)
+        table.insert(vm.cubeStack, locus)
+      end -- match
+    end -- ok
     
     -- adds to the inspected array.
-    vm.inspected[ix][iy][iz]= isWanted
+    vm.setInspected(ix, iy, iz )
   end
 
   return isWanted
@@ -342,8 +358,7 @@ veinMiner.inspectACube= function()
     local y= cube.y + cis[sl][1]
     local z= cube.z + cis[sl][2]
     -- If not already inspected
-    if not(vm.inspected[x][y][z]==nil)
-        then
+    if not(vm.isInspected(x,y,z)) then
       vm.goLookAt( x, y, z )
     end -- if not inspected
   end
@@ -400,7 +415,7 @@ veinMiner.mine= function()
     
     -- Includes place in the array of
     -- inspected places
-    vm.inspected[0][0][0]= true
+    vm.setInspected(0, 0, 0)
     
     -- Start to work on a stack
     local cube = Locus.new(0, 0, 0)
