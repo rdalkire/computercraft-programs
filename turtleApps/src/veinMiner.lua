@@ -216,7 +216,7 @@ veinMiner.explore= function(way, moves)
   return isAble, whynot
 end
 
---- Moves starboard, port, fore or aft, 
+--- Moves starboard or port 
 -- depending on where dest is compared 
 -- to the robot's current location.  
 -- Inspects and/or breaks when needed.

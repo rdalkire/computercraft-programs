@@ -92,6 +92,13 @@ local function testExplore()
   assert(dr.place.z==2,"z should be 2")
 end
 local function testXYandZ()
-  
+  local dest= Locus.new(10,20,30)
+  vm.exploreTo(dest)
 end
-testExplore()
+local function testGolookAt()
+  vm.goLookAt(-1,1,1)
+  assert(dr.place.x==-1, "X nogood")
+  assert(dr.place.y==0,  "Y nogood")
+  assert(dr.place.z==1,  "Z nogood")
+end
+testGolookAt()
