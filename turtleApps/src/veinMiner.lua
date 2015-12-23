@@ -151,8 +151,10 @@ veinMiner.check= function(way)
       if item.name==vm.targetBlockName 
           then
         isWanted = true
-        local locus= Locus.new(ix,iy,iz)
-        table.insert(vm.cubeStack, locus)
+        local locus= Locus.new( ix, 
+            iy, iz)
+        table.insert( vm.cubeStack, 
+            locus)
       end -- match
     end -- ok
     
@@ -166,8 +168,8 @@ end
 --- Digs.
 -- @param way must be dr.AHEAD, dr.UP
 -- or dr.DOWN
--- @return isAble true if it really was able
--- to dig
+-- @return isAble true if it really 
+-- was able to dig
 -- @return whyNot if isAble, nil. Else,
 -- reason why not.
 veinMiner.dig= function( way )
@@ -354,7 +356,7 @@ end
 veinMiner.inspectACube= function()
   
   -- Pops one
-  local cube= table.remove(vm.cubeStack)
+  local cube=table.remove(vm.cubeStack)
   
   -- Moves to the cube central locus
   vm.exploreTo( cube )
@@ -379,7 +381,7 @@ end
 --- Sees if there's enough space in
 -- the inventory for another cube
 -- of target material
-veinMiner.isInvtrySpaceAvail = function()
+veinMiner.isInvtrySpaceAvail=function()
   
   local isAvail = false
   local frSpace = 0
@@ -392,9 +394,11 @@ veinMiner.isInvtrySpaceAvail = function()
       local slName= 
           t.getItemDetail(i).name
           
-      if slName==vm.targetBlockName then
+      if slName==
+          vm.targetBlockName then
         frSpace= frSpace+ 64- itmCount
       end -- match
+      
     end -- count zero-else
     
   end -- inventory loop
