@@ -32,7 +32,7 @@ veinMiner.cubeInspectionSequence = {
   -- 10
   {1, 1, 0}, {1, -1, 0}, {1, 0,-1},
   {1, 1,-1}, {1, -1,-1}, {0, 0,-1},
-  {0, 1,-1}, {0, -1,-1}, {-1,1,-1},
+  {0, 1,-1}, {0, -1,-1}, {-1,0,-1},
   -- 19
   {-1,1,-1}, {-1,-1,-1}, {-1,0, 0},
   {-1, 1,0}, {-1,-1, 0}, {-1,0, 1},
@@ -47,11 +47,13 @@ veinMiner.cubeStack = {}
 --- Array of locations which have been
 -- inspected.
 veinMiner.inspected = {}
+veinMiner.inspectedCount= 0
 
 veinMiner.setInspected=function(x,y,z)
   vm.inspected[
       string.format("%d,%d,%d",x,y,z)]= 
       true
+  vm.inspectedCount=vm.inspectedCount+1 
 end
 
 veinMiner.isInspected=function(x,y,z)
@@ -66,9 +68,14 @@ end
 -- felling task is complete.
 veinMiner.isVeinExplored= function()
   local isExplored = false
-
-  if table.maxn(vm.cubeStack)== 0 then
+  local cubeCount= 
+      table.maxn(vm.cubeStack)
+  if cubeCount== 0 then
     isExplored = true
+    print("Vein is explored")
+  else
+    print( "unexplored cubeCount: ".. 
+        cubeCount )
   end
   
   return isExplored
@@ -87,7 +94,11 @@ veinMiner.isFuelOK = function()
         veinMiner.previousDistance +
         dr.howFarFromHome() +
         vm.MOVESPERCUBE
-    isOK= fuel > fuelNeed
+    if fuel > fuelNeed then
+      isOK = true
+    else
+      print("Fuel too low: ".. fuel )
+    end
   end
   return isOK
 end
@@ -352,11 +363,12 @@ veinMiner.inspectACube= function()
   local cis= vm.cubeInspectionSequence
   
   -- For each surrounding locus sl
-  for sl= 1, table.maxn( 
-      vm.cubeInspectionSequence ) do
-    local x= cube.x + cis[sl][0]
-    local y= cube.y + cis[sl][1]
-    local z= cube.z + cis[sl][2]
+  local maxOfSequence = table.maxn( 
+      vm.cubeInspectionSequence ) 
+  for sl= 1, maxOfSequence do
+    local x= cube.x + cis[sl][1]
+    local y= cube.y + cis[sl][2]
+    local z= cube.z + cis[sl][3]
     -- If not already inspected
     if not(vm.isInspected(x,y,z)) then
       vm.goLookAt( x, y, z )
@@ -409,9 +421,11 @@ veinMiner.mine= function()
   isOK, block = t.inspect()
   
   if isOK then
-  
+    
     veinMiner.targetBlockName = 
         block.name
+    print("target block: ".. 
+        block.name)
     
     -- Includes place in the array of
     -- inspected places
@@ -434,7 +448,7 @@ veinMiner.mine= function()
     -- If so, report it.
     local cubesYet= 
         table.maxn(vm.cubeStack)
-    if table.maxn(cubesYet) > 0 then
+    if cubesYet > 0 then
       print( "There are still ".. 
           cubesYet.. 
           " cubes to be explored." )

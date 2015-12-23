@@ -101,4 +101,20 @@ local function testGolookAt()
   assert(dr.place.y==0,  "Y nogood")
   assert(dr.place.z==1,  "Z nogood")
 end
-testGolookAt()
+local function testInspectACube()
+  table.insert( vm.cubeStack, loc )
+  vm.inspectACube()
+  local count=vm.inspectedCount
+  assert(count==26,
+      "inspected count: ".. count )
+end
+local function testIsInvtrySpaceAvail()
+  local isOK = vm.isInvtrySpaceAvail()
+  assert(isOK,"should've been enough")
+end
+local function testMine()
+  vm.mine()
+  assert( not vm.isFuelOK(), 
+      "fuel should be low" )
+end
+testMine()
