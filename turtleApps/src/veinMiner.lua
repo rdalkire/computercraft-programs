@@ -10,6 +10,9 @@ at http://opensource.org/licenses/MIT)
 ]]
 local dr = require "deadReckoner"
 local t = require "mockTurtle"
+if t == nil then
+  t = turtle
+else
 
 local veinMiner = {}
 local vm = veinMiner
