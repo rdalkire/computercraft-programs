@@ -1,6 +1,20 @@
 local dr = require "deadReckoner"
 local loc= Locus.new(0,0,0)
 
+local function testBearTo()
+  dr.bearTo(dr.PORT)
+  assert(dr.heading==dr.PORT, 
+      "should be PORT now; instead"..
+      " it's ".. dr.WAYS[dr.heading] )
+  dr.bearTo(dr.FORE)
+  assert(dr.heading==dr.FORE, 
+      "should be FORE; instead"..
+      " it's ".. dr.WAYS[dr.heading])
+  print("heading: ".. 
+      dr.WAYS[dr.heading] )
+end
+testBearTo()
+
 local function testLocus()
   loc.x = 1
   assert( loc.x==1, "Locus.x 1" )
@@ -117,4 +131,4 @@ local function testMine()
   assert( not vm.isFuelOK(), 
       "fuel should be low" )
 end
-testMine()
+-- testMine()

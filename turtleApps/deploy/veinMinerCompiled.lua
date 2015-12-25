@@ -11,8 +11,8 @@ at http://opensource.org/licenses/MIT)
 
 --- assigns fake/real turtle
 -- TODO toggle turtle before deployment
---  t = turtle
-  t = require "mockTurtle"
+t = turtle
+--  t = require "mockTurtle"
 
 Locus = {}
 Locus.__index = Locus
@@ -37,7 +37,13 @@ deadReckoner.FORE = 0
 deadReckoner.STARBOARD = 1
 deadReckoner.AFT = 2
 deadReckoner.PORT = 3
-
+deadReckoner.WAYS = {}
+dr.WAYS[deadReckoner.FORE] = "FORE"
+dr.WAYS[deadReckoner.STARBOARD]= 
+    "STARBOARD"
+dr.WAYS[deadReckoner.AFT] = "AFT"
+dr.WAYS[deadReckoner.PORT] = "PORT"
+  
 deadReckoner.heading=deadReckoner.FORE
 
 deadReckoner.place=Locus.new(0, 0, 0)
@@ -60,20 +66,21 @@ end
 
 --- Turns as needed to face the 
 -- target direction indicated
+-- @param target must be dr.FORE, 
+-- dr.STARBOARD, dr.AFT, or dr.PORT
 deadReckoner.bearTo= function(target)
-
-  local WAYS = {}
-  WAYS[deadReckoner.FORE] = "FORE"
-  WAYS[deadReckoner.STARBOARD]= 
-      "STARBOARD"
-  WAYS[deadReckoner.AFT] = "AFT"
-  WAYS[deadReckoner.PORT] = "PORT"
 
   local trnsRght = 
       target - deadReckoner.heading
   
   local trns = math.abs( trnsRght )
   if trns ~= 0 then
+    
+    if trns== 3 then
+      trns= 1
+      trnsRght= trnsRght/-3
+    end
+    
     local i = 0
     while i < trns do
       if trnsRght >= 0 then
@@ -381,7 +388,7 @@ veinMiner.explore= function(way, moves)
     
       if whynot=="Movement obstructed"
           then
-        vm.checks( way )
+        vm.check( way )
         isAble, whynot = vm.dig( way )
         isAble, whynot= dr.move( way )
       else
@@ -523,9 +530,6 @@ veinMiner.inspectACube= function()
   
   -- Pops one
   local cube=table.remove(vm.cubeStack)
-  
-  -- Moves to the cube central locus
-  vm.exploreTo( cube )
   
   -- shorthand
   local cis= vm.cubeInspectionSequence

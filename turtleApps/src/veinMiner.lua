@@ -358,9 +358,6 @@ veinMiner.inspectACube= function()
   -- Pops one
   local cube=table.remove(vm.cubeStack)
   
-  -- Moves to the cube central locus
-  vm.exploreTo( cube )
-  
   -- shorthand
   local cis= vm.cubeInspectionSequence
   
