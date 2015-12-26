@@ -3,7 +3,7 @@
 from IDEs outside of computercraft ]]
 local mockTurtle = {}
 
-local fuelLevel = 150 --or "unlimited"
+local fuelLevel = 50 --or "unlimited"
 
 mockTurtle.popCount = 5
 mockTurtle.itms = {}

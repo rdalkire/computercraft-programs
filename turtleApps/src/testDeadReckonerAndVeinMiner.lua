@@ -13,7 +13,7 @@ local function testBearTo()
   print("heading: ".. 
       dr.WAYS[dr.heading] )
 end
-testBearTo()
+-- testBearTo()
 
 local function testLocus()
   loc.x = 1
@@ -131,4 +131,4 @@ local function testMine()
   assert( not vm.isFuelOK(), 
       "fuel should be low" )
 end
--- testMine()
+testMine()

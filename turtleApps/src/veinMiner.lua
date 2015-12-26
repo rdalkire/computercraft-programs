@@ -47,8 +47,24 @@ veinMiner.cubeStack = {}
 --- Array of locations which have been
 -- inspected.
 veinMiner.inspected = {}
+
+--- Count of blocks that have been
+-- marked as inspected
 veinMiner.inspectedCount= 0
 
+--- Count of inspections skipped due
+-- to logic with the Check function
+-- (when the turtle was right next to
+-- it)
+veinMiner.inspectedSkipped= 0
+
+--- Count of goLookAt calls skipped due
+-- to logic within inspectACube,
+-- therefore avoiding extra movements
+veinMiner.goLookSkipped= 0
+
+--- Records a location as having been
+-- inspected
 veinMiner.setInspected=function(x,y,z)
   vm.inspected[
       string.format("%d,%d,%d",x,y,z)]= 
@@ -137,7 +153,10 @@ veinMiner.check= function(way)
   end
   
   -- If it still needs to be inspected,
-  if not vm.isInspected(ix,iy,iz) then
+  if vm.isInspected(ix,iy,iz) then
+    vm.inspectedSkipped = 
+        vm.inspectedSkipped + 1
+  else
     local ok, item
     if way== dr.AHEAD then
       ok, item= t.inspect()
@@ -215,7 +234,7 @@ veinMiner.explore= function(way, moves)
     
       if whynot=="Movement obstructed"
           then
-        vm.checks( way )
+        vm.check( way )
         isAble, whynot = vm.dig( way )
         isAble, whynot= dr.move( way )
       else
@@ -369,7 +388,12 @@ veinMiner.inspectACube= function()
     local y= cube.y + cis[sl][2]
     local z= cube.z + cis[sl][3]
     -- If not already inspected
-    if not(vm.isInspected(x,y,z)) then
+    if vm.isInspected(x,y,z) then
+      vm.inspectedSkipped = 
+          vm.inspectedSkipped + 1
+      vm.goLookSkipped = 
+          vm.goLookSkipped + 1
+    else
       vm.goLookAt( x, y, z )
     end -- if not inspected
   end
@@ -430,10 +454,10 @@ veinMiner.mine= function()
     
     -- Includes place in the array of
     -- inspected places
-    vm.setInspected(0, 0, 0)
+    vm.setInspected(0, 0, 1)
     
     -- Start to work on a stack
-    local cube = Locus.new(0, 0, 0)
+    local cube = Locus.new(0, 0, 1)
     table.insert(vm.cubeStack, cube)
     while vm.isFuelOK() and
         vm.isInvtrySpaceAvail() and 
@@ -444,6 +468,13 @@ veinMiner.mine= function()
     -- Comes back and faces forward
     vm.exploreTo( Locus.new(0,0,0) )
     dr.bearTo( dr.FORE )
+    
+    print( "inspected count: ".. 
+        vm.inspectedCount )
+    print( "inspections skipped: "..
+        vm.inspectedSkipped )
+    print( "goLookAt calls skipped: ".. 
+        vm.goLookSkipped )
     
     -- Possibly more found on way back
     -- If so, report it.
