@@ -1,4 +1,6 @@
---[[
+--[[ NOTE: This is a component, *not* 
+a stand-alone, runnable script.
+
 Copyright (c) 2015 
 Robert David Alkire II, IGN ian_xw
 Distributed under the MIT License.
@@ -93,6 +95,35 @@ deadReckoner.bearTo= function(target)
   end -- there were any turns
   
   deadReckoner.heading = target
+end
+
+--- Digs.
+-- @param way must be dr.FORE, 
+-- dr.STARBOARD, dr.FORE, dr.AFT
+-- dr.AHEAD, dr.UP or dr.DOWN
+-- @return isAble true if it really 
+-- was able to dig
+-- @return whyNot if isAble, nil. Else,
+-- reason why not.
+deadReckoner.dig= function( way )
+
+  -- If way is fore, starboard, aft or
+  -- port, then bear to that direction
+  if way < 4 then
+    dr.bearTo( way )
+    way = dr.AHEAD
+  end
+  
+  local dug= false
+  local whyNot
+  if way== dr.AHEAD then
+    dug, whyNot= t.dig()
+  elseif way== dr.UP then
+    dug, whyNot= t.digUp()
+  elseif way== dr.DOWN then
+    dug, whyNot= t.digDown()
+  end
+  return dug, whyNot
 end
 
 --- Tries to move ahead, up or down. 

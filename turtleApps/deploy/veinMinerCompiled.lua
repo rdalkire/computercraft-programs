@@ -1,6 +1,10 @@
 --[[ Mines a contiguous aggregation of
-resource blocks.  Meant for trees or
+resource blocks. Meant for trees or 
 veins of ore.
+1. Place the turtle so it faces the 
+   material you want.
+2. Refuel the turtle if applicable.
+3. Run this script.
 
 Copyright (c) 2015 
 Robert David Alkire II, IGN ian_xw
@@ -10,9 +14,10 @@ at http://opensource.org/licenses/MIT)
 ]]
 
 --- assigns fake/real turtle
--- TODO toggle turtle before deployment
+--  toggle turtle before deployment
+--  TODO remember deploy-time toggle
 t = turtle
---  t = require "mockTurtle"
+-- t = require "mockTurtle"
 
 Locus = {}
 Locus.__index = Locus
@@ -93,6 +98,35 @@ deadReckoner.bearTo= function(target)
   end -- there were any turns
   
   deadReckoner.heading = target
+end
+
+--- Digs.
+-- @param way must be dr.FORE, 
+-- dr.STARBOARD, dr.FORE, dr.AFT
+-- dr.AHEAD, dr.UP or dr.DOWN
+-- @return isAble true if it really 
+-- was able to dig
+-- @return whyNot if isAble, nil. Else,
+-- reason why not.
+deadReckoner.dig= function( way )
+
+  -- If way is fore, starboard, aft or
+  -- port, then bear to that direction
+  if way < 4 then
+    dr.bearTo( way )
+    way = dr.AHEAD
+  end
+  
+  local dug= false
+  local whyNot
+  if way== dr.AHEAD then
+    dug, whyNot= t.dig()
+  elseif way== dr.UP then
+    dug, whyNot= t.digUp()
+  elseif way== dr.DOWN then
+    dug, whyNot= t.digDown()
+  end
+  return dug, whyNot
 end
 
 --- Tries to move ahead, up or down. 
@@ -187,7 +221,7 @@ end
 local veinMiner = {}
 local vm = veinMiner
 
-veinMiner.MOVESPERCUBE = 10
+veinMiner.MOVESPERCUBE = 15
 
 --- If part of larger task, from caller
 veinMiner.previousDistance = 0
@@ -231,6 +265,11 @@ veinMiner.inspectedCount= 0
 -- it)
 veinMiner.inspectedSkipped= 0
 
+--- Count of times that coordinates
+-- to goLookAt were actually for the
+-- robot's own location
+veinMiner.inspectSelfAvoidance = 0
+
 --- Count of goLookAt calls skipped due
 -- to logic within inspectACube,
 -- therefore avoiding extra movements
@@ -262,9 +301,9 @@ veinMiner.isVeinExplored= function()
   if cubeCount== 0 then
     isExplored = true
     print("Vein is explored")
-  else
-    print( "unexplored cubeCount: ".. 
-        cubeCount )
+--  else
+--    print( "unexplored cubeCount: ".. 
+--        cubeCount )
   end
   
   return isExplored
@@ -299,8 +338,9 @@ end
 -- If inspection shows block is wanted,
 -- its location gets added to the 
 -- cubeStack
--- @param way is dr.AHEAD, dr.UP or
--- dr.DOWN
+-- @param way is must be dr.FORE, 
+-- dr.STARBOARD, dr.FORE, dr.AFT
+-- dr.AHEAD, dr.UP or dr.DOWN
 -- @return true if target block matches
 -- what was wanted.
 veinMiner.check= function(way)
@@ -308,6 +348,13 @@ veinMiner.check= function(way)
   local ix = dr.place.x
   local iy = dr.place.y
   local iz = dr.place.z
+  
+  -- If way is fore, starboard, aft or
+  -- port, then bear to that direction
+  if way < 4 then
+    dr.bearTo( way )
+    way = dr.AHEAD
+  end
   
   if way== dr.AHEAD then
     if dr.heading== dr.AFT then
@@ -357,26 +404,6 @@ veinMiner.check= function(way)
   return isWanted
 end
 
---- Digs.
--- @param way must be dr.AHEAD, dr.UP
--- or dr.DOWN
--- @return isAble true if it really 
--- was able to dig
--- @return whyNot if isAble, nil. Else,
--- reason why not.
-veinMiner.dig= function( way )
-  local dug= false
-  local whyNot
-  if way== dr.AHEAD then
-    dug, whyNot= t.dig()
-  elseif way== dr.UP then
-    dug, whyNot= t.digUp()
-  elseif way== dr.DOWN then
-    dug, whyNot= t.digDown()
-  end
-  return dug, whyNot
-end
-
 --- Moves, checks, and pushes to stack
 -- when applicable.
 -- @param way is either dr.AHEAD, 
@@ -408,7 +435,7 @@ veinMiner.explore= function(way, moves)
       if whynot=="Movement obstructed"
           then
         vm.check( way )
-        isAble, whynot = vm.dig( way )
+        isAble, whynot = dr.dig( way )
         isAble, whynot= dr.move( way )
       else
         print( "Stuck. ".. whynot )
@@ -535,8 +562,12 @@ veinMiner.goLookAt= function(x, y, z)
       direction= dr.AHEAD
     end
     if vm.check(direction) then
-      vm.dig(direction)
+      dr.dig(direction)
     end
+  else -- Coords were turtle's place
+    vm.inspectSelfAvoidance= 
+        vm.inspectSelfAvoidance + 1
+    vm.setInspected(x,y,z)
   end
   
 end
@@ -611,7 +642,10 @@ end
 
 --- The main function: Inspects the 
 -- block in front of it and sets its
--- name of that as the target material.
+-- name of that as the target material,
+-- then mines for that until the vein
+-- has been explored, the fuel is gone
+-- or there isn't any more room.
 veinMiner.mine= function()
   local isOK = false
   local block = {}
@@ -625,13 +659,8 @@ veinMiner.mine= function()
     print("target block: ".. 
         block.name)
     
-    -- Includes place in the array of
-    -- inspected places
-    vm.setInspected(0, 0, 1)
+    vm.check( dr.AHEAD )
     
-    -- Start to work on a stack
-    local cube = Locus.new(0, 0, 1)
-    table.insert(vm.cubeStack, cube)
     while vm.isFuelOK() and
         vm.isInvtrySpaceAvail() and 
         (not vm.isVeinExplored()) do
@@ -648,6 +677,8 @@ veinMiner.mine= function()
         vm.inspectedSkipped )
     print( "goLookAt calls skipped: ".. 
         vm.goLookSkipped )
+    print( "inspect-self avoidance: "..
+        vm.inspectSelfAvoidance )
     
     -- Possibly more found on way back
     -- If so, report it.

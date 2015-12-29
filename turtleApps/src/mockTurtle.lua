@@ -3,7 +3,7 @@
 from IDEs outside of computercraft ]]
 local mockTurtle = {}
 
-local fuelLevel = 50 --or "unlimited"
+local fuelLevel = 35 --or "unlimited"
 
 mockTurtle.popCount = 5
 mockTurtle.itms = {}
@@ -58,14 +58,17 @@ end
 
 local function checkAndDecrementFuel()
   local rtrn = true
+  local whyNot = nil
   if fuelLevel ~= "unlimited" then
     if fuelLevel <= 0 then
       rtrn = false
+      -- TODO find out real message
+      whyNot = "Out of fuel"
     else
       fuelLevel = fuelLevel - 1
     end
   end
-  return rtrn
+  return rtrn, whyNot
 end
 
 mockTurtle.back = function()

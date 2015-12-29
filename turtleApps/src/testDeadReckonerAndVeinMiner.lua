@@ -111,9 +111,9 @@ local function testXYandZ()
 end
 local function testGolookAt()
   vm.goLookAt(-1,1,1)
-  assert(dr.place.x==-1, "X nogood")
-  assert(dr.place.y==0,  "Y nogood")
-  assert(dr.place.z==1,  "Z nogood")
+  assert(dr.place.x==-1, "X no good")
+  assert(dr.place.y==0,  "Y no good")
+  assert(dr.place.z==1,  "Z no good")
 end
 local function testInspectACube()
   table.insert( vm.cubeStack, loc )
