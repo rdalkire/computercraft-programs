@@ -4,9 +4,15 @@ veins of ore.
 1. Place the turtle so it faces the 
    material you want.
 2. Refuel the turtle if applicable.
-3. Run this script.
+3. Run this script.  Note, if you want
+   it to dig *all* blocks around any
+   matching one, to give the spaces
+   a neater appearance, use 'a' as
+   an argument.  For example, if the
+   script is called vMiner:
+   vMiner a
 
-Copyright (c) 2015 
+Copyright (c) 2015 - 2016
 Robert David Alkire II, IGN ian_xw
 Distributed under the MIT License.
 (See accompanying file LICENSE or copy
@@ -181,7 +187,7 @@ end
 -- @return direction: up, down, fore, 
 -- aft, port or starboard
 -- @return distance
-deadReckoner.furthestWay= function(dest)
+deadReckoner.furthestWay=function(dest)
   
   -- Dest - Current: +Srbrd -Port
   local direction = 0
@@ -269,6 +275,12 @@ veinMiner.inspectedSkipped= 0
 -- to goLookAt were actually for the
 -- robot's own location
 veinMiner.inspectSelfAvoidance = 0
+
+--- If true, then the miner is supposed
+-- to *dig* all the blocks from around
+-- the target block, even the ones that
+-- don't match the target blocks.
+veinMiner.isAll = false
 
 --- Count of goLookAt calls skipped due
 -- to logic within inspectACube,
@@ -561,7 +573,8 @@ veinMiner.goLookAt= function(x, y, z)
     if direction <= dr.PORT then
       direction= dr.AHEAD
     end
-    if vm.check(direction) then
+    if vm.check(direction) or 
+        vm.isAll then
       dr.dig(direction)
     end
   else -- Coords were turtle's place
@@ -646,10 +659,19 @@ end
 -- then mines for that until the vein
 -- has been explored, the fuel is gone
 -- or there isn't any more room.
-veinMiner.mine= function()
+veinMiner.mine= function( args )
+
+  if table.getn( args ) > 0 then
+    if args[1] == "a" then
+      vm.isAll = true
+    else
+      print( "Unknown argument: \"" ..
+        args[1] .. "\"" )
+    end
+  end
+  
   local isOK = false
   local block = {}
-  
   isOK, block = t.inspect()
   
   if isOK then
@@ -696,4 +718,4 @@ veinMiner.mine= function()
   end
 end
 
-vm.mine()
+vm.mine({...})
