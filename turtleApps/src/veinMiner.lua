@@ -455,6 +455,11 @@ veinMiner.isInvtrySpaceAvail=function()
   return isAvail
 end
 
+
+veinMine.clearRectangle= function()
+  -- TODO clearRectangle
+end
+
 --- The main function: Inspects the 
 -- block in front of it and sets its
 -- name of that as the target material,
@@ -463,9 +468,12 @@ end
 -- or there isn't any more room.
 veinMiner.mine= function( args )
 
+  local isRectangle = false
   if table.getn( args ) > 0 then
     if args[1] == "a" then
       vm.isAll = true
+    elseif args[1] == "r" then
+      isRectangle = true
     else
       print( "Unknown argument: \"" ..
         args[1] .. "\"" )
@@ -489,6 +497,10 @@ veinMiner.mine= function( args )
         vm.isInvtrySpaceAvail() and 
         (not vm.isVeinExplored()) do
       vm.inspectACube()
+    end
+    
+    if isRectangle then
+      vm.clearRectangle()
     end
     
     -- Comes back and faces forward
@@ -515,8 +527,8 @@ veinMiner.mine= function( args )
     end
   else
     print( "To start, there must \n"..
-      "be a block of interest \n"..
-      "in front of the turtle." )
+        "be a block of interest \n"..
+        "in front of the turtle." )
   end
 end
 
