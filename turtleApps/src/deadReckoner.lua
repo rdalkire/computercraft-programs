@@ -48,7 +48,16 @@ dr.WAYS[deadReckoner.PORT] = "PORT"
   
 deadReckoner.heading=deadReckoner.FORE
 
-deadReckoner.place=Locus.new(0, 0, 0)
+--- Current position relative to start
+deadReckoner.place= Locus.new(0, 0, 0)
+
+--- Maximum x, y, z relative to start,
+-- located or dug
+deadReckoner.placeMAX=Locus.new(0,0,0)
+
+--- Minimum x, y, z relative to start,
+-- located or dug
+deadReckoner.placeMIN=Locus.new(0,0,0)
 
 --- forward regardless of heading
 deadReckoner.AHEAD = 4
@@ -97,6 +106,36 @@ deadReckoner.bearTo= function(target)
   deadReckoner.heading = target
 end
 
+--- Adjusts placeMAX and placeMIN as
+-- applicable.
+deadReckoner.setMaxMin=function(x,y,z)
+
+  if x > dr.placeMAX.x then
+    dr.placeMAX.x = x
+  elseif x < dr.placeMIN then
+    dr.placeMIN.x = x
+  end
+  
+  if y > dr.placeMAX.y then
+    dr.placeMAX.y = y
+  elseif y < dr.placeMIN.y then
+    dr.placeMIN.y = y
+  end
+  
+  if z > dr.placeMAX.z then
+    dr.placeMAX.z = z
+  elseif z < dr.placeMIN.z then
+    dr.placeMIN.z = z
+  end
+  
+end
+
+
+deadReckoner.getTargetCoords=
+    function(way)
+  -- TODO getTargetCoords()
+end
+
 --- Digs.
 -- @param way must be dr.FORE, 
 -- dr.STARBOARD, dr.FORE, dr.AFT
@@ -123,6 +162,12 @@ deadReckoner.dig= function( way )
   elseif way== dr.DOWN then
     dug, whyNot= t.digDown()
   end
+  
+  -- TODO find the x, y, z of dug 
+  -- place
+  
+  -- TODO call setMaxMin()
+  
   return dug, whyNot
 end
 
@@ -165,6 +210,11 @@ deadReckoner.move= function( way )
       dr.place.y = dr.place.y - 1
     end
   end -- AHEAD, UP or DOWN
+  
+  if isAble then
+    dr.setMaxMin( dr.place.x, 
+        dr.place.y, dr.place.z )
+  end
   
   return isAble, whynot
 end

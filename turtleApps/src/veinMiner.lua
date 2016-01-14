@@ -159,6 +159,9 @@ end
 -- what was wanted.
 veinMiner.check= function(way)
   local isWanted = false
+  
+  -- TODO call dr.getTargetCoords()
+  -- to find ix, iy, iz
   local ix = dr.place.x
   local iy = dr.place.y
   local iz = dr.place.z
@@ -456,8 +459,9 @@ veinMiner.isInvtrySpaceAvail=function()
 end
 
 
-veinMine.clearRectangle= function()
+veinMiner.clearRectangle= function()
   -- TODO clearRectangle
+  
 end
 
 --- The main function: Inspects the 
