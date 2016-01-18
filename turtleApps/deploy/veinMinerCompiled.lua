@@ -1,16 +1,22 @@
 --[[ Mines a contiguous aggregation of
 resource blocks. Meant for trees or 
 veins of ore.
-1. Place the turtle so it faces the 
+1  Place the turtle so it faces the 
    material you want.
-2. Refuel the turtle if applicable.
-3. Run this script.  Note, if you want
-   it to dig *all* blocks around any
-   matching one, to give the spaces
-   a neater appearance, use 'a' as
-   an argument.  For example, if the
-   script is called vMiner:
+2  Refuel the turtle if applicable.
+3  Run this script.  
+3a Note, if you want it to dig *all* 
+   blocks around any matching one, to 
+   give the spaces a neater 
+   appearance, use 'a' as an argument.
+   For example, if the script is 
+   called vMiner: 
    vMiner a
+3b Even neater but using more time 
+   and more fuel: To dig out the whole
+   rectangular prism surrounding the 
+   vein, use 'r' argument:
+   vMiner r
 
 Copyright (c) 2015 - 2016
 Robert David Alkire II, IGN ian_xw
@@ -57,23 +63,21 @@ dr.WAYS[deadReckoner.PORT] = "PORT"
   
 deadReckoner.heading=deadReckoner.FORE
 
-deadReckoner.place=Locus.new(0, 0, 0)
+--- Current position relative to start
+deadReckoner.place= Locus.new(0, 0, 0)
+
+--- Maximum x, y, z relative to start,
+-- located or dug
+deadReckoner.placeMAX=Locus.new(0,0,0)
+
+--- Minimum x, y, z relative to start,
+-- located or dug
+deadReckoner.placeMIN=Locus.new(0,0,0)
 
 --- forward regardless of heading
 deadReckoner.AHEAD = 4
 deadReckoner.UP = 5
 deadReckoner.DOWN = 6
-
---- Calculates distance from starting
--- place, considering that turtles
--- do not move diagonally in their 
--- present form.
--- @return number of moves to get back
-deadReckoner.howFarFromHome=function()
-  return math.abs(dr.place.x)+ 
-      math.abs(dr.place.y)+ 
-      math.abs(dr.place.z)
-end
 
 --- Turns as needed to face the 
 -- target direction indicated
@@ -106,6 +110,140 @@ deadReckoner.bearTo= function(target)
   deadReckoner.heading = target
 end
 
+--- If way is fore, starboard, aft or
+-- port, then bear to that direction
+-- @param way can any of the heading
+-- constants: FORE, STARBOARD, AFT,
+-- PORT, UP, DOWN or even AHEAD
+-- @return way is AHEAD if the param 
+-- had been a horizontal direction 
+-- (FORE, AFT, PORT, STARBOARD). 
+-- Otherwise it's the same as the input
+-- param.
+deadReckoner.correctHeading=
+    function(way)
+    
+  if way < 4 then
+    dr.bearTo( way )
+    way = dr.AHEAD
+  end
+  
+  return way
+  
+end
+
+--- Adjusts placeMAX and placeMIN as
+-- applicable.
+deadReckoner.setMaxMin=function(x,y,z)
+
+  if x > dr.placeMAX.x then
+    dr.placeMAX.x = x
+  elseif x < dr.placeMIN.x then
+    dr.placeMIN.x = x
+  end
+  
+  if y > dr.placeMAX.y then
+    dr.placeMAX.y = y
+  elseif y < dr.placeMIN.y then
+    dr.placeMIN.y = y
+  end
+  
+  if z > dr.placeMAX.z then
+    dr.placeMAX.z = z
+  elseif z < dr.placeMIN.z then
+    dr.placeMIN.z = z
+  end
+  
+end
+
+--- Gets the coordinates of the block
+-- currently next to the turtle,
+-- depending on which way one would
+-- look.
+-- @param way must be deadReckoner's 
+-- (dr's) AFT, FORE, PORT, STARBOARD,
+-- UP, DOWN or AHEAD.
+-- @return x, y, z coordinates of the 
+-- adjacent block.
+deadReckoner.getTargetCoords=
+    function(way)
+  
+  local ix = dr.place.x
+  local iy = dr.place.y
+  local iz = dr.place.z
+  
+  if way == dr.AHEAD then
+    way = dr.heading
+  end
+  
+  if way== dr.AFT then
+    iz= iz - 1
+  elseif way== dr.FORE then
+    iz= iz + 1
+  elseif way== dr.PORT then
+    ix= ix- 1
+  elseif way== dr.STARBOARD then
+    ix= ix+ 1
+  elseif way== dr.UP then
+    iy= iy + 1
+  elseif way== dr.DOWN then
+    iy= iy - 1
+  end
+  
+  return ix, iy, iz
+  
+end
+
+
+--- Finds the distance between the
+-- current location and some other
+-- place, without diagonal travel
+-- @param x, y, z are the coords of
+-- the other place
+-- @return the distance
+deadReckoner.howFarFrom=function(x,y,z)
+  local dx= math.abs( dr.place.x- x )
+  local dy= math.abs( dr.place.y- y )
+  local dz= math.abs( dr.place.z- z )
+  return dx + dy + dz
+end
+
+--- Calculates distance from starting
+-- place, considering that turtles
+-- do not move diagonally in their 
+-- present form.
+-- @return number of moves to get back
+deadReckoner.howFarFromHome=function()
+  return math.abs(dr.place.x)+ 
+      math.abs(dr.place.y)+ 
+      math.abs(dr.place.z)
+end
+
+--- Inspects the given direction, and
+-- also calls to evaluate the target
+-- block for max and min coords.
+-- @param way FORE, UP, AHEAD etc
+-- @return boolean success, table 
+-- data/string error message
+deadReckoner.inspect= function(way)
+
+  way = dr.correctHeading(way)
+  local ok, item
+  if way== dr.AHEAD then
+    ok, item= t.inspect()
+  elseif way== dr.UP then
+    ok, item= t.inspectUp()
+  else
+    ok, item= t.inspectDown()
+  end
+  
+  local ix, iy, iz = 
+      dr.getTargetCoords(way)
+  
+  dr.setMaxMin(ix, iy, iz)
+  return ok, item
+end
+
 --- Digs.
 -- @param way must be dr.FORE, 
 -- dr.STARBOARD, dr.FORE, dr.AFT
@@ -116,12 +254,7 @@ end
 -- reason why not.
 deadReckoner.dig= function( way )
 
-  -- If way is fore, starboard, aft or
-  -- port, then bear to that direction
-  if way < 4 then
-    dr.bearTo( way )
-    way = dr.AHEAD
-  end
+  way = dr.correctHeading( way )
   
   local dug= false
   local whyNot
@@ -132,6 +265,7 @@ deadReckoner.dig= function( way )
   elseif way== dr.DOWN then
     dug, whyNot= t.digDown()
   end
+  
   return dug, whyNot
 end
 
@@ -175,6 +309,11 @@ deadReckoner.move= function( way )
     end
   end -- AHEAD, UP or DOWN
   
+  if isAble then
+    dr.setMaxMin( dr.place.x, 
+        dr.place.y, dr.place.z )
+  end
+  
   return isAble, whynot
 end
 
@@ -187,7 +326,8 @@ end
 -- @return direction: up, down, fore, 
 -- aft, port or starboard
 -- @return distance
-deadReckoner.furthestWay=function(dest)
+deadReckoner.furthestWay = 
+    function(dest)
   
   -- Dest - Current: +Srbrd -Port
   local direction = 0
@@ -227,6 +367,7 @@ end
 local veinMiner = {}
 local vm = veinMiner
 
+--- For estimating fuel need
 veinMiner.MOVESPERCUBE = 15
 
 --- If part of larger task, from caller
@@ -324,7 +465,7 @@ end
 --- If there's enough fuel to explore
 -- one last cube and move back to the
 -- original place.
-veinMiner.isFuelOK = function()
+veinMiner.isFuelOK4Cube = function()
   local isOK = false
   local fuel = t.getFuelLevel()
   if fuel == "unlimited" then
@@ -338,6 +479,31 @@ veinMiner.isFuelOK = function()
       isOK = true
     else
       print("Fuel too low: ".. fuel )
+    end
+  end
+  return isOK
+end
+
+--- See's if there's enough fuel to get
+-- to the destination then get home
+-- @param x, y, z coords for dstnation
+-- @return true if fuel OK or unlimited
+veinMiner.isFuelOK4Dest= 
+    function(x, y, z) 
+  local isOK = false
+  local fuel = t.getFuelLevel()
+  if fuel == "unlimited" then
+    isOK = true
+  else
+    local destToHome = math.abs(x)+
+        math.abs(y)+ math.abs(z)
+    local fuelNeed =
+        dr.howFarFrom(x,y,z)+
+        destToHome+ vm.previousDistance
+    if fuel >= fuelNeed then
+      isOK = true
+    else
+      print("Not enough fuel:".. fuel)
     end
   end
   return isOK
@@ -357,32 +523,13 @@ end
 -- what was wanted.
 veinMiner.check= function(way)
   local isWanted = false
-  local ix = dr.place.x
-  local iy = dr.place.y
-  local iz = dr.place.z
+
+  local ix = 0
+  local iy = 0
+  local iz = 0
+  ix, iy, iz= dr.getTargetCoords(way)
   
-  -- If way is fore, starboard, aft or
-  -- port, then bear to that direction
-  if way < 4 then
-    dr.bearTo( way )
-    way = dr.AHEAD
-  end
-  
-  if way== dr.AHEAD then
-    if dr.heading== dr.AFT then
-      iz= iz - 1
-    elseif dr.heading== dr.FORE then
-      iz= iz + 1
-    elseif dr.heading== dr.PORT then
-      ix= ix- 1
-    else
-      ix= ix+ 1
-    end
-  elseif way== dr.UP then
-    iy= iy + 1
-  elseif way== dr.DOWN then
-    iy= iy - 1
-  end
+  way = dr.correctHeading(way)
   
   -- If it still needs to be inspected,
   if vm.isInspected(ix,iy,iz) then
@@ -390,13 +537,7 @@ veinMiner.check= function(way)
         vm.inspectedSkipped + 1
   else
     local ok, item
-    if way== dr.AHEAD then
-      ok, item= t.inspect()
-    elseif way== dr.UP then
-      ok, item= t.inspectUp()
-    else
-      ok, item= t.inspectDown()
-    end
+    ok, item= dr.inspect(way)
     
     if ok then
       if item.name==vm.targetBlockName 
@@ -429,12 +570,7 @@ end
 -- reason why not.
 veinMiner.explore= function(way, moves)
   
-  -- If way is fore, starboard, aft or
-  -- port, then bear to that direction
-  if way < 4 then
-    dr.bearTo( way )
-    way = dr.AHEAD
-  end
+  way = dr.correctHeading(way)
   
   local isAble, whynot
   
@@ -653,6 +789,40 @@ veinMiner.isInvtrySpaceAvail=function()
   return isAvail
 end
 
+--- Digs out the remaining blocks
+-- between the minimum, maximum 
+-- coordinates so far
+veinMiner.clearRectangle= function()
+
+  local fulOK = true
+  local tx = dr.placeMIN.x
+  while tx<= dr.placeMAX.x and fulOK do
+    local ty = dr.placeMIN.y
+    while ty<= dr.placeMAX.y and 
+        fulOK do
+      local tz = dr.placeMIN.z
+      while tz<= dr.placeMAX.z and
+          fulOK do
+        
+        if not vm.isInspected(tx,ty,tz) 
+            then
+          fulOK= vm.isFuelOK4Dest(
+              tx,ty,tz )
+          if fulOK then
+            vm.exploreTo(
+                Locus.new(tx, ty, tz))
+          end
+        end
+        
+        tz = tz + 1 
+      end
+      ty = ty + 1
+    end
+    tx = tx + 1
+  end
+  
+end
+
 --- The main function: Inspects the 
 -- block in front of it and sets its
 -- name of that as the target material,
@@ -661,9 +831,13 @@ end
 -- or there isn't any more room.
 veinMiner.mine= function( args )
 
+  local isRectangle = false
   if table.getn( args ) > 0 then
     if args[1] == "a" then
       vm.isAll = true
+    elseif args[1] == "r" then
+      vm.isAll = true
+      isRectangle = true
     else
       print( "Unknown argument: \"" ..
         args[1] .. "\"" )
@@ -672,7 +846,8 @@ veinMiner.mine= function( args )
   
   local isOK = false
   local block = {}
-  isOK, block = t.inspect()
+  
+  isOK, block = dr.inspect( dr.AHEAD )
   
   if isOK then
     
@@ -683,10 +858,14 @@ veinMiner.mine= function( args )
     
     vm.check( dr.AHEAD )
     
-    while vm.isFuelOK() and
+    while vm.isFuelOK4Cube() and
         vm.isInvtrySpaceAvail() and 
         (not vm.isVeinExplored()) do
       vm.inspectACube()
+    end
+    
+    if isRectangle then
+      vm.clearRectangle()
     end
     
     -- Comes back and faces forward
@@ -713,8 +892,8 @@ veinMiner.mine= function( args )
     end
   else
     print( "To start, there must \n"..
-      "be a block of interest \n"..
-      "in front of the turtle." )
+        "be a block of interest \n"..
+        "in front of the turtle." )
   end
 end
 

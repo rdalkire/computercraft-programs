@@ -64,17 +64,6 @@ deadReckoner.AHEAD = 4
 deadReckoner.UP = 5
 deadReckoner.DOWN = 6
 
---- Calculates distance from starting
--- place, considering that turtles
--- do not move diagonally in their 
--- present form.
--- @return number of moves to get back
-deadReckoner.howFarFromHome=function()
-  return math.abs(dr.place.x)+ 
-      math.abs(dr.place.y)+ 
-      math.abs(dr.place.z)
-end
-
 --- Turns as needed to face the 
 -- target direction indicated
 -- @param target must be dr.FORE, 
@@ -106,13 +95,35 @@ deadReckoner.bearTo= function(target)
   deadReckoner.heading = target
 end
 
+--- If way is fore, starboard, aft or
+-- port, then bear to that direction
+-- @param way can any of the heading
+-- constants: FORE, STARBOARD, AFT,
+-- PORT, UP, DOWN or even AHEAD
+-- @return way is AHEAD if the param 
+-- had been a horizontal direction 
+-- (FORE, AFT, PORT, STARBOARD). 
+-- Otherwise it's the same as the input
+-- param.
+deadReckoner.correctHeading=
+    function(way)
+    
+  if way < 4 then
+    dr.bearTo( way )
+    way = dr.AHEAD
+  end
+  
+  return way
+  
+end
+
 --- Adjusts placeMAX and placeMIN as
 -- applicable.
 deadReckoner.setMaxMin=function(x,y,z)
 
   if x > dr.placeMAX.x then
     dr.placeMAX.x = x
-  elseif x < dr.placeMIN then
+  elseif x < dr.placeMIN.x then
     dr.placeMIN.x = x
   end
   
@@ -130,10 +141,92 @@ deadReckoner.setMaxMin=function(x,y,z)
   
 end
 
-
+--- Gets the coordinates of the block
+-- currently next to the turtle,
+-- depending on which way one would
+-- look.
+-- @param way must be deadReckoner's 
+-- (dr's) AFT, FORE, PORT, STARBOARD,
+-- UP, DOWN or AHEAD.
+-- @return x, y, z coordinates of the 
+-- adjacent block.
 deadReckoner.getTargetCoords=
     function(way)
-  -- TODO getTargetCoords()
+  
+  local ix = dr.place.x
+  local iy = dr.place.y
+  local iz = dr.place.z
+  
+  if way == dr.AHEAD then
+    way = dr.heading
+  end
+  
+  if way== dr.AFT then
+    iz= iz - 1
+  elseif way== dr.FORE then
+    iz= iz + 1
+  elseif way== dr.PORT then
+    ix= ix- 1
+  elseif way== dr.STARBOARD then
+    ix= ix+ 1
+  elseif way== dr.UP then
+    iy= iy + 1
+  elseif way== dr.DOWN then
+    iy= iy - 1
+  end
+  
+  return ix, iy, iz
+  
+end
+
+
+--- Finds the distance between the
+-- current location and some other
+-- place, without diagonal travel
+-- @param x, y, z are the coords of
+-- the other place
+-- @return the distance
+deadReckoner.howFarFrom=function(x,y,z)
+  local dx= math.abs( dr.place.x- x )
+  local dy= math.abs( dr.place.y- y )
+  local dz= math.abs( dr.place.z- z )
+  return dx + dy + dz
+end
+
+--- Calculates distance from starting
+-- place, considering that turtles
+-- do not move diagonally in their 
+-- present form.
+-- @return number of moves to get back
+deadReckoner.howFarFromHome=function()
+  return math.abs(dr.place.x)+ 
+      math.abs(dr.place.y)+ 
+      math.abs(dr.place.z)
+end
+
+--- Inspects the given direction, and
+-- also calls to evaluate the target
+-- block for max and min coords.
+-- @param way FORE, UP, AHEAD etc
+-- @return boolean success, table 
+-- data/string error message
+deadReckoner.inspect= function(way)
+
+  way = dr.correctHeading(way)
+  local ok, item
+  if way== dr.AHEAD then
+    ok, item= t.inspect()
+  elseif way== dr.UP then
+    ok, item= t.inspectUp()
+  else
+    ok, item= t.inspectDown()
+  end
+  
+  local ix, iy, iz = 
+      dr.getTargetCoords(way)
+  
+  dr.setMaxMin(ix, iy, iz)
+  return ok, item
 end
 
 --- Digs.
@@ -146,12 +239,7 @@ end
 -- reason why not.
 deadReckoner.dig= function( way )
 
-  -- If way is fore, starboard, aft or
-  -- port, then bear to that direction
-  if way < 4 then
-    dr.bearTo( way )
-    way = dr.AHEAD
-  end
+  way = dr.correctHeading( way )
   
   local dug= false
   local whyNot
@@ -162,11 +250,6 @@ deadReckoner.dig= function( way )
   elseif way== dr.DOWN then
     dug, whyNot= t.digDown()
   end
-  
-  -- TODO find the x, y, z of dug 
-  -- place
-  
-  -- TODO call setMaxMin()
   
   return dug, whyNot
 end
@@ -228,7 +311,8 @@ end
 -- @return direction: up, down, fore, 
 -- aft, port or starboard
 -- @return distance
-deadReckoner.furthestWay= function(dest)
+deadReckoner.furthestWay = 
+    function(dest)
   
   -- Dest - Current: +Srbrd -Port
   local direction = 0

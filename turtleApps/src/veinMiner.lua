@@ -5,16 +5,22 @@ deploy/veinMinerCompiled.lua
 Mines a contiguous aggregation of
 resource blocks. Meant for trees or 
 veins of ore.
-1. Place the turtle so it faces the 
+1  Place the turtle so it faces the 
    material you want.
-2. Refuel the turtle if applicable.
-3. Run this script.  Note, if you want
-   it to dig *all* blocks around any
-   matching one, to give the spaces
-   a neater appearance, use 'a' as
-   an argument.  For example, if the
-   script is called vMiner:
+2  Refuel the turtle if applicable.
+3  Run this script.  
+3a Note, if you want it to dig *all* 
+   blocks around any matching one, to 
+   give the spaces a neater 
+   appearance, use 'a' as an argument.
+   For example, if the script is 
+   called vMiner: 
    vMiner a
+3b Even neater but using more time 
+   and more fuel: To dig out the whole
+   rectangular prism surrounding the 
+   vein, use 'r' argument:
+   vMiner r
 
 Copyright (c) 2015 
 Robert David Alkire II, IGN ian_xw
@@ -126,7 +132,7 @@ end
 --- If there's enough fuel to explore
 -- one last cube and move back to the
 -- original place.
-veinMiner.isFuelOK = function()
+veinMiner.isFuelOK4Cube = function()
   local isOK = false
   local fuel = t.getFuelLevel()
   if fuel == "unlimited" then
@@ -140,6 +146,31 @@ veinMiner.isFuelOK = function()
       isOK = true
     else
       print("Fuel too low: ".. fuel )
+    end
+  end
+  return isOK
+end
+
+--- See's if there's enough fuel to get
+-- to the destination then get home
+-- @param x, y, z coords for dstnation
+-- @return true if fuel OK or unlimited
+veinMiner.isFuelOK4Dest= 
+    function(x, y, z) 
+  local isOK = false
+  local fuel = t.getFuelLevel()
+  if fuel == "unlimited" then
+    isOK = true
+  else
+    local destToHome = math.abs(x)+
+        math.abs(y)+ math.abs(z)
+    local fuelNeed =
+        dr.howFarFrom(x,y,z)+
+        destToHome+ vm.previousDistance
+    if fuel >= fuelNeed then
+      isOK = true
+    else
+      print("Not enough fuel:".. fuel)
     end
   end
   return isOK
@@ -159,35 +190,13 @@ end
 -- what was wanted.
 veinMiner.check= function(way)
   local isWanted = false
+
+  local ix = 0
+  local iy = 0
+  local iz = 0
+  ix, iy, iz= dr.getTargetCoords(way)
   
-  -- TODO call dr.getTargetCoords()
-  -- to find ix, iy, iz
-  local ix = dr.place.x
-  local iy = dr.place.y
-  local iz = dr.place.z
-  
-  -- If way is fore, starboard, aft or
-  -- port, then bear to that direction
-  if way < 4 then
-    dr.bearTo( way )
-    way = dr.AHEAD
-  end
-  
-  if way== dr.AHEAD then
-    if dr.heading== dr.AFT then
-      iz= iz - 1
-    elseif dr.heading== dr.FORE then
-      iz= iz + 1
-    elseif dr.heading== dr.PORT then
-      ix= ix- 1
-    else
-      ix= ix+ 1
-    end
-  elseif way== dr.UP then
-    iy= iy + 1
-  elseif way== dr.DOWN then
-    iy= iy - 1
-  end
+  way = dr.correctHeading(way)
   
   -- If it still needs to be inspected,
   if vm.isInspected(ix,iy,iz) then
@@ -195,13 +204,7 @@ veinMiner.check= function(way)
         vm.inspectedSkipped + 1
   else
     local ok, item
-    if way== dr.AHEAD then
-      ok, item= t.inspect()
-    elseif way== dr.UP then
-      ok, item= t.inspectUp()
-    else
-      ok, item= t.inspectDown()
-    end
+    ok, item= dr.inspect(way)
     
     if ok then
       if item.name==vm.targetBlockName 
@@ -234,12 +237,7 @@ end
 -- reason why not.
 veinMiner.explore= function(way, moves)
   
-  -- If way is fore, starboard, aft or
-  -- port, then bear to that direction
-  if way < 4 then
-    dr.bearTo( way )
-    way = dr.AHEAD
-  end
+  way = dr.correctHeading(way)
   
   local isAble, whynot
   
@@ -458,9 +456,37 @@ veinMiner.isInvtrySpaceAvail=function()
   return isAvail
 end
 
-
+--- Digs out the remaining blocks
+-- between the minimum, maximum 
+-- coordinates so far
 veinMiner.clearRectangle= function()
-  -- TODO clearRectangle
+
+  local fulOK = true
+  local tx = dr.placeMIN.x
+  while tx<= dr.placeMAX.x and fulOK do
+    local ty = dr.placeMIN.y
+    while ty<= dr.placeMAX.y and 
+        fulOK do
+      local tz = dr.placeMIN.z
+      while tz<= dr.placeMAX.z and
+          fulOK do
+        
+        if not vm.isInspected(tx,ty,tz) 
+            then
+          fulOK= vm.isFuelOK4Dest(
+              tx,ty,tz )
+          if fulOK then
+            vm.exploreTo(
+                Locus.new(tx, ty, tz))
+          end
+        end
+        
+        tz = tz + 1 
+      end
+      ty = ty + 1
+    end
+    tx = tx + 1
+  end
   
 end
 
@@ -477,6 +503,7 @@ veinMiner.mine= function( args )
     if args[1] == "a" then
       vm.isAll = true
     elseif args[1] == "r" then
+      vm.isAll = true
       isRectangle = true
     else
       print( "Unknown argument: \"" ..
@@ -486,7 +513,8 @@ veinMiner.mine= function( args )
   
   local isOK = false
   local block = {}
-  isOK, block = t.inspect()
+  
+  isOK, block = dr.inspect( dr.AHEAD )
   
   if isOK then
     
@@ -497,7 +525,7 @@ veinMiner.mine= function( args )
     
     vm.check( dr.AHEAD )
     
-    while vm.isFuelOK() and
+    while vm.isFuelOK4Cube() and
         vm.isInvtrySpaceAvail() and 
         (not vm.isVeinExplored()) do
       vm.inspectACube()
