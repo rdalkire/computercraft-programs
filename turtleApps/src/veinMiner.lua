@@ -508,7 +508,10 @@ veinMiner.mine= function( args )
       isRectangle = true
     else
       print( "Unknown argument: \"" ..
-        args[1] .. "\"" )
+        args[1] .. "\". \n"..
+        "Acceptable arguments are "..
+        "a or r.  \n"..
+        "Edit script for details." )
       isArgOK = false
     end
   end

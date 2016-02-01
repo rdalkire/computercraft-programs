@@ -832,6 +832,7 @@ end
 veinMiner.mine= function( args )
 
   local isRectangle = false
+  local isArgOK = true
   if table.getn( args ) > 0 then
     if args[1] == "a" then
       vm.isAll = true
@@ -840,16 +841,21 @@ veinMiner.mine= function( args )
       isRectangle = true
     else
       print( "Unknown argument: \"" ..
-        args[1] .. "\"" )
+        args[1] .. "\". \n"..
+        "Acceptable arguments are "..
+        "a or r.  \n"..
+        "Edit script for details." )
+      isArgOK = false
     end
   end
   
-  local isOK = false
+  local isBlockOK = false
   local block = {}
   
-  isOK, block = dr.inspect( dr.AHEAD )
+  isBlockOK, block = 
+      dr.inspect( dr.AHEAD )
   
-  if isOK then
+  if isBlockOK and isArgOK then
     
     veinMiner.targetBlockName = 
         block.name
@@ -890,7 +896,7 @@ veinMiner.mine= function( args )
           cubesYet.. 
           " cubes to be explored." )
     end
-  else
+  elseif not isBlockOK then
     print( "To start, there must \n"..
         "be a block of interest \n"..
         "in front of the turtle." )

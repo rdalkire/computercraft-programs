@@ -127,7 +127,7 @@ local function testIsInvtrySpaceAvail()
   assert(isOK,"should've been enough")
 end
 local function testMine()
-  local args = { "r" }
+  local args = { "-r" }
   vm.mine( args )
 --  assert( not vm.isFuelOK4Cube(), 
 --      "fuel should be low" )
