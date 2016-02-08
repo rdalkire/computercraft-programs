@@ -10,9 +10,9 @@ and obby-making.
 
 ## The Operation Manuals, Launchers, Test Stubs and Harnesses
 
-Each of the completed programs has its own help document in markdown format: farmHowTo.md, obbyMinerHowTo.md <TODO> and sortAndBlockHowTo.md
+Most of the completed programs have their own help documents in markdown format: farmHowTo.md, obbyMinerHowTo.md and sortAndBlockHowTo.md
 
-TODO: Fill in wiki pages with links to the how-to markdown files.
+An exception is the vein miner program, at turtleApps/deploy/veinMinerCompiled.lua, which is so simple to use that I didn't feel it necessary to have a separate file for instructions.  Instead simply edit the script file itself if you don't know how to use it already.
 
 There's a launcher called startup.lua, so that a player might launch a turtle program with a button-click or by opening a trapped chest.
 
