@@ -148,7 +148,7 @@ mockTurtle.inspectUp = function()
   return true, itm
 end
 
-mockTurtle.placeDown = function()
+local function adjstInvFromPlacing()
   local slctd = mockTurtle.selected 
   if slts[slctd] > 0 then
     slts[slctd] = slts[slctd] - 1
@@ -160,8 +160,14 @@ mockTurtle.placeDown = function()
       itm.count = slts[slctd]  
     end 
   end
-  
-  
+end
+
+mockTurtle.place = function()
+  adjstInvFromPlacing()
+end
+
+mockTurtle.placeDown = function()
+  adjstInvFromPlacing()
 end
 
 mockTurtle.refuel = function()

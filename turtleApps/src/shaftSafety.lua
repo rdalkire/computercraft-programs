@@ -95,6 +95,7 @@ local function checkSupplies(height)
   return areOK
 end
 
+
 local function checkPrereqs(targs)
   local isOK = false
   if table.maxn(targs) < 1 then
@@ -109,9 +110,28 @@ local function checkPrereqs(targs)
       print("arg should be 6 or more")
     else
       isOK = checkSupplies(n)
+      -- TODO also estimate fuel
     end
   end
   return isOK
+end
+
+local function goDownWithLadders(n)
+  
+  local lmt = n - 5
+  local actlDst = 0
+  local keepGoing = true
+  
+  while keepGoing and actlDst < lmt do
+    keepGoing = t.down()
+    if keepGoing then
+      -- TODO select slt having ladders
+      
+      t.place()
+    end
+  end
+  
+  
 end
 
 local function main( targs )
@@ -119,12 +139,24 @@ local function main( targs )
   -- Check prereqs; warn as applicable
   if checkPrereqs(targs) then
     print("prereqs OK")
+    
     -- TODO finish main()
-    -- Adjust starting location
+    
+    -- Adjust starting location:
+    -- so turtle can start 1 from edge
+    if t.inspectDown() then
+      t.forward()
+    end
+    t.forward()
+    t.turnLeft();t.turnLeft()
+    
+    local n = toNumber(targs[1])
     
     -- Go down, placing ladders
-    
-    -- Come back up, placing torches
+    local d = goDownWithLadders(n)
+
+    -- Come back up, placing ladders &
+    -- torches
   
   end
 
