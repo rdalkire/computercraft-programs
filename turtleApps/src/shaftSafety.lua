@@ -7,11 +7,10 @@ places them ]]
 -- TODO at release, use native turtle
 local t = require "mockTurtle"
 
---- Finds out if there are enough 
--- ladders and torches.  If not it
--- displays a manifest of what's needed
-local function checkSupplies(height)
-  local areOK = false
+--- Finds how many more torches and 
+-- ladders are needed.
+local function lddrsNTrchsDiff(height)
+
   local n = height - 5
   local ladderReq = n * 2
   local torchReq= math.ceil( n/5 )
@@ -23,56 +22,83 @@ local function checkSupplies(height)
     local sltDt= t.getItemDetail(iSlot)
     if t.getItemCount(iSlot)==0 then
       -- no op
-    elseif sltDt.name=="minecraft:ladder"
-        then
+    elseif sltDt.name==
+        "minecraft:ladder" then
       laddersHave= laddersHave +
           sltDt.count
-    elseif sltDt.name=="minecraft:torch" 
-        then
+    elseif sltDt.name==
+        "minecraft:torch" then
       torchesHave = torchesHave +
           sltDt.count
     end -- slotname if
   end -- slots loop
   
-  local ladderCnt = math.max(0, 
+  local ladderDif = math.max(0, 
       ladderReq - laddersHave )
-  local torchCnt = math.max( 0,
+  local torchDif = math.max( 0,
       torchReq - torchesHave )
+
+  return ladderDif, torchDif
+
+end
+
+--- Finds how many sticks needed for
+-- ladders, and how many sticks for 
+-- torches
+local function lddrNTrchSticks( 
+    ladderDif, torchDif )
   
-  local trchStckCnt = 0
-  if torchCnt > 0 then
-    print("== need ".. torchCnt..
+  local trchStcks = 0
+  if torchDif > 0 then
+    print("== need ".. torchDif..
         " more torches")
     -- Nearest higher factor of 4
-    torchCnt= math.ceil(torchCnt/4)*4
-    print("Craft ".. torchCnt.. 
+    torchDif= math.ceil(torchDif/4)*4
+    print("Craft ".. torchDif.. 
         " torches" )
     local coalCnt= math.ceil(
-        torchCnt / 4 )
-    trchStckCnt= coalCnt
+        torchDif / 4 )
+    trchStcks= coalCnt
     print("coal & sticks needed for ".. 
         "torches: ".. coalCnt ) 
   end
   
-  local lddrStckCnt = 0
-  if ladderCnt > 0 then
+  local lddrStcks = 0
+  if ladderDif > 0 then
     print("== more ladders needed: "..
-        ladderCnt )
+        ladderDif )
     -- Nearest higher factor of 3
-    ladderCnt= math.ceil(ladderCnt/3)*3
+    ladderDif= math.ceil(ladderDif/3)*3
     print("Ladders to craft: "..
-        ladderCnt )
-    lddrStckCnt= math.ceil(
-        ladderCnt * 7 / 3 )
+        ladderDif )
+    lddrStcks= math.ceil(
+        ladderDif * 7 / 3 )
     print("ladder-sticks needed: "..
-        lddrStckCnt )
+        lddrStcks )
   end
   
-  if ladderCnt + torchCnt == 0 then
+  return lddrStcks, trchStcks
+  
+end
+
+--- Finds out if there are enough 
+-- ladders and torches.  If not it
+-- displays a manifest of what's needed
+local function checkSupplies(height)
+  local areOK = false
+  
+  local ladderDif, torchDif = 
+      lddrsNTrchsDiff(height)
+  
+  local lddrStcks, trchStcks = 
+      lddrNTrchSticks(ladderDif,
+          torchDif)
+  
+  if ladderDif + torchDif == 0 then
     areOK = true
   else
-    local stickCnt= lddrStckCnt +
-        trchStckCnt
+    local stickCnt= lddrStcks +
+        trchStcks
     
     -- Nearest higher factor of 4
     stickCnt= math.ceil(stickCnt/4 )*4
@@ -83,7 +109,9 @@ local function checkSupplies(height)
         stickCnt * 2 / 4 )
     
     plankCnt= math.ceil(plankCnt/4)*4
-    print("planks to craft for sticks "..
+    
+    print(
+        "planks to craft for sticks "..
         plankCnt )
     
     local logCnt = math.ceil(
@@ -130,8 +158,7 @@ local function goDownWithLadders(n)
       t.place()
     end
   end
-  
-  
+
 end
 
 local function main( targs )
@@ -150,7 +177,7 @@ local function main( targs )
     t.forward()
     t.turnLeft();t.turnLeft()
     
-    local n = toNumber(targs[1])
+    local n = tonumber(targs[1])
     
     -- Go down, placing ladders
     local d = goDownWithLadders(n)
