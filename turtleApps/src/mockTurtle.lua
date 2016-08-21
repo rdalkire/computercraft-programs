@@ -1,6 +1,7 @@
-
 --[[ This is to test turtle scripts 
-from IDEs outside of computercraft ]]
+from IDEs outside of computercraft
+MIT License (MIT)
+2014 Robert David Alkire II ]]
 local mockTurtle = {}
 
 local fuelLevel = 35 --or "unlimited"
