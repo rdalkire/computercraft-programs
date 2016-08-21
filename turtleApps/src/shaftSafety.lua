@@ -127,39 +127,76 @@ end
 local function checkPrereqs(targs)
   local isOK = false
   if table.maxn(targs) < 1 then
-    print("usage: shaftSafety <Y>")
+    print("usage: shaftSafety <Y> "..
+        "[r]")
     print("  where <Y> is turtle's"..
-        " Y-coord.")
+        " Y-coord.  Use the \"r\" "..
+        "option to have the robot "..
+        "return to start afterward")
   else
     local n = tonumber( targs[1] )
     if n == nil then
-      print("argument not a number")
+      print("first arg not a number")
     elseif n < 6 then
       print("arg should be 6 or more")
     else
       isOK = checkSupplies(n)
       -- TODO also estimate fuel
     end
+    
+    
+    
   end
   return isOK
 end
 
-local function goDownWithLadders(n)
+local function placeAladder()
+  -- TODO placeAladder()
+  
+end
+
+
+--- Moves down the shaft wall, placing
+-- ladders and torches.
+local function goDownPlacing(n)
   
   local lmt = n - 5
   local actlDst = 0
   local keepGoing = true
   
   while keepGoing and actlDst < lmt do
+    -- TODO Deadreckoner to go down
     keepGoing = t.down()
     if keepGoing then
-      -- TODO select slt having ladders
-      
-      t.place()
-    end
-  end
+      -- TODO placing
+      -- If even
 
-end
+        -- place a ladder aft
+        
+        -- move starboard
+        
+        -- place a ladder aft
+        
+        -- move starboard
+        
+        -- if fifth, place a torch
+      -- else, its odd
+        -- if fifth, place torch
+        
+        -- move port
+        
+        -- place ladder
+        
+        -- move port
+        
+        -- place ladder
+      -- end if even
+      
+      actlDst = actlDst + 1
+    end -- if keepgoing
+  end -- while
+  return actlDst
+end -- function
 
 local function main( targs )
 
@@ -171,6 +208,7 @@ local function main( targs )
     
     -- Adjust starting location:
     -- so turtle can start 1 from edge
+    -- TODO Deadreckoner to move
     if t.inspectDown() then
       t.forward()
     end
@@ -179,11 +217,10 @@ local function main( targs )
     
     local n = tonumber(targs[1])
     
-    -- Go down, placing ladders
-    local d = goDownWithLadders(n)
+    -- Go down, placing things
+    local d = goDownPlacing(n)
 
-    -- Come back up, placing ladders &
-    -- torches
+    -- TODO if specified come back up
   
   end
 
