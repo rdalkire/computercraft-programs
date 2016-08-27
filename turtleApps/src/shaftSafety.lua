@@ -4,6 +4,9 @@ hole in front of you.  Finds out how
 many ladders and torches you need, and
 places them ]]
 
+-- TODO at release, in-line deadReckoner
+local dr = require "deadReckoner"
+
 -- TODO at release, use native turtle
 local t = require "mockTurtle"
 
@@ -208,12 +211,12 @@ local function main( targs )
     
     -- Adjust starting location:
     -- so turtle can start 1 from edge
-    -- TODO Deadreckoner to move
+
     if t.inspectDown() then
-      t.forward()
+      dr.move(dr.AHEAD)
     end
-    t.forward()
-    t.turnLeft();t.turnLeft()
+    dr.move(dr.AHEAD)
+    dr.bearTo(dr.AFT);
     
     local n = tonumber(targs[1])
     
