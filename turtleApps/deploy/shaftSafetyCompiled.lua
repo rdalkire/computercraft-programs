@@ -470,7 +470,7 @@ local function checkFuel( height )
   if fuel == "unlimited" then
     isGood = true
   else
-    local d = fuel - BEDROCK_Y
+    local d = height - BEDROCK_Y
     
     local needed = d * 2 + -- ladders
                   (d/5)*2+ -- torches
@@ -489,6 +489,7 @@ local function checkFuel( height )
     end
     
   end
+  return isGood
 end
 
 --- Finds out if there are enough 
@@ -552,12 +553,9 @@ end
 local function checkPrereqs(targs)
   local isOK = false
   if table.maxn(targs) < 1 then
-    print("usage: shaftSafety <Y> "..
-        "[r]")
+    print("usage: shaftSafety <Y> ")
     print("  where <Y> is turtle's"..
-        " Y-coord.  Use the \"r\" "..
-        "option to have the robot "..
-        "return to start afterward")
+        " Y-coord.")
   else
     local n = tonumber( targs[1] )
     if n == nil then
@@ -651,7 +649,7 @@ end
 --  place a torch and come back
 --  @param d is distance down so far
 local function placeFthTrchStrbrd(d)
-  if d % 5 then
+  if d % 5 == 0 then
     dr.move(dr.STARBOARD)
     placeItemAft(ITM_TORCH)
     dr.move(dr.PORT)
@@ -735,6 +733,7 @@ local function comeBack()
       dr.move(dr.AFT)
     end
   end
+  dr.bearTo(dr.FORE)
 end
 
 local function main( targs )
