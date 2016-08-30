@@ -5,7 +5,14 @@
 excavate script, and you have a deep 
 hole in front of you.  Finds out how 
 many ladders and torches you need, and
-places them ]]
+places them
+
+Copyright (c) 2015 
+Robert David Alkire II, IGN ian_xw
+Distributed under the MIT License.
+(See accompanying file LICENSE or copy
+at http://opensource.org/licenses/MIT)
+]]
 
 -- TODO at release, in-line deadReckoner
 local dr = require "deadReckoner"
@@ -18,6 +25,8 @@ local COBBLE_MIN = 12
 local ITM_COBBLE="minecraft:cobblestone"
 local ITM_LADDER = "minecraft:ladder"
 local ITM_TORCH = "minecraft:torch"
+
+local g_stop = false
 
 --- estimates and inventories torches, 
 -- ladders and cobbles
@@ -114,13 +123,19 @@ local function checkFuel( height )
   else
     local d = height - 5
     
+    -- returning fuel
+    local rtn = d
+    if g_stop then
+      rtn = 0
+    end
+    
     local needed = d * 2 + -- ladders
                   (d/5)*2+ -- torches
-                   d +     -- returning
+                   rtn +   -- returning
                    20      -- buffer
                    
     local diff = math.max(0, 
-        needed-fuel )
+        needed - fuel )
     
     if diff == 0 then
       isGood = true
@@ -142,8 +157,6 @@ local function checkSupplies(height)
   local ladderDif, torchDif, cobbleDif, 
       cobbleHave = lddrsNTrchsDiff(
           height )
-  
-  -- TODO check math for sticks needed
   
   local lddrStcks, trchStcks = 
       lddrNTrchSticks( ladderDif,
@@ -195,16 +208,33 @@ end
 local function checkPrereqs(targs)
   local isOK = false
   if table.maxn(targs) < 1 then
-    print("usage: shaftSafety <Y> ")
-    print("  where <Y> is turtle's"..
-        " Y-coord.")
+    print("usage: shaftSafety [-s] ".. 
+          "<height>")
+    print("  The [-s] option would "..
+        "tell the turtle to Stop ".. 
+        "afterward and not come back.")
+    print("  For <height>, put in "..
+        "the turtle's Y coordinate."  )
   else
-    local n = tonumber( targs[1] )
+  
+    -- checks options and operand
+    local aarhgIndx = 1
+    if table.maxn(targs) == 2 then
+      if targs[1] == "-s" then
+        isOK = true
+        g_stop = true
+      else
+        print("First arg must be -s")
+      end
+      aarhgIndx = 2
+    end 
+
+    local n= tonumber(targs[aarhgIndx])
     if n == nil then
-      print("first arg not a number")
+      print("argument not a number")
     elseif n < 6 then
       print("arg should be 6 or more")
-    else
+    elseif isOK then
       isOK = checkSupplies(n)
     end
     
@@ -375,7 +405,6 @@ local function comeBack()
       dr.move(dr.AFT)
     end
   end
-  dr.bearTo(dr.FORE)
 end
 
 local function main( targs )
@@ -394,13 +423,18 @@ local function main( targs )
     dr.move(dr.AHEAD)
     dr.bearTo(dr.AFT);
     
-    local n = tonumber(targs[1])
+    local n = tonumber(
+        targs[ table.maxn( targs ) ] )
     
     -- Go down, placing things
     local d = goDownPlacing(n)
 
-    comeBack()
-  
+    if not g_stop then
+      comeBack()
+    end
+    
+    dr.bearTo(dr.FORE)
+    
   end
 
 end
