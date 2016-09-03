@@ -2,7 +2,14 @@
 excavate script, and you have a deep 
 hole in front of you.  Finds out how 
 many ladders and torches you need, and
-places them ]]
+places them 
+
+Copyright (c) 2016
+Robert David Alkire II, IGN ian_xw
+Distributed under the MIT License.
+(See accompanying file LICENSE or copy
+at http://opensource.org/licenses/MIT)
+]]
 
 -- when 'compiling', use native turtle
 local t = turtle
@@ -30,6 +37,8 @@ deadReckoner.FORE = 0
 deadReckoner.STARBOARD = 1
 deadReckoner.AFT = 2
 deadReckoner.PORT = 3
+
+
 deadReckoner.WAYS = {}
 dr.WAYS[deadReckoner.FORE] = "FORE"
 dr.WAYS[deadReckoner.STARBOARD]= 
@@ -52,8 +61,12 @@ deadReckoner.placeMIN=Locus.new(0,0,0)
 
 --- forward regardless of heading
 deadReckoner.AHEAD = 4
+
 deadReckoner.UP = 5
 deadReckoner.DOWN = 6
+
+--- again regardless of heading
+deadReckoner.BACK = 7
 
 --- Turns as needed to face the 
 -- target direction indicated
@@ -87,21 +100,35 @@ deadReckoner.bearTo= function(target)
 end
 
 --- If way is fore, starboard, aft or
--- port, then bear to that direction
+-- port, then bear to that direction,
+-- unless this is called for movement
+-- purposes and turtle was facing the
+-- opposite way to begin with.
 -- @param way can any of the heading
 -- constants: FORE, STARBOARD, AFT,
 -- PORT, UP, DOWN or even AHEAD
+-- @param [isForMovement] true if the 
+-- caller is using this in order to 
+-- move.
 -- @return way is AHEAD if the param 
 -- had been a horizontal direction 
 -- (FORE, AFT, PORT, STARBOARD). 
 -- Otherwise it's the same as the input
--- param.
+-- param. If isForMovement, and the
+-- turtle is facing opposite way, then
+-- this will return BACK
 deadReckoner.correctHeading=
-    function(way)
+    function(way, isForMovement)
     
   if way < 4 then
-    dr.bearTo( way )
-    way = dr.AHEAD
+    if isForMovement and 
+        way ~= dr.heading and 
+        (way - dr.heading) % 2== 0 then
+      way = dr.BACK
+    else
+      dr.bearTo( way )
+      way = dr.AHEAD
+    end
   end
   
   return way
@@ -258,22 +285,32 @@ end
 -- @return isAble, whyNot
 deadReckoner.move= function( way )
   
-  way = dr.correctHeading(way)
+  way = dr.correctHeading(way, true)
   
   -- where way is dr.AHEAD, UP or DOWN
   local isAble, whynot
-  if way== dr.AHEAD then
-    isAble, whynot = t.forward()
+  if way==dr.AHEAD or way==dr.BACK then
+    local forwardness = 1
+    if way== dr.AHEAD then
+      isAble, whynot = t.forward()
+    else
+      isAble, whynot = t.back()
+      forwardness = -1
+    end
     
     if isAble then
       if dr.heading== dr.AFT then
-        dr.place.z= dr.place.z - 1
+        dr.place.z= 
+            dr.place.z - forwardness
       elseif dr.heading== dr.FORE then
-        dr.place.z= dr.place.z + 1
+        dr.place.z= 
+            dr.place.z + forwardness
       elseif dr.heading== dr.PORT then
-        dr.place.x= dr.place.x- 1
+        dr.place.x= 
+            dr.place.x- forwardness
       else
-        dr.place.x= dr.place.x+ 1
+        dr.place.x= 
+            dr.place.x+ forwardness
       end
       
     end -- isAble
@@ -369,13 +406,13 @@ deadReckoner.furthestWay =
   
 end
 
-
 local COBBLE_MIN = 12
-local BEDROCK_Y = 5
 
-local ITM_COBBLE="minecraft:cobblestone"
+local ITM_FILLER="minecraft:cobblestone"
 local ITM_LADDER = "minecraft:ladder"
 local ITM_TORCH = "minecraft:torch"
+
+local g_stop = false
 
 --- estimates and inventories torches, 
 -- ladders and cobbles
@@ -386,7 +423,7 @@ local ITM_TORCH = "minecraft:torch"
 -- have
 local function lddrsNTrchsDiff(height)
 
-  local n = height - BEDROCK_Y
+  local n = height - 5
   local ladderReq = n * 2
   local torchReq= math.ceil( n/5 )
   local cobbleReq= n * 3
@@ -407,7 +444,7 @@ local function lddrsNTrchsDiff(height)
         ITM_TORCH then
       torchesHave = torchesHave +
           sltDt.count
-    elseif sltDt.name== ITM_COBBLE then
+    elseif sltDt.name== ITM_FILLER then
       cobbleHave= cobbleHave+sltDt.count 
     end -- slotname if
   end -- slots loop
@@ -470,15 +507,21 @@ local function checkFuel( height )
   if fuel == "unlimited" then
     isGood = true
   else
-    local d = height - BEDROCK_Y
+    local d = height - 5
+    
+    -- returning fuel
+    local rtn = d
+    if g_stop then
+      rtn = 0
+    end
     
     local needed = d * 2 + -- ladders
                   (d/5)*2+ -- torches
-                   d +     -- returning
+                   rtn +   -- returning
                    20      -- buffer
                    
     local diff = math.max(0, 
-        needed-fuel )
+        needed - fuel )
     
     if diff == 0 then
       isGood = true
@@ -486,8 +529,7 @@ local function checkFuel( height )
       print("fuel is too low: ".. fuel)
       print("needs at least: "..needed)
       print("difference: ".. diff)
-    end
-    
+    end  
   end
   return isGood
 end
@@ -549,20 +591,39 @@ local function checkSupplies(height)
   return areOK
 end
 
-
 local function checkPrereqs(targs)
-  local isOK = false
-  if table.maxn(targs) < 1 then
-    print("usage: shaftSafety <Y> ")
-    print("  where <Y> is turtle's"..
-        " Y-coord.")
+  local isOK = true
+  local aarhgIndx = table.maxn(targs) 
+  if aarhgIndx < 1 then
+    isOK = false
+    print("usage: shaftSafety [-s] ".. 
+          "<height>")
+    print("  The [-s] option would "..
+        "tell the turtle to Stop ".. 
+        "afterward and not come back.")
+    print("  For <height>, put in "..
+        "the turtle's Y coordinate."  )
   else
-    local n = tonumber( targs[1] )
+  
+    -- checks options and operand
+    if aarhgIndx == 2 then
+      if targs[1] == "-s" then
+        isOK = true
+        g_stop = true
+      else
+        print("First arg must be -s")
+        isOK = false
+      end
+    end 
+
+    local n= tonumber(targs[aarhgIndx])
     if n == nil then
-      print("first arg not a number")
+      isOK = false
+      print("argument not a number")
     elseif n < 6 then
+      isOK = false
       print("arg should be 6 or more")
-    else
+    elseif isOK then
       isOK = checkSupplies(n)
     end
     
@@ -618,7 +679,7 @@ local function placeItemAft( itmName )
       
       if isAble then
         isAble = selectSltWthItm(
-            ITM_COBBLE )
+            ITM_FILLER )
         
         if isAble then
           isAble, whyNt = dr.placeItem( 
@@ -660,7 +721,7 @@ end
 -- ladders and torches.
 local function goDownPlacing(n)
   
-  local lmt = n - BEDROCK_Y
+  local lmt = n - 5
   local actlDst = 0
   local keepGoing = true
   
@@ -733,7 +794,6 @@ local function comeBack()
       dr.move(dr.AFT)
     end
   end
-  dr.bearTo(dr.FORE)
 end
 
 local function main( targs )
@@ -752,13 +812,18 @@ local function main( targs )
     dr.move(dr.AHEAD)
     dr.bearTo(dr.AFT);
     
-    local n = tonumber(targs[1])
+    local n = tonumber(
+        targs[ table.maxn( targs ) ] )
     
     -- Go down, placing things
     local d = goDownPlacing(n)
 
-    comeBack()
-  
+    if not g_stop then
+      comeBack()
+    end
+    
+    dr.bearTo(dr.FORE)
+    
   end
 
 end

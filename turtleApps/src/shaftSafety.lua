@@ -206,8 +206,10 @@ local function checkSupplies(height)
 end
 
 local function checkPrereqs(targs)
-  local isOK = false
-  if table.maxn(targs) < 1 then
+  local isOK = true
+  local aarhgIndx = table.maxn(targs) 
+  if aarhgIndx < 1 then
+    isOK = false
     print("usage: shaftSafety [-s] ".. 
           "<height>")
     print("  The [-s] option would "..
@@ -218,21 +220,22 @@ local function checkPrereqs(targs)
   else
   
     -- checks options and operand
-    local aarhgIndx = 1
-    if table.maxn(targs) == 2 then
+    if aarhgIndx == 2 then
       if targs[1] == "-s" then
         isOK = true
         g_stop = true
       else
         print("First arg must be -s")
+        isOK = false
       end
-      aarhgIndx = 2
     end 
 
     local n= tonumber(targs[aarhgIndx])
     if n == nil then
+      isOK = false
       print("argument not a number")
     elseif n < 6 then
+      isOK = false
       print("arg should be 6 or more")
     elseif isOK then
       isOK = checkSupplies(n)
