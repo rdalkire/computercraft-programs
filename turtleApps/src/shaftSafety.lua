@@ -1,43 +1,58 @@
+-- Starting at top of hole/cliff/wall,
+-- this places ladders and torches
+-- downward so you can climb safetly
+--
 -- NOTE this is NOT the stand-alone
 -- version.  See deploy directory
+-- Run with no args or -h for usage
 
---[[ This is for after you've used the 
-excavate script, and you have a deep 
-hole in front of you.  Finds out how 
-many ladders and torches you need, and
-places them
-
-Copyright (c) 2015 
-Robert David Alkire II, IGN ian_xw
+--[[ ShaftSafety
+Copyright (c) 2016
+Robert David Alkire II, AKA rdalkire, 
+IGN ian_xw
+(some parts contributed by others. I 
+credit them at the top of those parts)
 Distributed under the MIT License.
 (See accompanying file LICENSE or copy
 at http://opensource.org/licenses/MIT)
 ]]
 
--- TODO at release, in-line deadReckoner
+-- TODO RELEASE IN-LINE deadReckoner
 local dr = require "deadReckoner"
+-- END RELEASE IN-LINE deadReckoner
 
--- TODO at release, use native turtle
+-- TODO RELEASE IN-LINE getopt
+local getopt = require "getopt"
+-- END RELEASE IN-LINE getopt
+
+-- TODO RELEASE use native turtle
 local t = require "mockTurtle"
 
-local COBBLE_MIN = 12
+local FILL_MIN = 12
 
-local ITM_COBBLE="minecraft:cobblestone"
+local ITM_FILL="minecraft:cobblestone"
 local ITM_LADDER = "minecraft:ladder"
 local ITM_TORCH = "minecraft:torch"
 
-local g_stop = false
+local g_stay = false
+local g_height = 0
+local g_bed = true --stops at bedrock
+local g_up = false
+local g_gap = false
 
 --- estimates and inventories torches, 
 -- ladders and cobbles
--- @param height is turtle Y coordinate
 -- @return how many torches, ladders, 
 -- and cobbles are needed to make up, 
 -- and how many cobbles you actually 
 -- have
-local function lddrsNTrchsDiff(height)
+local function lddrsNTrchsDiff()
 
-  local n = height - 5
+  local n = g_height
+  if g_bed then
+    n = n - 5
+  end
+  
   local ladderReq = n * 2
   local torchReq= math.ceil( n/5 )
   local cobbleReq= n * 3
@@ -58,8 +73,8 @@ local function lddrsNTrchsDiff(height)
         ITM_TORCH then
       torchesHave = torchesHave +
           sltDt.count
-    elseif sltDt.name== ITM_COBBLE then
-      cobbleHave= cobbleHave+sltDt.count 
+    elseif sltDt.name== ITM_FILL then
+      cobbleHave=cobbleHave+sltDt.count 
     end -- slotname if
   end -- slots loop
   
@@ -70,7 +85,7 @@ local function lddrsNTrchsDiff(height)
   local cobbleDif = math.max( 0, 
       cobbleReq - cobbleHave )
       
-  return ladderDif, torchDif, cobbleDif,
+  return ladderDif,torchDif, cobbleDif,
       cobbleHave
 
 end
@@ -115,17 +130,21 @@ local function lddrNTrchSticks(
 end
 
 --- @return true if fuel is enough
-local function checkFuel( height )
+local function checkFuel()
   local isGood = false
   local fuel = t.getFuelLevel()
   if fuel == "unlimited" then
     isGood = true
   else
-    local d = height - 5
+  
+    local d = g_height
+    if g_bed then
+      d = d - 5
+    end
     
     -- returning fuel
     local rtn = d
-    if g_stop then
+    if g_stay then
       rtn = 0
     end
     
@@ -151,12 +170,11 @@ end
 --- Finds out if there are enough 
 -- ladders and torches.  If not it
 -- displays a manifest of what's needed
-local function checkSupplies(height)
+local function checkSupplies()
   local areOK = false
   
   local ladderDif, torchDif, cobbleDif, 
-      cobbleHave = lddrsNTrchsDiff(
-          height )
+      cobbleHave = lddrsNTrchsDiff()
   
   local lddrStcks, trchStcks = 
       lddrNTrchSticks( ladderDif,
@@ -189,59 +207,153 @@ local function checkSupplies(height)
     
   end
   
-  if cobbleHave < COBBLE_MIN then
+  if cobbleHave < FILL_MIN then
     areOK = false
+    
+    -- TODO parse fill item for warning
     print("You should have at least "..
-        COBBLE_MIN.. " cobbles")
+        FILL_MIN.. " cobbles")
     print("If building whole wall "..
         "you'd need ".. cobbleDif..
         " more cobblestone blocks")
   end
   
-  if not checkFuel(height) then
+  if not checkFuel() then
     areOK = false
   end
   
   return areOK
 end
 
-local function checkPrereqs(targs)
+--- Manages the input arguments. 
+-- Validates and parses them.
+-- @param targs the arguments passed
+-- in when starting the program
+local function mngArgs(targs)
+  local _optionsExample = {
+      ["stay"] = {
+          "Stay and don't come back.",
+          "s", nill },
+      ["bedrock"] = {
+          "go all the way to "..
+          "Bedrock (true if not "..
+          "specified and going "..
+          "down.  If going up, "..
+          "this isn't applicable).",
+          "b", "<true|false>"},
+      ["up"] = {
+          "go Up instead.",
+          "u", nill },
+      ["gap"] = {
+          "stop at the first Gap "..
+          "(If not specified, "..
+          "defaults true going up,"..
+          " false going down).",
+          "g", "<true|false>"}
+  }
+  
   local isOK = true
-  local aarhgIndx = table.maxn(targs) 
-  if aarhgIndx < 1 then
+  
+  local tbl= getopt.init("shaftSafety",
+      "This is for after you've "..
+      "used the excavate script, "..
+      "and you have a deep hole in"..
+      " front of you.  Finds out "..
+      "how many ladders and torches "..
+      "you need, and places them. "..
+      "\nUse turtle's Y coord "..
+      "as the argument to go all "..
+      "the way to bedrock", 
+      _optionsExample, targs )
+  
+  if tbl== nil then
+    -- user had used -h as option
     isOK = false
-    print("usage: shaftSafety [-s] ".. 
-          "<height>")
-    print("  The [-s] option would "..
-        "tell the turtle to Stop ".. 
-        "afterward and not come back.")
-    print("  For <height>, put in "..
-        "the turtle's Y coordinate."  )
+  elseif next(tbl)== nil then
+    -- no options or args specified
+    isOK = false
+    getopt.help()
   else
   
-    -- checks options and operand
-    if aarhgIndx == 2 then
-      if targs[1] == "-s" then
-        isOK = true
-        g_stop = true
-      else
-        print("First arg must be -s")
-        isOK = false
-      end
-    end 
-
-    local n= tonumber(targs[aarhgIndx])
-    if n == nil then
-      isOK = false
-      print("argument not a number")
-    elseif n < 6 then
-      isOK = false
-      print("arg should be 6 or more")
-    elseif isOK then
-      isOK = checkSupplies(n)
+    if tbl["stay"] then
+      g_stay = true
     end
     
+    if tbl["up"] then
+      g_up = true
+      g_bed = false
+      g_gap = true
+    end
+    
+    if tbl["bedrock"] then
+    
+      local bedTxt = string.lower( 
+          tbl["bedrock"] )
+      
+      if "true" == bedTxt then
+        g_bed = true
+      elseif "false" == bedTxt then
+        g_bed = false
+      elseif g_up then
+        isOK = false
+        print("Going up, so bedrock"..
+            "doesn't really apply.")
+      else
+        isOK = false
+        print("For Bedrock, you ".. 
+            "must specify true or "..
+            "false.")
+      end
+      
+    end
+    
+    if tbl["gap"] then
+      local gapTxt = string.lower(
+          tbl["gap"])
+          
+      if "true" == gapTxt then
+        g_gap = true
+      elseif "false" == gapTxt then
+        g_gap = false
+      else
+        print("Gap option requires"..
+            " true|false argument.")
+        isOK = false
+      end
+    end
+    
+    if tbl["opt-1"] then
+      g_height= tonumber( tbl["opt-1"])
+      if g_height== nil then
+        isOK = false
+        print("Arg must be numeric.")
+      elseif g_bed and g_height< 6 then
+        isOK = false
+        print("Arg must be 6 or more.")
+      end
+    elseif isOK then
+      isOK = false
+      print("Arg required for height.")
+    end -- opt-1
   end
+  
+  return isOK
+end
+
+--- Manages prerequisites. Validates
+-- and parses the options, arguments,
+-- and inventory supplies.
+-- @param targs the raw arguments
+-- @return true if prerequisites
+-- are OK
+local function mngPrereqs(targs)
+  local isOK = true
+  
+    isOK = mngArgs(targs)
+    if isOK then
+      isOK = checkSupplies()
+    end
+    
   return isOK
 end
 
@@ -277,11 +389,11 @@ local function selectSltWthItm(itmName)
   return isFound
 end
 
---- Meant for placing torches or ladders
+---Meant for placing torches or ladders
 -- @param itmName
 -- @return true if successful
 local function placeItemAft( itmName )
-  local isAble= selectSltWthItm(itmName)
+  local isAble=selectSltWthItm(itmName)
   local whyNt = nil
   if isAble then
     isAble, whyNt=dr.placeItem(dr.AFT)
@@ -293,7 +405,7 @@ local function placeItemAft( itmName )
       
       if isAble then
         isAble = selectSltWthItm(
-            ITM_COBBLE )
+            ITM_FILL )
         
         if isAble then
           isAble, whyNt = dr.placeItem( 
@@ -333,15 +445,27 @@ end
 
 --- Moves down the shaft wall, placing
 -- ladders and torches.
-local function goDownPlacing(n)
+local function goPlaceThings()
   
-  local lmt = n - 5
+  local lmt = g_height
+  if g_bed then
+    lmt = lmt - 5
+  end
+  
   local actlDst = 0
   local keepGoing = true
   
+  local vert = dr.DOWN
+  if g_up then
+    vert = dr.UP
+  end
+  
   while keepGoing and actlDst < lmt do
     
-    keepGoing = dr.move(dr.DOWN)
+    keepGoing = dr.move(vert)
+    
+    -- TODO When Gap-stop is true,
+    -- stop at gap
     if keepGoing then
       
       if actlDst % 2 == 0 then --even
@@ -358,7 +482,7 @@ local function goDownPlacing(n)
         dr.move(dr.PORT)
         placeItemAft( ITM_LADDER )
         
-      end -- if even
+      end -- even/odd
       actlDst = actlDst + 1
     end -- if keepgoing
   end -- while
@@ -367,8 +491,8 @@ end -- function
 
 --- Moves the turtle to the original
 -- location. First left/right, then
--- up/down (in this app's case up, to be
--- realistic), then for/aft
+-- up/down (in this app's case up, to 
+-- be realistic), then for/aft
 local function comeBack()
   
   -- left/right
@@ -410,13 +534,15 @@ local function comeBack()
   end
 end
 
-local function main( targs )
+local function adjStartLocation()
 
-  -- Check prereqs; warn as applicable
-  if checkPrereqs(targs) then
-    print("prereqs OK")
-    
-    -- Adjust starting location:
+  if g_up then
+    -- If up against wall, back up
+    -- so that a ladder can be placed
+    if t.inspect() then
+      dr.move(dr.AFT)
+    end
+  else
     -- so turtle can start 1 from edge
     -- afterward, trtl is 1 away from 
     -- wall, giving room to place
@@ -425,14 +551,21 @@ local function main( targs )
     end
     dr.move(dr.AHEAD)
     dr.bearTo(dr.AFT);
+  end
+end
+
+local function main( targs )
+
+  -- Check prereqs; warn as applicable
+  if mngPrereqs(targs) then
+    print("prereqs OK")
     
-    local n = tonumber(
-        targs[ table.maxn( targs ) ] )
+    adjStartLocation()
     
     -- Go down, placing things
-    local d = goDownPlacing(n)
+    local d = goPlaceThings()
 
-    if not g_stop then
+    if not g_stay then
       comeBack()
     end
     
