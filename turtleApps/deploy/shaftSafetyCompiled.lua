@@ -519,7 +519,9 @@ local ITM_TORCH = "minecraft:torch"
 
 local g_stay = false
 local g_height = 0
-local g_bed = true --stops at bedrock
+local g_bed = true -- stops at bedrock
+local g_up = false
+local g_gap = false -- stops at gap
 
 --- estimates and inventories torches, 
 -- ladders and cobbles
@@ -706,14 +708,31 @@ local function checkSupplies()
   return areOK
 end
 
+--- Manages the input arguments. 
+-- Validates and parses them.
+-- @param targs the arguments passed
+-- in when starting the program
 local function mngArgs(targs)
   local _optionsExample = {
       ["stay"] = {
-          "Stay and don't come back",
+          "Stay and don't come back.",
           "s", nill },
       ["bedrock"] = {
-          "go all the way to Bedrock",
-          "b", "true/false"}
+          "go all the way to "..
+          "Bedrock (true if not "..
+          "specified and going "..
+          "down.  If going up, "..
+          "this isn't applicable).",
+          "b", "<true|false>"},
+      ["up"] = {
+          "go Up instead.",
+          "u", nill },
+      ["gap"] = {
+          "stop at the first Gap "..
+          "(If not specified, "..
+          "defaults true going up,"..
+          " false going down).",
+          "g", "<true|false>"}
   }
   
   local isOK = true
@@ -743,35 +762,61 @@ local function mngArgs(targs)
       g_stay = true
     end
     
+    if tbl["up"] then
+      g_up = true
+      g_bed = false
+      g_gap = true
+    end
+    
     if tbl["bedrock"] then
     
       local bedTxt = string.lower( 
           tbl["bedrock"] )
       
-      if bedTxt == "true" then
+      if "true" == bedTxt then
         g_bed = true
-        isOK = true
-      elseif bedTxt == "false" then
+      elseif "false" == bedTxt then
         g_bed = false
-        isOK = true
+      elseif g_up then
+        isOK = false
+        print("Going up, so bedrock"..
+            "doesn't really apply.")
       else
         isOK = false
+        print("For Bedrock, you ".. 
+            "must specify true or "..
+            "false.")
       end
       
+    end
+    
+    if tbl["gap"] then
+      local gapTxt = string.lower(
+          tbl["gap"])
+          
+      if "true" == gapTxt then
+        g_gap = true
+      elseif "false" == gapTxt then
+        g_gap = false
+      else
+        print("Gap option requires"..
+            " true|false argument.")
+        isOK = false
+      end
     end
     
     if tbl["opt-1"] then
       g_height= tonumber( tbl["opt-1"])
       if g_height== nil then
         isOK = false
-        print("Arg must be numeric")
+        print("Arg must be numeric.")
       elseif g_bed and g_height< 6 then
         isOK = false
-        print("Arg must be 6 or more")
+        print("Arg must be 6 or more.")
       end
-    else
+    elseif isOK then
       isOK = false
-      print("Arg required for height")
+      print("Arg required for height.")
     end -- opt-1
   end
   
@@ -828,18 +873,29 @@ local function selectSltWthItm(itmName)
 end
 
 ---Meant for placing torches or ladders
+-- AFT if going down, or FORE if going 
+-- up. When encountering a gap, it will
+-- depend on whether it's supposed to
+-- stop at gaps.  If so (g_gap, default
+-- true going up), it will return 
+-- false.  Otherwise will fill in the
+-- gap with ITM_FILL and continue.
 -- @param itmName
 -- @return true if successful
-local function placeItemAft( itmName )
+local function placeItem( itmName )
   local isAble=selectSltWthItm(itmName)
   local whyNt = nil
+  local way = dr.AFT
+  if g_up then
+    way = dr.FORE
+  end
   if isAble then
-    isAble, whyNt=dr.placeItem(dr.AFT)
+    isAble, whyNt=dr.placeItem(way)
   
-    if not isAble then
+    if not isAble and not g_gap then
       -- Assuming due to empty space, so
-      -- go back and place cobble
-      isAble, whyNt = dr.move(dr.AFT)
+      -- go back and place filler
+      isAble, whyNt = dr.move(way)
       
       if isAble then
         isAble = selectSltWthItm(
@@ -847,15 +903,17 @@ local function placeItemAft( itmName )
         
         if isAble then
           isAble, whyNt = dr.placeItem( 
-              dr.AFT )
-          dr.move(dr.FORE)
+              way )
+
+          dr.move(dr.BACK)
           
           -- try again
           selectSltWthItm(itmName)
           isAble, whyNt = dr.placeItem(
-              dr.AFT )
+              way )
         else
-          whyNt = "out of cobble"
+          -- TODO parse fill item
+          whyNt = "out of ".. itmName
         end -- if there's cobble
       end -- able to move aft
     end -- wasn't able to place
@@ -874,16 +932,19 @@ end
 --  place a torch and come back
 --  @param d is distance down so far
 local function placeFthTrchStrbrd(d)
+  local rtrn = true
   if d % 5 == 0 then
     dr.move(dr.STARBOARD)
-    placeItemAft(ITM_TORCH)
+    rtrn = placeItem(ITM_TORCH)
     dr.move(dr.PORT)
   end
+  return rtrn
 end
 
 --- Moves down the shaft wall, placing
 -- ladders and torches.
-local function goDownPlacing()
+-- @return vertical distance traveled
+local function goPlaceThings()
   
   local lmt = g_height
   if g_bed then
@@ -893,24 +954,33 @@ local function goDownPlacing()
   local actlDst = 0
   local keepGoing = true
   
+  local vert = dr.DOWN
+  if g_up then
+    vert = dr.UP
+  end
+  
   while keepGoing and actlDst < lmt do
     
-    keepGoing = dr.move(dr.DOWN)
+    keepGoing = dr.move(vert)
+    
     if keepGoing then
       
       if actlDst % 2 == 0 then --even
-
-        placeItemAft( ITM_LADDER )
-        dr.move(dr.STARBOARD)
-        placeItemAft( ITM_LADDER )
-        placeFthTrchStrbrd(actlDst)
+        
+        keepGoing =
+            placeItem( ITM_LADDER) and
+            dr.move(dr.STARBOARD ) and
+            placeItem( ITM_LADDER) and
+            placeFthTrchStrbrd(actlDst)
         
       else -- odd
         
-        placeFthTrchStrbrd(actlDst)
-        placeItemAft( ITM_LADDER )
-        dr.move(dr.PORT)
-        placeItemAft( ITM_LADDER )
+        keepGoing =
+            placeFthTrchStrbrd(actlDst)
+            and
+            placeItem( ITM_LADDER) and
+            dr.move(dr.PORT) and
+            placeItem( ITM_LADDER )
         
       end -- even/odd
       actlDst = actlDst + 1
@@ -964,13 +1034,15 @@ local function comeBack()
   end
 end
 
-local function main( targs )
+local function adjStartLocation()
 
-  -- Check prereqs; warn as applicable
-  if mngPrereqs(targs) then
-    print("prereqs OK")
-    
-    -- Adjust starting location:
+  if g_up then
+    -- If up against wall, back up
+    -- so that a ladder can be placed
+    if t.inspect() then
+      dr.move(dr.BACK)
+    end
+  else
     -- so turtle can start 1 from edge
     -- afterward, trtl is 1 away from 
     -- wall, giving room to place
@@ -979,9 +1051,19 @@ local function main( targs )
     end
     dr.move(dr.AHEAD)
     dr.bearTo(dr.AFT);
+  end
+end
+
+local function main( targs )
+
+  -- Check prereqs; warn as applicable
+  if mngPrereqs(targs) then
+    print("prereqs OK")
+    
+    adjStartLocation()
     
     -- Go down, placing things
-    local d = goDownPlacing()
+    local d = goPlaceThings()
 
     if not g_stay then
       comeBack()

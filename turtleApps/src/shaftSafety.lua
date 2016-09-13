@@ -36,9 +36,9 @@ local ITM_TORCH = "minecraft:torch"
 
 local g_stay = false
 local g_height = 0
-local g_bed = true --stops at bedrock
+local g_bed = true -- stops at bedrock
 local g_up = false
-local g_gap = false
+local g_gap = false -- stops at gap
 
 --- estimates and inventories torches, 
 -- ladders and cobbles
@@ -390,18 +390,29 @@ local function selectSltWthItm(itmName)
 end
 
 ---Meant for placing torches or ladders
+-- AFT if going down, or FORE if going 
+-- up. When encountering a gap, it will
+-- depend on whether it's supposed to
+-- stop at gaps.  If so (g_gap, default
+-- true going up), it will return 
+-- false.  Otherwise will fill in the
+-- gap with ITM_FILL and continue.
 -- @param itmName
 -- @return true if successful
-local function placeItemAft( itmName )
+local function placeItem( itmName )
   local isAble=selectSltWthItm(itmName)
   local whyNt = nil
+  local way = dr.AFT
+  if g_up then
+    way = dr.FORE
+  end
   if isAble then
-    isAble, whyNt=dr.placeItem(dr.AFT)
+    isAble, whyNt=dr.placeItem(way)
   
-    if not isAble then
+    if not isAble and not g_gap then
       -- Assuming due to empty space, so
-      -- go back and place cobble
-      isAble, whyNt = dr.move(dr.AFT)
+      -- go back and place filler
+      isAble, whyNt = dr.move(way)
       
       if isAble then
         isAble = selectSltWthItm(
@@ -409,15 +420,17 @@ local function placeItemAft( itmName )
         
         if isAble then
           isAble, whyNt = dr.placeItem( 
-              dr.AFT )
-          dr.move(dr.FORE)
+              way )
+
+          dr.move(dr.BACK)
           
           -- try again
           selectSltWthItm(itmName)
           isAble, whyNt = dr.placeItem(
-              dr.AFT )
+              way )
         else
-          whyNt = "out of cobble"
+          -- TODO parse fill item
+          whyNt = "out of ".. itmName
         end -- if there's cobble
       end -- able to move aft
     end -- wasn't able to place
@@ -436,15 +449,18 @@ end
 --  place a torch and come back
 --  @param d is distance down so far
 local function placeFthTrchStrbrd(d)
+  local rtrn = true
   if d % 5 == 0 then
     dr.move(dr.STARBOARD)
-    placeItemAft(ITM_TORCH)
+    rtrn = placeItem(ITM_TORCH)
     dr.move(dr.PORT)
   end
+  return rtrn
 end
 
 --- Moves down the shaft wall, placing
 -- ladders and torches.
+-- @return vertical distance traveled
 local function goPlaceThings()
   
   local lmt = g_height
@@ -464,23 +480,24 @@ local function goPlaceThings()
     
     keepGoing = dr.move(vert)
     
-    -- TODO When Gap-stop is true,
-    -- stop at gap
     if keepGoing then
       
       if actlDst % 2 == 0 then --even
-
-        placeItemAft( ITM_LADDER )
-        dr.move(dr.STARBOARD)
-        placeItemAft( ITM_LADDER )
-        placeFthTrchStrbrd(actlDst)
+        
+        keepGoing =
+            placeItem( ITM_LADDER) and
+            dr.move(dr.STARBOARD ) and
+            placeItem( ITM_LADDER) and
+            placeFthTrchStrbrd(actlDst)
         
       else -- odd
         
-        placeFthTrchStrbrd(actlDst)
-        placeItemAft( ITM_LADDER )
-        dr.move(dr.PORT)
-        placeItemAft( ITM_LADDER )
+        keepGoing =
+            placeFthTrchStrbrd(actlDst)
+            and
+            placeItem( ITM_LADDER) and
+            dr.move(dr.PORT) and
+            placeItem( ITM_LADDER )
         
       end -- even/odd
       actlDst = actlDst + 1
@@ -540,7 +557,7 @@ local function adjStartLocation()
     -- If up against wall, back up
     -- so that a ladder can be placed
     if t.inspect() then
-      dr.move(dr.AFT)
+      dr.move(dr.BACK)
     end
   else
     -- so turtle can start 1 from edge
