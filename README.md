@@ -7,6 +7,7 @@ These are nested eclipse Lua Development Tools (LDT) projects, to create scripts
 So far, all the focus of this work has been for the robot; you can find the programs and other files under the turtleApps/src directory, for food-farming, block-making
 and obby-making.
 
+Latest:  See turtleApps/deploy/saferWallCompiled.lua, which makes high walls and deep pits safe to climb by placing torches and ladders.  Options and usage details provided when you run the program without arguments or with only -h for help.
 
 ## The Operation Manuals, Launchers, Test Stubs and Harnesses
 
