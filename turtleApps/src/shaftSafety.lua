@@ -433,6 +433,11 @@ local function placeItem( itmName )
           whyNt = "out of ".. itmName
         end -- if there's cobble
       end -- able to move aft
+    elseif not isAble then
+      print("Not filling gap")
+      print(
+        "isAble: "..tostring(isAble)..
+        " g_gap: "..tostring(g_gap))
     end -- wasn't able to place
   else
     whyNt = "Out of ".. itmName

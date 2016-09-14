@@ -891,7 +891,7 @@ local function placeItem( itmName )
   end
   if isAble then
     isAble, whyNt=dr.placeItem(way)
-  
+    
     if not isAble and not g_gap then
       -- Assuming due to empty space, so
       -- go back and place filler
