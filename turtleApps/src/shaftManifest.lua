@@ -52,7 +52,7 @@ function main( arghs )
       local logCnt = math.ceil(
           plankCnt / 4 )
       print("logs for planks: ".. 
-          logCnt )      
+          logCnt )
       
     end    
   end

@@ -1,7 +1,7 @@
 --[[ NOTE: This is a component, *not* 
 a stand-alone, runnable script.
 
-Copyright (c) 2015 
+Copyright (c) 2015 - 2016
 Robert David Alkire II, IGN ian_xw
 Distributed under the MIT License.
 (See accompanying file LICENSE or copy
@@ -39,6 +39,8 @@ deadReckoner.FORE = 0
 deadReckoner.STARBOARD = 1
 deadReckoner.AFT = 2
 deadReckoner.PORT = 3
+
+
 deadReckoner.WAYS = {}
 dr.WAYS[deadReckoner.FORE] = "FORE"
 dr.WAYS[deadReckoner.STARBOARD]= 
@@ -61,8 +63,12 @@ deadReckoner.placeMIN=Locus.new(0,0,0)
 
 --- forward regardless of heading
 deadReckoner.AHEAD = 4
+
 deadReckoner.UP = 5
 deadReckoner.DOWN = 6
+
+--- again regardless of heading
+deadReckoner.BACK = 7
 
 --- Turns as needed to face the 
 -- target direction indicated
@@ -96,21 +102,35 @@ deadReckoner.bearTo= function(target)
 end
 
 --- If way is fore, starboard, aft or
--- port, then bear to that direction
+-- port, then bear to that direction,
+-- unless this is called for movement
+-- purposes and turtle was facing the
+-- opposite way to begin with.
 -- @param way can any of the heading
 -- constants: FORE, STARBOARD, AFT,
 -- PORT, UP, DOWN or even AHEAD
+-- @param [isForMovement] true if the 
+-- caller is using this in order to 
+-- move.
 -- @return way is AHEAD if the param 
 -- had been a horizontal direction 
 -- (FORE, AFT, PORT, STARBOARD). 
 -- Otherwise it's the same as the input
--- param.
+-- param. If isForMovement, and the
+-- turtle is facing opposite way, then
+-- this will return BACK
 deadReckoner.correctHeading=
-    function(way)
+    function(way, isForMovement)
     
   if way < 4 then
-    dr.bearTo( way )
-    way = dr.AHEAD
+    if isForMovement and 
+        way ~= dr.heading and 
+        (way - dr.heading) % 2== 0 then
+      way = dr.BACK
+    else
+      dr.bearTo( way )
+      way = dr.AHEAD
+    end
   end
   
   return way
@@ -254,31 +274,45 @@ deadReckoner.dig= function( way )
   return dug, whyNot
 end
 
---- Tries to move ahead, up or down. 
+--- Tries to move laterally, up or down. 
 -- If successful,
 -- it updates its current location
 -- relative to where it started and 
 -- returns true.
 -- Else, it returns false and the
 -- reason why not.
--- @param way is either dr.AHEAD, dr.UP 
+-- @param way is dr.FORE, dr.STARBOARD, 
+-- dr.AFT, dr.PORT, dr.AHEAD, dr.UP 
 -- or dr.DOWN, where dr is deadReckoner
+-- @return isAble, whyNot
 deadReckoner.move= function( way )
+  
+  way = dr.correctHeading(way, true)
   
   -- where way is dr.AHEAD, UP or DOWN
   local isAble, whynot
-  if way== dr.AHEAD then
-    isAble, whynot = t.forward()
+  if way==dr.AHEAD or way==dr.BACK then
+    local forwardness = 1
+    if way== dr.AHEAD then
+      isAble, whynot = t.forward()
+    else
+      isAble, whynot = t.back()
+      forwardness = -1
+    end
     
     if isAble then
       if dr.heading== dr.AFT then
-        dr.place.z= dr.place.z - 1
+        dr.place.z= 
+            dr.place.z - forwardness
       elseif dr.heading== dr.FORE then
-        dr.place.z= dr.place.z + 1
+        dr.place.z= 
+            dr.place.z + forwardness
       elseif dr.heading== dr.PORT then
-        dr.place.x= dr.place.x- 1
+        dr.place.x= 
+            dr.place.x- forwardness
       else
-        dr.place.x= dr.place.x+ 1
+        dr.place.x= 
+            dr.place.x+ forwardness
       end
       
     end -- isAble
@@ -300,6 +334,31 @@ deadReckoner.move= function( way )
   end
   
   return isAble, whynot
+end
+
+--- Places.
+-- @param way must be dr.FORE, 
+-- dr.STARBOARD, dr.FORE, dr.AFT
+-- dr.AHEAD, dr.UP or dr.DOWN
+-- @return isAble true if it really 
+-- was able to place the item
+-- @return whyNot if isAble, nil. Else,
+-- reason why not.
+deadReckoner.placeItem = function(way)
+  
+  way = dr.correctHeading( way )
+  
+  local placed= false
+  local whyNot
+  if way== dr.AHEAD then
+    placed, whyNot= t.place()
+  elseif way== dr.UP then
+    placed, whyNot= t.placeUp()
+  elseif way== dr.DOWN then
+    placed, whyNot= t.placeDown()
+  end
+  
+  return placed, whyNot
 end
 
 --- Comparing destination with current
