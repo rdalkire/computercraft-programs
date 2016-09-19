@@ -523,6 +523,8 @@ local g_bed = true -- stops at bedrock
 local g_up = false
 local g_gap = false -- stops at gap
 
+local g_torchInterval = 5
+
 --- estimates and inventories torches, 
 -- ladders and cobbles
 -- @return how many torches, ladders, 
@@ -537,7 +539,9 @@ local function lddrsNTrchsDiff()
   end
   
   local ladderReq = n * 2
-  local torchReq= math.ceil( n/5 )
+  local torchReq= math.ceil( n/ 
+      g_torchInterval )
+      
   local cobbleReq= n * 3
   
   -- inventories ladders & torches
@@ -732,7 +736,11 @@ local function mngArgs(targs)
           "(If not specified, "..
           "defaults true going up,"..
           " false going down).",
-          "g", "<true|false>"}
+          "g", "<true|false>"},
+      ["torchInterval"] = {
+          "Define Interval between "..
+          "torches.",
+          "i", "<num>"}
   }
   
   local isOK = true
@@ -802,6 +810,16 @@ local function mngArgs(targs)
         print("Gap option requires"..
             " true|false argument.")
         isOK = false
+      end
+    end
+    
+    if tbl["torchInterval"] then
+      g_torchInterval = tonumber( 
+          tbl["torchInterval"] )
+      if g_torchInterval == nil then
+        isOK = false
+        print("TorchInterval option"..
+            " requires number.")
       end
     end
     
@@ -891,7 +909,7 @@ local function placeItem( itmName )
   end
   if isAble then
     isAble, whyNt=dr.placeItem(way)
-    
+  
     if not isAble and not g_gap then
       -- Assuming due to empty space, so
       -- go back and place filler
@@ -916,6 +934,11 @@ local function placeItem( itmName )
           whyNt = "out of ".. itmName
         end -- if there's cobble
       end -- able to move aft
+    elseif not isAble then
+      print("Not filling gap")
+      print(
+        "isAble: "..tostring(isAble)..
+        " g_gap: "..tostring(g_gap))
     end -- wasn't able to place
   else
     whyNt = "Out of ".. itmName
@@ -931,9 +954,9 @@ end
 --- if fifth, move starboard, 
 --  place a torch and come back
 --  @param d is distance down so far
-local function placeFthTrchStrbrd(d)
+local function placeNthTrchStrbrd(d)
   local rtrn = true
-  if d % 5 == 0 then
+  if d % g_torchInterval == 0 then
     dr.move(dr.STARBOARD)
     rtrn = placeItem(ITM_TORCH)
     dr.move(dr.PORT)
@@ -959,9 +982,15 @@ local function goPlaceThings()
     vert = dr.UP
   end
   
+  local isFirstGoingUp = g_up
+  
   while keepGoing and actlDst < lmt do
     
-    keepGoing = dr.move(vert)
+    if isFirstGoingUp then
+      isFirstGoingUp = false
+    else
+      keepGoing = dr.move(vert)
+    end
     
     if keepGoing then
       
@@ -971,12 +1000,12 @@ local function goPlaceThings()
             placeItem( ITM_LADDER) and
             dr.move(dr.STARBOARD ) and
             placeItem( ITM_LADDER) and
-            placeFthTrchStrbrd(actlDst)
+            placeNthTrchStrbrd(actlDst)
         
       else -- odd
         
         keepGoing =
-            placeFthTrchStrbrd(actlDst)
+            placeNthTrchStrbrd(actlDst)
             and
             placeItem( ITM_LADDER) and
             dr.move(dr.PORT) and
