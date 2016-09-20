@@ -6,7 +6,7 @@
 -- version.  See deploy directory
 -- Run with no args or -h for usage
 
---[[ ShaftSafety
+--[[ wallSherpa
 Copyright (c) 2016
 Robert David Alkire II, AKA rdalkire, 
 IGN ian_xw
@@ -262,7 +262,7 @@ local function mngArgs(targs)
   
   local isOK = true
   
-  local tbl= getopt.init("shaftSafety",
+  local tbl= getopt.init("wallSherpa",
       "This is for after you've "..
       "used the excavate script, "..
       "and you have a deep hole in"..
