@@ -256,7 +256,7 @@ local function mngArgs(targs)
           "g", "<true|false>"},
       ["torchInterval"] = {
           "Define Interval between "..
-          "torches.",
+          "torches. Defaults to 5",
           "i", "<num>"}
   }
   
