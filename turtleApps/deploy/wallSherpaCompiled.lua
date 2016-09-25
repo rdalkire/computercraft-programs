@@ -911,7 +911,8 @@ local function placeItem( itmName )
     isAble, whyNt=dr.placeItem(way)
   
     if not isAble and not g_gap then
-      -- Assuming due to empty space, so
+    
+      -- Assuming due to empty space,o
       -- go back and place filler
       isAble, whyNt = dr.move(way)
       
@@ -920,6 +921,10 @@ local function placeItem( itmName )
             ITM_FILL )
         
         if isAble then
+          -- Could be abandoned mine
+          -- with fence posts or web
+          dr.dig(way)
+          
           isAble, whyNt = dr.placeItem( 
               way )
 
