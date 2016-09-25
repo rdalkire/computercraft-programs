@@ -4,10 +4,12 @@
 
 -- Run with no args or -h for usage
 
---[[ shaftsafety
+--[[ wallSherpa
 Copyright (c) 2016
 Robert David Alkire II, AKA rdalkire,
 IGN ian_xw
+(some parts contributed by others. I 
+credit them at the top of those parts)
 Distributed under the MIT License.
 (See accompanying file LICENSE or copy
 at http://opensource.org/licenses/MIT)
@@ -509,7 +511,7 @@ getopt.init= function(name, desc,
 end
 -- END IN-LINE RELEASE getopt
 
--- SHAFTSAFETY ITSELF BEGINS HERE
+-- wallSherpa ITSELF BEGINS HERE
 
 local FILL_MIN = 12
 
@@ -739,13 +741,13 @@ local function mngArgs(targs)
           "g", "<true|false>"},
       ["torchInterval"] = {
           "Define Interval between "..
-          "torches.",
+          "torches. Defaults to 5",
           "i", "<num>"}
   }
   
   local isOK = true
   
-  local tbl= getopt.init("shaftSafety",
+  local tbl= getopt.init("wallSherpa",
       "This is for after you've "..
       "used the excavate script, "..
       "and you have a deep hole in"..
