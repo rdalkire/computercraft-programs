@@ -425,6 +425,8 @@ local function placeItem( itmName )
     way = dr.FORE
   end
   if isAble then
+    
+    dr.dig(way)
     isAble, whyNt=dr.placeItem(way)
   
     if not isAble and not g_gap then
