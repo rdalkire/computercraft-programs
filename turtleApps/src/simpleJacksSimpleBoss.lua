@@ -4,12 +4,13 @@
 
 -- local t = require("mockTurtle")
 local t = turtle
+local smpljck = "simplejack"
 
 for i= 1, 2 do
- shell.run("simpleJack")
+ shell.run(smpljck)
 end
 
 for i= 1, 2 do
   t.turnRight()
-  shell.run("simpleJack")
+  shell.run(smpljck)
 end
