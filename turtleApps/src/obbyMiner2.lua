@@ -47,11 +47,13 @@ local function processAlayer()
 end
 
 local function main( targs )
-  -- TODO Starting left, go right
-  -- go back & forth like you're mowing
 
   -- TODO check prereqs: water bucket & 
   -- fuel
+  
+  -- TODO Starting left, go right
+  -- go back & forth like you're mowing
+  
   
   local theresLava = true
   while g_enoughFuel and theresLava do
@@ -78,9 +80,6 @@ local function main( targs )
   -- Go down, repeat lower layers 
   -- until out of lava or low on fuel
     
-    
-    
-  
 end
 
 local tArgs = {...}
