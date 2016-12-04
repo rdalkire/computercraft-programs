@@ -1,6 +1,6 @@
---[[ NOTE: This is a component, *not* 
-the stand-alone, runnable script.  See 
-deploy/veinMinerCompiled.lua
+--[[ NOTE: Dynamically pulls 
+dependencies if not present, so HTTP
+must be available.
 
 Mines a contiguous aggregation of
 resource blocks. Meant for trees or 
@@ -37,16 +37,19 @@ local D_BASE = "https://"..
     "computercraft-programs/".. 
     "dalkire-obsidian2/turtleApps/src/"
 
---- Ensures dependency exists
+--- Ensures dependency exists.
+-- Assumes that the repository source
+-- file needs '.lua' to be appended
 local function ensureDep(depNme,depVer)
 
   print("Ensuring presence of "..
       depNme.. " ".. depVer)
       
-  local drFile= loadFile( depNme )
+  local drFile= loadfile( depNme )
   local isGood = false
   
   if drFile ~= nil then
+    drFile()
     if depVer == DEP_VERSION then
       isGood = true
     else
@@ -60,9 +63,12 @@ local function ensureDep(depNme,depVer)
   if isGood== false then
     print("getting latest version")
     shell.run("wget", 
-        D_BASE.. depNme,
+        -- original source file name
+        -- has the ".lua" extension:
+        D_BASE.. depNme.. ".lua",
         depNme )
-    drFile= loadFile(depNme)
+    drFile= loadfile(depNme)
+    drFile()
   end
   
 end
@@ -70,7 +76,9 @@ end
 ensureDep("deadReckoner", "1.1" )
 local dr = deadReckoner
 
-local t = require "mockTurtle"
+local lf = loadfile( "mockTurtle")
+if lf ~= nil then lf() end
+local t = turtle
 
 local veinMiner = {}
 local vm = veinMiner
