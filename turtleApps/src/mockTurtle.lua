@@ -2,20 +2,21 @@
 from IDEs outside of computercraft
 MIT License (MIT)
 2014 Robert David Alkire II ]]
-local mockTurtle = {}
+turtle = {}
+local mockTurtle= turtle
 
 local fuelLevel = 35 --or "unlimited"
 
-mockTurtle.popCount = 5
-mockTurtle.itms = {}
-local itms = mockTurtle.itms 
+turtle.popCount = 5
+turtle.itms = {}
+local itms = turtle.itms 
 local slts
 
-mockTurtle.selected = 1 -- Slot Num
+turtle.selected = 1 -- Slot Num
 
 local function getItemName(indx)
 
-  local itm = mockTurtle.
+  local itm = turtle.
       getItemDetail( indx )
 
   local rtn = nill
@@ -27,10 +28,10 @@ local function getItemName(indx)
   return rtn
 end
 
-mockTurtle.compareTo= function( indx )
+turtle.compareTo= function( indx )
 
   local thisItm = getItemName(
-      mockTurtle.selected )
+      turtle.selected )
 
   local thatItm = getItemName(indx)
    
@@ -38,22 +39,22 @@ mockTurtle.compareTo= function( indx )
    
 end
 
-mockTurtle.craft = function()
+turtle.craft = function()
   print("Pretending to craft.")
-  for i, v in pairs(mockTurtle.itms)do
+  for i, v in pairs(turtle.itms)do
     print(i, v.name, v.count)
   end
 end
 
-mockTurtle.dig = function()
+turtle.dig = function()
   return true
 end
 
-mockTurtle.digDown = function()
+turtle.digDown = function()
   return true
 end
 
-mockTurtle.digUp = function()
+turtle.digUp = function()
   return true
 end
 
@@ -72,85 +73,85 @@ local function checkAndDecrementFuel()
   return rtrn, whyNot
 end
 
-mockTurtle.back = function()
+turtle.back = function()
   return checkAndDecrementFuel()
 end
 
-mockTurtle.down = function()
+turtle.down = function()
   return checkAndDecrementFuel()
 end
 
-mockTurtle.drop = function( amt )
+turtle.drop = function( amt )
   if amt then
-    slts[mockTurtle.selected] = 
-      slts[mockTurtle.selected]- amt
+    slts[turtle.selected] = 
+      slts[turtle.selected]- amt
   else
-    amt = slts[mockTurtle.selected] 
-    slts[mockTurtle.selected] = 0
+    amt = slts[turtle.selected] 
+    slts[turtle.selected] = 0
   end
   
-  itms[mockTurtle.selected] = nill
+  itms[turtle.selected] = nill
   
   print("Pretended to drop: ", amt)
 end
 
-mockTurtle.forward = function()
+turtle.forward = function()
   return checkAndDecrementFuel()
 end
 
 -- Can return a number or "unlimited"
-mockTurtle.getFuelLevel= function()
+turtle.getFuelLevel= function()
   return fuelLevel
 end
 
-mockTurtle.getItemCount = 
+turtle.getItemCount = 
     function( slotNum )
   local rtrn = 0
   if slotNum then
     rtrn = slts[slotNum]
   else
-    rtrn = slts[mockTurtle.selected]
+    rtrn = slts[turtle.selected]
   end
   return rtrn
 end
 
-mockTurtle.getItemDetail = function( 
+turtle.getItemDetail = function( 
     slot )
   return itms[slot]
 end
 
-mockTurtle.getItemSpace= function(slt)
+turtle.getItemSpace= function(slt)
   local rtrn = 0
   if slt then
     rtrn = 64 - slts[slt]
   else
-    rtrn= 64- slts[mockTurtle.selected]
+    rtrn= 64- slts[turtle.selected]
   end
   return rtrn
 end
 
-mockTurtle.getSelectedSlot = function()
-  return mockTurtle.selected
+turtle.getSelectedSlot = function()
+  return turtle.selected
 end
 
-mockTurtle.inspect = function()
+turtle.inspect = function()
   local itm = {}
   itm.name = "minecraft:log"
   return true, itm
 end
-mockTurtle.inspectDown = function()
+turtle.inspectDown = function()
   local itm = {}
   itm.name = "minecraft:log"
   return true, itm
 end
-mockTurtle.inspectUp = function()
+turtle.inspectUp = function()
   local itm = {}
   itm.name = "minecraft:log"
   return true, itm
 end
 
 local function adjstInvFromPlacing()
-  local slctd = mockTurtle.selected 
+  local slctd = turtle.selected 
   if slts[slctd] > 0 then
     slts[slctd] = slts[slctd] - 1
     
@@ -163,41 +164,41 @@ local function adjstInvFromPlacing()
   end
 end
 
-mockTurtle.place = function()
+turtle.place = function()
   adjstInvFromPlacing()
 end
 
-mockTurtle.placeDown = function()
+turtle.placeDown = function()
   adjstInvFromPlacing()
 end
 
-mockTurtle.refuel = function()
+turtle.refuel = function()
   if fuelLevel ~= "unlimited" then
     fuelLevel = fuelLevel + 400
   end
 end
 
-mockTurtle.select= function( slotNum )
-  mockTurtle.selected = slotNum  
+turtle.select= function( slotNum )
+  turtle.selected = slotNum  
 end
 
-mockTurtle.suck = function()
+turtle.suck = function()
   print("fake suction", 
-      mockTurtle.popCount)
+      turtle.popCount)
   local isAble = false
-  if mockTurtle.popCount > 1 then
-    mockTurtle.popCount = 
-        mockTurtle.popCount - 1
+  if turtle.popCount > 1 then
+    turtle.popCount = 
+        turtle.popCount - 1
     isAble = true
   end
   return isAble
 end -- end suck
 
-mockTurtle.turnRight = function()
+turtle.turnRight = function()
   print("Play-turning right.")
 end
 
-mockTurtle.turnLeft = function()
+turtle.turnLeft = function()
   print("Play-turning left.")
 end
 
@@ -211,25 +212,25 @@ local function shallow_copy(t)
   return t2
 end
 
-mockTurtle.transferTo = function( slot,
+turtle.transferTo = function( slot,
     quantity )
   
   local isAble = true
   
   local slctdItem= itms[
-      mockTurtle.selected]
+      turtle.selected]
   local destItem = itms[ slot ] 
   
   if (not quantity) or 
-      (slts[mockTurtle.selected] < 
+      (slts[turtle.selected] < 
       quantity) then
-    quantity= slts[mockTurtle.selected] 
+    quantity= slts[turtle.selected] 
   end
   
   -- Checks compatiblity and room
   local destRoom = 64-slts[slot]
   if slts[slot] >= 64 or 
-      slts[mockTurtle.selected]<= 0 or
+      slts[turtle.selected]<= 0 or
       ( destItem ~= nill and
       slctdItem.name ~= destItem.name)
       then 
@@ -241,16 +242,16 @@ mockTurtle.transferTo = function( slot,
   if isAble then
     
     -- Update the source
-    slts[mockTurtle.selected] = 
-        slts[mockTurtle.selected] - 
+    slts[turtle.selected] = 
+        slts[turtle.selected] - 
         quantity
     
-    if slts[mockTurtle.selected] == 0 
+    if slts[turtle.selected] == 0 
         then
-      itms[mockTurtle.selected] = nill
+      itms[turtle.selected] = nill
     else
       slctdItem.value = 
-          slts[mockTurtle.selected]
+          slts[turtle.selected]
     end
     
     -- If the destination slot type was 
@@ -269,11 +270,11 @@ mockTurtle.transferTo = function( slot,
   
 end
 
-mockTurtle.up = function()
+turtle.up = function()
   return checkAndDecrementFuel()
 end
 
-mockTurtle.init = function()
+turtle.init = function()
   
   -- Initializes the inventory
   -- with 4 kinds of items
@@ -322,8 +323,8 @@ mockTurtle.init = function()
   
 end
 
-mockTurtle.init()
+turtle.init()
 
-print("mockTurtle 0.5.1")
+print("turtle 0.5.1")
 
 return mockTurtle
