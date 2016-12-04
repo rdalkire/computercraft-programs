@@ -8,6 +8,10 @@ Distributed under the MIT License.
 at http://opensource.org/licenses/MIT)
 ]]
 
+--- To ensure this is the version
+-- you're looking for
+DEP_VERSION="1.1"
+
 --- assigns fake/real turtle
 local t
 if turtle then
@@ -31,7 +35,7 @@ Locus.new= function( x, y, z )
   return self
 end
 
-local deadReckoner = {}
+deadReckoner = {}
 local dr = deadReckoner
 
 --- relative to turtle heading at start 

@@ -28,7 +28,46 @@ Distributed under the MIT License.
 (See accompanying file LICENSE or copy
 at http://opensource.org/licenses/MIT)
 ]]
-local dr = require "deadReckoner"
+
+
+--- Base URL for dependencies
+local D_BASE = "https://".. 
+    "raw.githubusercontent.com/".. 
+    "rdalkire/"..
+    "computercraft-programs/".. 
+    "dalkire-obsidian2/turtleApps/src/"
+
+--- Ensures dependency exists
+local function ensureDep(depNme,depVer)
+
+  print("Ensuring presence of "..
+      depNme.. " ".. depVer)
+      
+  local drFile= loadFile( depNme )
+  local isGood = false
+  
+  if drFile ~= nil then
+    if depVer == DEP_VERSION then
+      isGood = true
+    else
+      print("existing version: ".. 
+          DEP_VERSION)
+    end
+  end
+  
+  if isGood== false then
+    print("getting latest version")
+    shell.run("wget", 
+        D_BASE.. depNme,
+        depNme )
+    drFile= loadFile(depNme)
+  end
+  
+end
+
+ensureDep("deadReckoner", "1.1" )
+local dr = deadReckoner
+
 local t = require "mockTurtle"
 
 local veinMiner = {}
