@@ -52,6 +52,8 @@ local function ensureDep(depNme,depVer)
     else
       print("existing version: ".. 
           DEP_VERSION)
+      shell.run("rename", depNme, 
+          depNme.."_".. DEP_VERSION )
     end
   end
   
