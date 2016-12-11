@@ -619,4 +619,6 @@ veinMiner.mine= function( args )
   end
 end
 
+vm.mine({...})
+
 return veinMiner

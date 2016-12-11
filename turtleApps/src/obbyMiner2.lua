@@ -9,7 +9,8 @@ at http://opensource.org/licenses/MIT)
 
 local onlyOneLayer = false
 
-local getopt= require "getopt"
+local goFile = loadfile("getopt")
+goFile()
 
 --- A collection of squares, which are
 -- 9x9 areas, each defined by the 

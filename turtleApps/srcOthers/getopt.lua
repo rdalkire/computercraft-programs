@@ -14,7 +14,7 @@ at http://opensource.org/licenses/MIT)
  27355-getopt-easy-option-parsing/ )
  ]]
 
-local getopt = {}
+getopt = {}
 
 local g_name
 local g_desc 
