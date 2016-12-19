@@ -1,10 +1,6 @@
 -- Starting at top of hole/cliff/wall,
 -- this places ladders and torches
 -- downward so you can climb safetly
---
--- NOTE this is NOT the stand-alone
--- version.  See deploy directory
--- Run with no args or -h for usage
 
 --[[ wallSherpa
 Copyright (c) 2016
@@ -17,19 +13,55 @@ Distributed under the MIT License.
 at http://opensource.org/licenses/MIT)
 ]]
 
--- TODO RELEASE IN-LINE deadReckoner
-local dr = require "deadReckoner"
--- END RELEASE IN-LINE deadReckoner
+--- Base URL for dependencies
+local D_BASE = "https://".. 
+    "raw.githubusercontent.com/".. 
+    "rdalkire/"..
+    "computercraft-programs/".. 
+    "dalkire-obsidian2/turtleApps/src/"
 
--- TODO RELEASE IN-LINE getopt
-local getopt = require "getopt"
--- END RELEASE IN-LINE getopt
+--- Ensures dependency exists.
+local function ensureDep(depNme,depVer)
 
--- TODO RELEASE use native turtle
-local t = require "mockTurtle"
+  print("Ensuring presence of "..
+      depNme.. " ".. depVer)
+  
+  local drFile= loadfile( depNme )
+  local isGood = false
+  
+  if drFile ~= nil then
+    drFile()
+    if depVer == DEP_VERSION then
+      isGood = true
+    else
+      print("existing version: ".. 
+          DEP_VERSION)
+      shell.run("rename", depNme, 
+          depNme.."_".. DEP_VERSION )
+    end
+  end
+  
+  if isGood== false then
+    print("getting latest version")
+    shell.run("wget", 
+        D_BASE.. depNme,
+        depNme )
+    drFile= loadfile(depNme)
+    drFile()
+  end
+  
+end
+
+ensureDep("deadReckoner.lua", "1.1" )
+local dr = deadReckoner
+
+ensureDep("getopt.lua", "2.0" )
+
+local lf = loadfile( "mockTurtle.lua")
+if lf ~= nil then lf() end
+local t = turtle
 
 local FILL_MIN = 12
-
 local ITM_FILL="minecraft:cobblestone"
 local ITM_LADDER = "minecraft:ladder"
 local ITM_TORCH = "minecraft:torch"

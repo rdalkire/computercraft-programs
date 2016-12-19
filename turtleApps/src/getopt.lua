@@ -14,6 +14,10 @@ at http://opensource.org/licenses/MIT)
  27355-getopt-easy-option-parsing/ )
  ]]
 
+--- To ensure this is the version
+-- you're looking for
+DEP_VERSION="2.0"
+
 getopt = {}
 
 local g_name

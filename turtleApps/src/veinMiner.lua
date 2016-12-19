@@ -38,8 +38,6 @@ local D_BASE = "https://"..
     "dalkire-obsidian2/turtleApps/src/"
 
 --- Ensures dependency exists.
--- Assumes that the repository source
--- file needs '.lua' to be appended
 local function ensureDep(depNme,depVer)
 
   print("Ensuring presence of "..
@@ -63,20 +61,17 @@ local function ensureDep(depNme,depVer)
   if isGood== false then
     print("getting latest version")
     shell.run("wget", 
-        -- original source file name
-        -- has the ".lua" extension:
-        D_BASE.. depNme.. ".lua",
-        depNme )
+        D_BASE.. depNme, depNme )
     drFile= loadfile(depNme)
     drFile()
   end
   
 end
 
-ensureDep("deadReckoner", "1.1" )
+ensureDep("deadReckoner.lua", "1.1" )
 local dr = deadReckoner
 
-local lf = loadfile( "mockTurtle")
+local lf = loadfile( "mockTurtle.lua")
 if lf ~= nil then lf() end
 local t = turtle
 
