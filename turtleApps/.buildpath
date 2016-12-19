@@ -2,5 +2,4 @@
 <buildpath>
 	<buildpathentry kind="con" path="org.eclipse.ldt.ExecutionEnvironmentContainer/lua/5.1"/>
 	<buildpathentry kind="src" path="src"/>
-	<buildpathentry kind="src" path="deploy"/>
 </buildpath>
