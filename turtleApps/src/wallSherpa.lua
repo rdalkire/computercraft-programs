@@ -13,12 +13,14 @@ Distributed under the MIT License.
 at http://opensource.org/licenses/MIT)
 ]]
 
+-- TODO remember to update D_BASE
 --- Base URL for dependencies
 local D_BASE = "https://".. 
     "raw.githubusercontent.com/".. 
     "rdalkire/"..
     "computercraft-programs/".. 
-    "dalkire-obsidian2/turtleApps/src/"
+    "dalkire-obsidian2/"..
+    "turtleApps/src/"
 
 --- Ensures dependency exists.
 local function ensureDep(depNme,depVer)

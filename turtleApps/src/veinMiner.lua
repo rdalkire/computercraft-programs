@@ -1,7 +1,4 @@
---[[ NOTE: Dynamically pulls 
-dependencies if not present, so HTTP
-must be available.
-
+--[[ 
 Mines a contiguous aggregation of
 resource blocks. Meant for trees or 
 veins of ore.
@@ -21,15 +18,18 @@ veins of ore.
    rectangular prism surrounding the 
    vein, use 'r' argument:
    vMiner r
+4  NOTE: Dynamically pulls dependencies
+   if not present, so HTTP must be 
+   available.
 
-Copyright (c) 2015 
+Copyright (c) 2015 - 2016
 Robert David Alkire II, IGN ian_xw
 Distributed under the MIT License.
 (See accompanying file LICENSE or copy
 at http://opensource.org/licenses/MIT)
 ]]
 
-
+-- TODO remember to update D_BASE
 --- Base URL for dependencies
 local D_BASE = "https://".. 
     "raw.githubusercontent.com/".. 
