@@ -88,8 +88,8 @@ local ITM_OBBY = "minecraft:obsidian"
 local ITM_CBBLE="minecraft:cobblestone"
 local ITM_LAVA="minecraft:lava"
 ---
--- Moves to right above lava or solid 
--- block
+-- Moves to right above lava, obby or
+-- cobble
 -- @param isFromStart indicates whether
 -- this is from main's starting place,
 -- @return false if it wasn't able to
@@ -97,6 +97,10 @@ local ITM_LAVA="minecraft:lava"
 -- constraints or whatever
 local function getToIt( isFromStart )
   -- TODO implement getToIt()
+  
+  -- TODO Once there, add coords to the 
+  -- squareStack
+  
   return false
 end
 
@@ -146,6 +150,48 @@ local function isLayerFinished()
   return false
 end
 
+--- Determines if a place has already
+-- been inspected
+local function isChecked(x, z)
+  -- TODO implement isChecked
+end
+
+--- Moves in the given direction,
+-- digging as needed
+-- @param way is either dr.AHEAD, 
+-- STARBOARD, PORT, FORE, or AFT 
+-- dr.UP, or dr.DOWN where dr is 
+-- deadReckoner
+-- @param moves
+-- @return isAble true if it really was
+-- able to move and dig.
+-- @return whyNot if isAble, nil. Else,
+-- reason why not.
+local function move(way, moves)
+
+  way = dr.correctHeading(way, true)
+  
+  local isAble, whynot
+
+
+end
+
+--- Moves to the destination, digging
+-- on the way as needed
+-- @param coords relative to
+-- where bot started at main()
+local function moveTo(x, y, z)
+  
+  -- TODO goTo()
+  
+  -- X
+  
+  -- Z
+  
+  -- Y
+  
+end
+
 ---
 -- @return true if there was any obby
 -- or cobble to mine
@@ -154,7 +200,8 @@ local function mineASquare()
   local isProductive = false
   -- TODO implement mineASquare()
   -- TODO Probe lower, until a lower 
-  -- lava layer is found
+  -- lava layer is found. If so, store
+  -- location for next layer iteration
   
   local places= {
     {0,0}, {0,1}, {1,1}, {1,0}, {1,-1},
@@ -163,6 +210,17 @@ local function mineASquare()
   
   local square= table.remove(
       squareStack )
+  
+  local maxOfSequence = 
+      table.maxn(places)
+  for ix=1, maxOfSequence do
+    local x= square.x+ places[ix][1]
+    local z= square.z+ places[ix][2]
+    if not isChecked(x, z) then
+      -- TODO go there. Use moveTo
+      -- TODO check
+    end
+  end
   
   return isProductive
   

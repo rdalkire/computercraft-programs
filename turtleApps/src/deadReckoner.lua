@@ -10,7 +10,7 @@ at http://opensource.org/licenses/MIT)
 
 --- To ensure this is the version
 -- you're looking for
-DEP_VERSION="1.1"
+DEP_VERSION="1.1.1"
 
 --- assigns fake/real turtle
 local t
@@ -135,6 +135,15 @@ deadReckoner.correctHeading=
       dr.bearTo( way )
       way = dr.AHEAD
     end
+  elseif way== dr.BACK and 
+      not isForMovement then
+    -- This means it's digging or 
+    -- inspecting something behind, so
+    -- it needs to turn around
+    way = dr.heading + 2
+    way = way % 4
+    dr.bearTo(way)
+    way = dr.AHEAD
   end
   
   return way

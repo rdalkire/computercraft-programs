@@ -68,7 +68,7 @@ local function ensureDep(depNme,depVer)
   
 end
 
-ensureDep("deadReckoner.lua", "1.1" )
+ensureDep("deadReckoner.lua", "1.1.1" )
 local dr = deadReckoner
 
 local lf = loadfile( "mockTurtle.lua")

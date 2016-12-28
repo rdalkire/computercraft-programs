@@ -54,7 +54,7 @@ local function ensureDep(depNme,depVer)
   
 end
 
-ensureDep("deadReckoner.lua", "1.1" )
+ensureDep("deadReckoner.lua", "1.1.1" )
 local dr = deadReckoner
 
 ensureDep("getopt.lua", "2.0" )
