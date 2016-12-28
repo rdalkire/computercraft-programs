@@ -164,31 +164,81 @@ end
 -- deadReckoner
 -- @param moves
 -- @return isAble true if it really was
--- able to move and dig.
+--    able to move and dig.
 -- @return whyNot if isAble, nil. Else,
--- reason why not.
-local function move(way, moves)
-
+--    reason why not.
+local function moveVector(way, moves)
+  
   way = dr.correctHeading(way, true)
   
   local isAble, whynot
-
-
+  -- TODO finish moveVector()
+  
+  return isAble, whynot
 end
+
+
+--- Makes a vector and moves that way
+-- @param destCrd The destination X,
+--    Y or Z coordinate
+-- @param thisCrd The current X, Y, or
+--    Z coordinate
+-- @param posWay the positive 
+--    direction: dr.FORE, STARBOARD, 
+--    or UP 
+-- @param negWay the negative direction
+--    opposite of the positive: dr.AFT,
+--    PORT or DOWN
+-- @return isAble true if it really was
+--    able to move and dig.
+-- @return whyNot if isAble, nil. Else,
+--    reason why not.
+local function moveDimension(destCrd,
+    thisCrd, posWay, negWay )
+  
+  local diff = destCrd - thisCrd
+  local moves = math.abs(diff)
+  local way = 0
+  if diff > 0 then
+    way = posWay
+  elseif diff < 0 then
+    way = negWay
+  end
+  
+  return moveVector( way, moves)
+end
+
 
 --- Moves to the destination, digging
 -- on the way as needed
 -- @param coords relative to
--- where bot started at main()
-local function moveTo(x, y, z)
-  
-  -- TODO goTo()
-  
+--    where bot started at main()
+-- @return isAble true if it really was
+--    able to move and dig.
+-- @return whyNot if isAble, nil. Else,
+--    reason why not.
+local function moveToPlace(x, y, z)
+    
   -- X
-  
-  -- Z
+  local isAble, whynot = moveDimension( 
+      x, dr.place.x, 
+      dr.STARBOARD, dr.PORT)
   
   -- Y
+  if isAble then
+    isAble, whynot = moveDimension( 
+        y, dr.place.y, 
+        dr.UP, dr.DOWN)
+  end
+  
+  -- Z
+  if isAble then
+    isAble, whynot = moveDimension( 
+        z, dr.place.z, 
+        dr.FORE, dr.AFT )
+  end
+  
+  return isAble, whynot
   
 end
 
