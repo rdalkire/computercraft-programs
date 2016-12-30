@@ -265,7 +265,7 @@ end
 --- Digs.
 -- @param way must be dr.FORE, 
 -- dr.STARBOARD, dr.FORE, dr.AFT
--- dr.AHEAD, dr.UP or dr.DOWN
+-- dr.AHEAD, dr.BACK, dr.UP or dr.DOWN
 -- @return isAble true if it really 
 -- was able to dig
 -- @return whyNot if isAble, nil. Else,

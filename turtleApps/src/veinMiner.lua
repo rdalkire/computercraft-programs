@@ -162,12 +162,10 @@ veinMiner.isVeinExplored= function()
   local isExplored = false
   local cubeCount= 
       table.maxn(vm.cubeStack)
+
   if cubeCount== 0 then
     isExplored = true
     print("Vein is explored")
---  else
---    print( "unexplored cubeCount: ".. 
---        cubeCount )
   end
   
   return isExplored
