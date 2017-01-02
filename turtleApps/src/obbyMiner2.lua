@@ -128,6 +128,9 @@ local function selectSltWthItm(itmName)
   return isFound
 end
 
+obbyMiner = {}
+local om = obbyMiner
+
 --- Moves in the given direction,
 -- digging as needed
 -- @param way is either dr.AHEAD, 
@@ -140,7 +143,8 @@ end
 --    able to move and dig.
 -- @return whyNot if isAble, nil. Else,
 --    reason why not.
-local function moveVector(way, moves)
+obbyMiner.moveVector= function( way, 
+    moves )
   -- XXX maybe move & modify move...()
   -- functions to separate API like
   -- the deadreckoner.
@@ -181,8 +185,8 @@ end
 --    able to move and dig.
 -- @return whyNot if isAble, nil. Else,
 --    reason why not.
-local function moveDimension(destCrd,
-    thisCrd, posWay, negWay )
+obbyMiner.moveDimension = function(
+    destCrd, thisCrd, posWay, negWay )
   
   local diff = destCrd - thisCrd
   local moves = math.abs(diff)
@@ -193,7 +197,7 @@ local function moveDimension(destCrd,
     way = negWay
   end
   
-  return moveVector( way, moves)
+  return om.moveVector( way, moves)
 end
 
 
@@ -205,23 +209,23 @@ end
 --    able to move and dig.
 -- @return whyNot if isAble, nil. Else,
 --    reason why not.
-local function moveToPlace(x, y, z)
+obbyMiner.moveToPlace=function(x, y, z)
     
   -- X
-  local isAble, whynot= moveDimension( 
-      x, dr.place.x, 
+  local isAble, whynot= 
+      om.moveDimension( x, dr.place.x, 
       dr.STARBOARD, dr.PORT)
   
   -- Y
   if isAble then
-    isAble, whynot = moveDimension( 
+    isAble, whynot = om.moveDimension( 
         y, dr.place.y, 
         dr.UP, dr.DOWN)
   end
   
   -- Z
   if isAble then
-    isAble, whynot = moveDimension( 
+    isAble, whynot = om.moveDimension( 
         z, dr.place.z, 
         dr.FORE, dr.AFT )
   end
@@ -238,7 +242,7 @@ end
 -- @return false if it wasn't able to
 -- get to the start due to fuel 
 -- constraints or whatever
-local function getToIt( isFromStart )
+obbyMiner.getToIt=function(isFromStart)
   
   local isAble, whynot
   
@@ -266,7 +270,7 @@ local function getToIt( isFromStart )
     
   else -- Continue from previous layer
 
-    isAble, whynot = moveToPlace( 
+    isAble, whynot = om.moveToPlace( 
         lowerLayerLocus.x, 
         lowerLayerLocus.y, 
         lowerLayerLocus.z )
@@ -290,7 +294,7 @@ local function getToIt( isFromStart )
 end
 
 --- Message and solution for fuel
-local problemWithFuel = {}
+problemWithFuel = {}
 problemWithFuel.message = 
     "Place fuel in selected slot."
 
@@ -302,7 +306,7 @@ problemWithFuel.callback = function()
 end
 
 --- Message and solution for inventory
-local problemWithInventory = {}
+problemWithInventory = {}
 problemWithInventory.message = 
     "Clear inventory for obsidian."
 
@@ -319,15 +323,15 @@ end
 -- @param whatsTheMatter with message
 -- and callback
 -- @return true if it could continue
-local function comeHomeWaitAndGoBack( 
-    whatsTheMatter )
+obbyMiner.comeHomeWaitAndGoBack=
+    function( whatsTheMatter )
   local isToContinue = false
   
   local returnPlace = Locus.new(
       dr.place.x, dr.place.y,
       dr.place.z)
       
-  moveToPlace(0, 0, 0)
+  om.moveToPlace(0, 0, 0)
   print( whatsTheMatter.message )
   print( "Then press C to continue "..
       "or any other key to quit." )
@@ -348,7 +352,7 @@ end
 -- fuel or cancel.
 -- @return true if fuel level seems
 --  to be sufficient
-local function isFuelOKForSquare()
+obbyMiner.isFuelOKForSquare= function()
   
   local isOK = false
   local fuel = t.getFuelLevel()
@@ -362,7 +366,7 @@ local function isFuelOKForSquare()
     if fuel- fuelNeed > 0 then
       isOK = true
     else
-      isOK = comeHomeWaitAndGoBack(
+      isOK = om.comeHomeWaitAndGoBack(
           problemWithFuel )
     end
   end
@@ -370,7 +374,8 @@ local function isFuelOKForSquare()
   return isOK
 end
 
-local function isInventorySpaceAvail()
+obbyMiner.isInventorySpaceAvail = 
+    function()
   -- XXX move to common API- this is
   -- in large part copied from 
   -- veinMiner
@@ -399,7 +404,7 @@ local function isInventorySpaceAvail()
   if frSpace >= 9 then
     isAvail = true
   else
-    isAvail= comeHomeWaitAndGoBack(
+    isAvail= om.comeHomeWaitAndGoBack(
         problemWithInventory ) 
   end
   
@@ -407,7 +412,7 @@ local function isInventorySpaceAvail()
   
 end
 
-local function isLayerFinished()
+obbyMiner.isLayerFinished= function()
   return table.maxn(squareStack) < 1
 end
 
@@ -417,7 +422,7 @@ local layerPlacesChecked = {}
 
 --- Determines if a place has already
 -- been inspected
-local function isChecked(x, z)
+obbyMiner.isChecked= function(x, z)
   local indx= string.format(
       "%d,%d", x, z )
   local val= layerPlacesChecked[indx]
@@ -425,7 +430,7 @@ local function isChecked(x, z)
   return isInspctd
 end
 
-local function setChecked(x, z)
+obbyMiner.setChecked = function(x, z)
   layerPlacesChecked[
       string.format( "%d,%d",
           x, z ) ] = true
@@ -436,21 +441,21 @@ end
 -- and cobble are mined. If full lava
 -- or Obby, the place is added to the
 -- square stack.
-local function mineAPlace()
+obbyMiner.mineAPlace = function()
   local isWanted = false
   local ok, item= dr.inspect(dr.DOWN)
-  setChecked(dr.place.x, dr.place.z)
+  om.setChecked(dr.place.x, dr.place.z)
   
   if ok then
   
     if item.name== ITM_LAVA and
         item.state.level == 0 then
       isWanted = true
-      moveVector(dr.UP, 1)
+      om.moveVector(dr.UP, 1)
       selectSltWthItm(ITM_WTR_BCKT)
       t.placeDown()
       t.placeDown()
-      moveVector(dr.DOWN, 1)
+      om.moveVector(dr.DOWN, 1)
       t.digDown()
     elseif item.name== ITM_OBBY then
       isWanted = true
@@ -469,7 +474,7 @@ local function mineAPlace()
       -- If lower layer not yet 
       -- found, this probes below 
       if lowerLayerLocus== nil then
-        moveVector(dr.DOWN, 1)
+        om.moveVector(dr.DOWN, 1)
         ok, item= dr.inspect(dr.DOWN)
         
         if ok then
@@ -485,7 +490,7 @@ local function mineAPlace()
           
         end -- ok (there was something)
         
-        moveVector(dr.UP, 1)
+        om.moveVector(dr.UP, 1)
       end -- lowerLayerLocus== nil
       
     end -- isWanted
@@ -495,8 +500,10 @@ local function mineAPlace()
 end
 
 ---
--- 
-local function mineASquare()
+-- Removes a square from the square 
+-- stack and mines it, delegating to 
+-- add more squares when needed.
+obbyMiner.mineASquare = function()
   
   local places= {
     {0,0}, {0,1}, {1,1}, {1,0}, {1,-1},
@@ -513,13 +520,14 @@ local function mineASquare()
     local x= square.x+ places[ix][1]
     local z= square.z+ places[ix][2]
     
-    if not isChecked(x, z) then
+    if not om.isChecked(x, z) then
       
       local isAble, whyNot = 
-          moveToPlace(x, dr.place.y, z)
+          om.moveToPlace(x, dr.place.y,
+              z )
       
       if isAble then
-        mineAPlace()
+        om.mineAPlace()
       end
     end
     
@@ -534,16 +542,16 @@ end
 -- space
 -- @return true if mining could be 
 --    continued afterward.
-local function mineALayer()
+obbyMiner.mineALayer= function()
   
   local couldContinue = false
   lowerLayerLocus = nil
   layerPlacesChecked = {}
   
-  while isFuelOKForSquare() and
-        isInventorySpaceAvail() and
-        (not isLayerFinished() ) do
-    mineASquare()
+  while om.isFuelOKForSquare() and
+        om.isInventorySpaceAvail() and
+        (not om.isLayerFinished() ) do
+    om.mineASquare()
   end
   
   if lowerLayerLocus ~= nil then
@@ -555,9 +563,9 @@ end
 
 --- Checks for sufficient fuel and
 -- a water bucket
-local function checkPrereqs()
+obbyMiner.checkPrereqs= function()
   
-  local isOK = isFuelOKForSquare()
+  local isOK = om.isFuelOKForSquare()
   
   if isOK then
     isOK= selectSltWthItm(ITM_WTR_BCKT)
@@ -570,23 +578,23 @@ local function checkPrereqs()
   
 end
 
-local function main( args )
+obbyMiner.main= function( args )
   
   -- From args, learns: get it all
   -- or just one layer?
   initOptions(args)
   
-  local keepGoing= checkPrereqs()
+  local keepGoing= om.checkPrereqs()
   local isFirst = true
   
   -- Mine the layer(s) of lava
   while keepGoing do
     -- Get down to the lava/cobble/obby
-    local keepGoing= getToIt(isFirst)
+    local keepGoing=om.getToIt(isFirst)
     isFirst = false
     
     if keepGoing then
-      keepGoing= mineALayer()
+      keepGoing= om.mineALayer()
     end
     
     if onlyOneLayer then
@@ -596,9 +604,10 @@ local function main( args )
   end
   
   -- comes back
-  moveToPlace( 0, 0, 0 )
+  om.moveToPlace( 0, 0, 0 )
   dr.bearTo(dr.FORE)
   
 end
 
-main({...})
+-- TODO uncomment when tested. 
+-- om.main({...})
