@@ -230,21 +230,63 @@ local function moveToPlace(x, y, z)
   
 end
 
+
 ---
--- Moves to right above lava, obby or
--- cobble
+-- Moves to right above lava or obby
 -- @param isFromStart indicates whether
 -- this is from main's starting place,
 -- @return false if it wasn't able to
 -- get to the start due to fuel 
 -- constraints or whatever
 local function getToIt( isFromStart )
-  -- TODO implement getToIt()
   
-  -- TODO Once there, add coords to the 
+  local isAble, whynot
+  
+  if isFromStart then
+    
+    -- moves forward/ down until it's
+    -- above lava or obby
+    local keepGoing = true
+    while keepGoing do
+      local isThng, what= 
+          t.inspectDown()
+          
+      if isThng == false then
+        isAble, whynot=dr.move(dr.DOWN)
+      elseif what.name== ITM_OBBY or 
+          (what.name== ITM_LAVA and
+           what.state.level == 0) then
+           
+         keepGoing= false
+      else
+        isAble, whynot=dr.move(dr.FORE)
+      end
+      
+    end
+    
+  else -- Continue from previous layer
+
+    isAble, whynot = moveToPlace( 
+        lowerLayerLocus.x, 
+        lowerLayerLocus.y, 
+        lowerLayerLocus.z )
+
+  end
+  
+  -- Once there, adds coords to the 
   -- squareStack
+  local square = Locus.new( 
+          dr.place.x, dr.place.y,
+          dr.place.y )
+          
+  table.insert(squareStack, square)
   
-  return false
+  if not isAble then
+    print( "Unable to getToIt(): "..
+        whynot )
+  end
+  
+  return isAble
 end
 
 --- Message and solution for fuel
@@ -299,15 +341,33 @@ local function comeHomeWaitAndGoBack(
   return isToContinue
 end
 
+--- Checks fuel level depending on 
+-- distance from starting place plus
+-- a buffer.  If not it'll come back
+-- and prompt user to either supply
+-- fuel or cancel.
+-- @return true if fuel level seems
+--  to be sufficient
 local function isFuelOKForSquare()
-  -- TODO implement isFuelOKForSquare()
-  -- use comeHomeWaitAndGoBack() if 
-  -- applicable
-  local fuelNeed= dr.howFarFromHome()+
-      10 + -- For mining a square
-      50   -- Arbitrary buffer
   
-  return false
+  local isOK = false
+  local fuel = t.getFuelLevel()
+  if fuel == "unlimited" then
+    isOK = true
+  else
+    local fuelNeed=dr.howFarFromHome()+
+        10 + -- For mining a square
+        50   -- Arbitrary buffer
+        
+    if fuel- fuelNeed > 0 then
+      isOK = true
+    else
+      isOK = comeHomeWaitAndGoBack(
+          problemWithFuel )
+    end
+  end
+
+  return isOK
 end
 
 local function isInventorySpaceAvail()
@@ -490,7 +550,24 @@ local function mineALayer()
     couldContinue = true
   end
   
-  return couldContinue 
+  return couldContinue
+end
+
+--- Checks for sufficient fuel and
+-- a water bucket
+local function checkPrereqs()
+  
+  local isOK = isFuelOKForSquare()
+  
+  if isOK then
+    isOK= selectSltWthItm(ITM_WTR_BCKT)
+    if not isOK then
+      print("Need water bucket")
+    end
+  end
+  
+  return isOK
+  
 end
 
 local function main( args )
@@ -499,15 +576,23 @@ local function main( args )
   -- or just one layer?
   initOptions(args)
   
-  -- Get down to the lava/cobble/obby
-  local keepGoing= getToIt()
+  local keepGoing= checkPrereqs()
+  local isFirst = true
   
   -- Mine the layer(s) of lava
   while keepGoing do
-    keepGoing= mineALayer()
+    -- Get down to the lava/cobble/obby
+    local keepGoing= getToIt(isFirst)
+    isFirst = false
+    
+    if keepGoing then
+      keepGoing= mineALayer()
+    end
+    
     if onlyOneLayer then
       keepGoing = false
     end
+    
   end
   
   -- comes back
