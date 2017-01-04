@@ -33,8 +33,10 @@ local function ensureDep(depNme,depVer)
     else
       print("existing version: ".. 
           DEP_VERSION)
+      
       shell.run("rename", depNme, 
           depNme.."_".. DEP_VERSION )
+      
     end
   end
   
@@ -48,7 +50,7 @@ local function ensureDep(depNme,depVer)
   
 end
 
-ensureDep("deadReckoner.lua", "1.1" )
+ensureDep("deadReckoner.lua", "1.1.1" )
 local dr = deadReckoner
 
 ensureDep("getopt.lua", "2.0" )
@@ -148,9 +150,9 @@ obbyMiner.moveVector= function( way,
   -- XXX maybe move & modify move...()
   -- functions to separate API like
   -- the deadreckoner.
-  way = dr.correctHeading(way, true)
   
-  local isAble, whynot
+  local isAble = true
+  local whynot = nil
   
   for i = 1, moves do
     isAble, whynot = dr.move(way)
