@@ -297,13 +297,14 @@ end
 
 --- Message and solution for fuel
 problemWithFuel = {}
-problemWithFuel.message = 
-    "Place fuel in selected slot."
+problemWithFuel.message = ""
 
 --- To be called if user puts fuel into
 -- selected slot and indicates they
 -- want to continue
 problemWithFuel.callback = function()
+  -- TODO loop through to find fuel
+  
   return t.refuel()
 end
 
@@ -334,6 +335,7 @@ obbyMiner.comeHomeWaitAndGoBack=
       dr.place.z)
       
   om.moveToPlace(0, 0, 0)
+  term.clear()
   print( whatsTheMatter.message )
   print( "Then press C to continue "..
       "or any other key to quit." )
@@ -342,6 +344,9 @@ obbyMiner.comeHomeWaitAndGoBack=
   if key == keys.c then
     isToContinue = 
         whatsTheMatter.callback()
+    
+    om.moveToPlace(returnPlace.x, 
+        returnPlace.y, returnPlace.z)
   end
   
   return isToContinue
@@ -368,6 +373,8 @@ obbyMiner.isFuelOKForSquare= function()
     if fuel- fuelNeed > 0 then
       isOK = true
     else
+      -- TODO in problemWithfuel, 
+      -- specify a minimum requirement
       isOK = om.comeHomeWaitAndGoBack(
           problemWithFuel )
     end
