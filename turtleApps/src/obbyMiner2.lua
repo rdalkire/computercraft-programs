@@ -303,15 +303,16 @@ problemWithFuel.message = ""
 -- selected slot and indicates they
 -- want to continue
 problemWithFuel.callback = function()
-  -- TODO loop through to find fuel
   
   return t.refuel()
+  
 end
 
 --- Message and solution for inventory
+-- or other problems that have an empty 
+-- callback function
 problemWithInventory = {}
-problemWithInventory.message = 
-    "Clear inventory for obsidian."
+problemWithInventory.message = ""
 
 problemWithInventory.callback= 
     function()
@@ -337,7 +338,7 @@ obbyMiner.comeHomeWaitAndGoBack=
   om.moveToPlace(0, 0, 0)
   term.clear()
   print( whatsTheMatter.message )
-  print( "Then press C to continue "..
+  print( "Then press c to continue "..
       "or any other key to quit." )
   
   local event, key= os.pullEvent("key")
@@ -367,14 +368,30 @@ obbyMiner.isFuelOKForSquare= function()
     isOK = true
   else
     local fuelNeed=dr.howFarFromHome()+
-        10 + -- For mining a square
-        50   -- Arbitrary buffer
+        10 + -- For traversing a square
+        18 + -- possible mine up-downs
+        18   -- max probing up-downs
         
     if fuel- fuelNeed > 0 then
       isOK = true
     else
-      -- TODO in problemWithfuel, 
-      -- specify a minimum requirement
+      
+      local xtraFuelForFueling =
+          dr.howFarFromHome() * 2
+      
+      fuelNeed = fuelNeed + 
+          xtraFuelForFueling
+      
+      local dif= fuelNeed- fuel
+      
+      problemWithFuel.message = 
+          string.format(
+          "Please place fuel into "..
+          "the SELECTED slot. Be "..
+          "generous. At very "..
+          "minimum, %d units.",
+          dif )
+        
       isOK = om.comeHomeWaitAndGoBack(
           problemWithFuel )
     end
@@ -413,6 +430,10 @@ obbyMiner.isInventorySpaceAvail =
   if frSpace >= 9 then
     isAvail = true
   else
+    problemWithInventory.message= 
+        "Please clear inventory "..
+        "space for obsidian."
+        
     isAvail= om.comeHomeWaitAndGoBack(
         problemWithInventory ) 
   end
@@ -421,8 +442,29 @@ obbyMiner.isInventorySpaceAvail =
   
 end
 
+obbyMiner.isWaterBucketThere=function()
+  local isOK= selectSltWthItm(
+      ITM_WTR_BCKT)
+  
+  if not isOK then
+    problemWithInventory.message=
+        "Need water bucket, please"
+        
+    isOK = om.comeHomeWaitAndGoBack(
+        problemWithInventory )
+    
+  end
+end
+
 obbyMiner.isLayerFinished= function()
-  return table.maxn(squareStack) < 1
+  local done = 
+      table.maxn(squareStack) < 1
+  
+  if done then
+    print("Layer is finished")
+  end
+  
+  return done
 end
 
 --- Array of 2D places that have been
@@ -460,10 +502,15 @@ obbyMiner.mineAPlace = function()
     if item.name== ITM_LAVA and
         item.state.level == 0 then
       isWanted = true
+      
+      -- Makes room for water below
       om.moveVector(dr.UP, 1)
+      
+      -- Makes obby below
       selectSltWthItm(ITM_WTR_BCKT)
       t.placeDown()
       t.placeDown()
+      
       om.moveVector(dr.DOWN, 1)
       t.digDown()
     elseif item.name== ITM_OBBY then
@@ -550,15 +597,15 @@ end
 -- as there's enough fuel and inventory
 -- space
 -- @return true if mining could be 
---    continued afterward.
+--    continued afterward, because a
+--    lower layer of lava was found
 obbyMiner.mineALayer= function()
   
   local couldContinue = false
   lowerLayerLocus = nil
   layerPlacesChecked = {}
   
-  while om.isFuelOKForSquare() and
-        om.isInventorySpaceAvail() and
+  while om.checkPrereqs() and
         (not om.isLayerFinished() ) do
     om.mineASquare()
   end
@@ -570,20 +617,13 @@ obbyMiner.mineALayer= function()
   return couldContinue
 end
 
---- Checks for sufficient fuel and
--- a water bucket
+--- Checks for sufficient fuel, 
+-- inventory space and a water bucket
 obbyMiner.checkPrereqs= function()
-  
-  local isOK = om.isFuelOKForSquare()
-  
-  if isOK then
-    isOK= selectSltWthItm(ITM_WTR_BCKT)
-    if not isOK then
-      print("Need water bucket")
-    end
-  end
-  
-  return isOK
+
+  return om.isFuelOKForSquare() and
+      om.isInventorySpaceAvail() and
+      om.isWaterBucketThere()
   
 end
 
