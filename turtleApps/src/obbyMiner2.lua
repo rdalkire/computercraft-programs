@@ -1,13 +1,20 @@
 --[[ Obsidian Miner 2
 
-Copyright (c) 2016
+Copyright (c) 2016-2017
 Robert David Alkire II, IGN ian_xw
 Distributed under the MIT License.
 (See accompanying file LICENSE or copy
 at http://opensource.org/licenses/MIT)
 ]]
 
-local onlyOneLayer = false
+-- Set by users (l)imit option, so 
+-- if they want to do only a few layers
+-- at a time. 0 means no limit
+local g_layerlimit = 0
+
+-- The initial limit for going down
+-- and forward to find the lava
+local FINDING_LIMIT = 128
 
 -- NOTE remember to update D_BASE
 --- Base URL for dependencies
@@ -66,21 +73,43 @@ local squareStack = {}
 
 local function initOptions( args )
 
+  local isOK = true
+
   local someOptions = {
-    ["one"] = { "(o)ne layer only", 
-        "o", nil}
+               
+  ["limit"] = {
+      "(l)imit how many lava layers",
+      "l", "<num>" }
   }
   
   local tbl= getopt.init(
       "Obsidian Miner 2",
-      "Mines obby from lava pit",
+      "Mines obby. "..
+      "Give it a water bucket, fuel"..
+      " it, place it at edge of "..
+      "lava pit and run it. Use -h "..
+      "to see other options",
       someOptions, args )
       
-  if tbl ~= nil then
-    if tbl["one"] then
-      onlyOneLayer= true
+  if tbl == nil then
+    -- this is for the -h option
+    isOK= false
+  else
+  
+    if tbl["limit"] then
+      g_layerlimit= tonumber(
+          tbl["limit"] )
+      if g_layerlimit== nil then
+        isOK= false
+        print("The (l)imit option "..
+            "requires a number.")
+      end
+      
     end
+
   end
+
+  return isOK
 
 end
 
@@ -250,14 +279,27 @@ obbyMiner.getToIt=function(isFromStart)
   
   if isFromStart then
     
+    local fuel= t.getFuelLevel()
+    local fwdLmt = FINDING_LIMIT
+    
+    if not (fuel == "unlimited") then
+      if fuel <= FINDING_LIMIT* 2 then
+        fwdLmt = fuel / 2
+      end
+    end
+    
     -- moves forward/ down until it's
     -- above lava or obby
     local keepGoing = true
     while keepGoing do
       local isThng, what= 
           t.inspectDown()
+
+      if dr.howFarFromHome() >= 
+          fwdLmt then
           
-      if isThng == false then
+        keepGoing= false
+      elseif isThng == false then
         isAble, whynot=dr.move(dr.DOWN)
       elseif what.name== ITM_OBBY or 
           (what.name== ITM_LAVA and
@@ -430,6 +472,11 @@ obbyMiner.isInventorySpaceAvail =
   if frSpace >= 9 then
     isAvail = true
   else
+    
+    -- TODO instead come back & dump
+    -- inventory into a chest a la
+    -- excavate
+    
     problemWithInventory.message= 
         "Please clear inventory "..
         "space for obsidian."
@@ -630,13 +677,14 @@ end
 obbyMiner.main= function( args )
   
   -- From args, learns: get it all
-  -- or just one layer?
-  initOptions(args)
+  -- or limit layers?
+  local keepGoing=initOptions(args) and
+      om.checkPrereqs()
   
-  local keepGoing= om.checkPrereqs()
   local isFirst = true
   
   -- Mine the layer(s) of lava
+  local countLayers= 0
   while keepGoing do
     -- Get down to the lava/cobble/obby
     local keepGoing=om.getToIt(isFirst)
@@ -646,7 +694,9 @@ obbyMiner.main= function( args )
       keepGoing= om.mineALayer()
     end
     
-    if onlyOneLayer then
+    countLayers= countLayers+ 1
+    if g_layerlimit > 0 and
+        countLayers>= g_layerlimit then
       keepGoing = false
     end
     
