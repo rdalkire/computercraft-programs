@@ -346,6 +346,16 @@ problemWithFuel.message = ""
 -- want to continue
 problemWithFuel.callback = function()
   
+  -- TODO maybe in fueling callback:
+  -- loop through all slots to find the
+  -- fuel instead of relying on user
+  -- to pick the *selected* slot.
+  --
+  -- Also, after refueling, check the
+  -- slot just used to see if it's a
+  -- plain bucket. If so, make sure 
+  -- there's also a water bucket
+  
   return t.refuel()
   
 end
@@ -473,8 +483,8 @@ obbyMiner.isInventorySpaceAvail =
     isAvail = true
   else
     
-    -- TODO instead come back & dump
-    -- inventory into a chest a la
+    -- TODO maybe instead come back & 
+    -- dump inventory into a chest a la
     -- excavate
     
     problemWithInventory.message= 
@@ -501,6 +511,7 @@ obbyMiner.isWaterBucketThere=function()
         problemWithInventory )
     
   end
+  return isOK
 end
 
 obbyMiner.isLayerFinished= function()
