@@ -277,6 +277,8 @@ obbyMiner.getToIt=function(isFromStart)
   
   local isAble, whynot
   
+  print("isFromStart:", isFromStart)
+  
   if isFromStart then
     
     local fuel= t.getFuelLevel()
@@ -288,6 +290,8 @@ obbyMiner.getToIt=function(isFromStart)
       end
     end
     
+    print("forward limit:", fwdLmt)
+    
     -- moves forward/ down until it's
     -- above lava or obby
     local keepGoing = true
@@ -297,23 +301,37 @@ obbyMiner.getToIt=function(isFromStart)
 
       if dr.howFarFromHome() >= 
           fwdLmt then
-          
+        
+        print("Too far from home.")
         keepGoing= false
       elseif isThng == false then
+        print("Nothing; descending.")
         isAble, whynot=dr.move(dr.DOWN)
       elseif what.name== ITM_OBBY or 
           (what.name== ITM_LAVA and
            what.state.level == 0) then
-           
+         
+         print(what.name, 
+            what.state.level)
+
          keepGoing= false
       else
+        print(what.name, 
+            what.state.level)
+
         isAble, whynot=dr.move(dr.FORE)
       end
       
     end
     
-  else -- Continue from previous layer
-
+  else
+  
+    print( "Continuing to "..
+        "next layer." )
+    
+    print( "lowerLayerLocus:",
+        lowerLayerLocus )
+    
     isAble, whynot = om.moveToPlace( 
         lowerLayerLocus.x, 
         lowerLayerLocus.y, 
