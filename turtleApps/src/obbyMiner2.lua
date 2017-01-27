@@ -328,6 +328,8 @@ obbyMiner.getToIt=function(isFromStart)
           what.state.level)
 
         isAble, whynot=dr.move(dr.FORE)
+        
+        keepGoing= isAble
       end
 
     end
@@ -723,6 +725,8 @@ obbyMiner.main= function( args )
   -- Mine the layer(s) of lava
   local countLayers= 0
   while keepGoing do
+  
+    -- FIXME redeclared variable
     -- Get down to the lava/cobble/obby
     local keepGoing=om.getToIt(isFirst)
     isFirst = false
@@ -744,6 +748,5 @@ obbyMiner.main= function( args )
   dr.bearTo(dr.FORE)
 
 end
-
--- TODO uncomment when tested. 
--- om.main({...})
+ 
+om.main({...})
