@@ -24,6 +24,15 @@ local D_BASE = "https://"..
   "computercraft-programs/"..
   "dalkire-obsidian2/turtleApps/src/"
 
+
+local lf = loadfile( "mockTurtle.lua")
+if lf ~= nil then 
+  lf()
+  lf= loadfile("mockMiscellaneous.lua")
+  lf()
+end
+local t = turtle
+
 --- Ensures dependency exists.
 local function ensureDep(depNme,depVer)
 
@@ -61,10 +70,6 @@ ensureDep("deadReckoner.lua", "1.1.1" )
 local dr = deadReckoner
 
 ensureDep("getopt.lua", "2.0" )
-
-local lf = loadfile( "mockTurtle.lua")
-if lf ~= nil then lf() end
-local t = turtle
 
 --- A collection of squares, which are
 -- 9x9 areas, each defined by a place
@@ -312,6 +317,7 @@ obbyMiner.getToIt=function(isFromStart)
 
         print("Too far from home.")
         keepGoing= false
+        isAble= false
       elseif isThng == false then
         print("Nothing; descending.")
         isAble, whynot=dr.move(dr.DOWN)
@@ -324,11 +330,11 @@ obbyMiner.getToIt=function(isFromStart)
 
         keepGoing= false
       else
+        
         print(what.name,
           what.state.level)
 
         isAble, whynot=dr.move(dr.FORE)
-        
         keepGoing= isAble
       end
 
@@ -349,15 +355,15 @@ obbyMiner.getToIt=function(isFromStart)
 
   end
 
-  -- Once there, adds coords to the
-  -- squareStack
-  local square = Locus.new(
-    dr.place.x, dr.place.y,
-    dr.place.y )
-
-  table.insert(squareStack, square)
-
-  if not isAble then
+  if isAble then
+     -- Once there, adds coords to the
+    -- squareStack
+    local square = Locus.new(
+      dr.place.x, dr.place.y,
+      dr.place.z )
+      
+    table.insert(squareStack, square)
+  else
     print( "Unable to getToIt(): "..
       whynot )
   end
@@ -408,7 +414,7 @@ end
 -- and callback
 -- @return true if it could continue
 obbyMiner.comeHomeWaitAndGoBack=
-function( whatsTheMatter )
+    function( whatsTheMatter )
   local isToContinue = false
 
   local returnPlace = Locus.new(
@@ -416,6 +422,7 @@ function( whatsTheMatter )
     dr.place.z)
 
   om.moveToPlace(0, 0, 0)
+  
   term.clear()
   print( whatsTheMatter.message )
   print( "Then press c to continue "..
@@ -452,29 +459,29 @@ obbyMiner.isFuelOKForSquare= function()
       18 + -- possible mine up-downs
       18   -- max probing up-downs
 
-    if fuel- fuelNeed > 0 then
+    if fuel > fuelNeed then
       isOK = true
-      else
-
-        local xtraFuelForFueling =
+    else
+  
+      local xtraFuelForFueling =
           dr.howFarFromHome() * 2
-
-        fuelNeed = fuelNeed +
+  
+      fuelNeed = fuelNeed +
           xtraFuelForFueling
-
-        local dif= fuelNeed- fuel
-
-        problemWithFuel.message =
-          string.format(
-            "Please place fuel into "..
-            "the SELECTED slot. Be "..
-            "generous. At very "..
-            "minimum, %d units.",
-            dif )
-
-        isOK = om.comeHomeWaitAndGoBack(
+  
+      local dif= fuelNeed- fuel
+  
+      problemWithFuel.message =
+        string.format(
+          "Please place fuel into "..
+          "the SELECTED slot. Be "..
+          "generous. At very "..
+          "minimum, %d units.",
+          dif )
+  
+      isOK = om.comeHomeWaitAndGoBack(
           problemWithFuel )
-      end
+    end
   end
 
   return isOK
@@ -605,11 +612,11 @@ obbyMiner.mineAPlace = function()
     elseif item.name== ITM_CBBLE then
       t.digDown()
     end
-
+    -- TODO mineAPlace() no re-insert
     if isWanted then
       local square = Locus.new(
         dr.place.x, dr.place.y,
-        dr.place.y )
+        dr.place.z )
 
       table.insert(squareStack, square)
 
@@ -623,10 +630,10 @@ obbyMiner.mineAPlace = function()
 
           if item.name== ITM_LAVA and
             item.state.level== 0 then
-
+            
             lowerLayerLocus= Locus.new(
               dr.place.x, dr.place.y,
-              dr.place.y )
+              dr.place.z )
 
           end -- lava below
 
@@ -726,9 +733,8 @@ obbyMiner.main= function( args )
   local countLayers= 0
   while keepGoing do
   
-    -- FIXME redeclared variable
     -- Get down to the lava/cobble/obby
-    local keepGoing=om.getToIt(isFirst)
+    keepGoing=om.getToIt(isFirst)
     isFirst = false
 
     if keepGoing then

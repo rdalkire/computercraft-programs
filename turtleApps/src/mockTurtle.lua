@@ -5,7 +5,8 @@ MIT License (MIT)
 turtle = {}
 local mockTurtle= turtle
 
-local fuelLevel = 35 --or "unlimited"
+--- number or "unlimited"
+local fuelLevel = 50
 
 turtle.popCount = 5
 turtle.itms = {}
@@ -117,6 +118,11 @@ end
 
 turtle.getItemDetail = function( 
     slot )
+
+  if slot == nil then 
+    slot= turtle.selected
+  end
+  
   return itms[slot]
 end
 
@@ -142,6 +148,8 @@ end
 turtle.inspectDown = function()
   local itm = {}
   itm.name = "minecraft:log"
+  itm.state= {}
+  
   return true, itm
 end
 turtle.inspectUp = function()
@@ -176,6 +184,7 @@ turtle.refuel = function()
   if fuelLevel ~= "unlimited" then
     fuelLevel = fuelLevel + 400
   end
+  return true
 end
 
 turtle.select= function( slotNum )
@@ -320,6 +329,12 @@ turtle.init = function()
       itms[i] = nw
     end 
   end
+  
+  itms[14] = {
+    name = "minecraft:water_bucket",
+    count = slts[14],
+    damage = 0,
+  }
   
 end
 
