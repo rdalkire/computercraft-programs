@@ -292,7 +292,7 @@ turtle.init = function()
     { 25, 50, 42, 43,
       0, 50, 0, 44,
       25, 50, 0, 45,
-      25, 1, 0, 46 }
+      25, 0, 0, 46 }
   
   --[[ Other item names:
     minecraft:melon_block
@@ -327,9 +327,12 @@ turtle.init = function()
       local nw= shallow_copy(itms[ref])
       nw.count = slts[i]
       itms[i] = nw
+    else
+      itms[i] = {}
     end 
   end
   
+  slts[14] = 1
   itms[14] = {
     name = "minecraft:water_bucket",
     count = slts[14],

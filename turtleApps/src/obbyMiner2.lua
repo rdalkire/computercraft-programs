@@ -310,10 +310,10 @@ obbyMiner.getToIt=function(isFromStart)
     local keepGoing = true
     while keepGoing do
       local isThng, what=
-        t.inspectDown()
+          t.inspectDown()
 
       if dr.howFarFromHome() >=
-        fwdLmt then
+          fwdLmt then
 
         print("Too far from home.")
         keepGoing= false
@@ -322,17 +322,17 @@ obbyMiner.getToIt=function(isFromStart)
         print("Nothing; descending.")
         isAble, whynot=dr.move(dr.DOWN)
       elseif what.name== ITM_OBBY or
-        (what.name== ITM_LAVA and
-        what.state.level == 0) then
+          (what.name== ITM_LAVA and
+          what.state.level == 0) then
 
         print(what.name,
-          what.state.level)
+            what.state.level)
 
         keepGoing= false
       else
         
         print(what.name,
-          what.state.level)
+            what.state.level)
 
         isAble, whynot=dr.move(dr.FORE)
         keepGoing= isAble
@@ -343,29 +343,29 @@ obbyMiner.getToIt=function(isFromStart)
   else
 
     print( "Continuing to "..
-      "next layer." )
+        "next layer." )
 
     print( "lowerLayerLocus:",
-      lowerLayerLocus )
+        lowerLayerLocus )
 
     isAble, whynot = om.moveToPlace(
-      lowerLayerLocus.x,
-      lowerLayerLocus.y,
-      lowerLayerLocus.z )
+        lowerLayerLocus.x,
+        lowerLayerLocus.y,
+        lowerLayerLocus.z )
 
   end
 
   if isAble then
-     -- Once there, adds coords to the
+    -- Once there, adds coords to the
     -- squareStack
     local square = Locus.new(
-      dr.place.x, dr.place.y,
-      dr.place.z )
+        dr.place.x, dr.place.y,
+        dr.place.z )
       
     table.insert(squareStack, square)
   else
     print( "Unable to getToIt(): "..
-      whynot )
+        whynot )
   end
 
   return isAble
@@ -585,7 +585,12 @@ end
 -- and cobble are mined. If full lava
 -- or Obby, the place is added to the
 -- square stack.
-obbyMiner.mineAPlace = function()
+-- @param isEligible true if the 
+--   current place is eligible to be
+--   added to the stack of squares
+obbyMiner.mineAPlace = function(
+    isEligible )
+  
   local isWanted = false
   local ok, item= dr.inspect(dr.DOWN)
   om.setChecked(dr.place.x, dr.place.z)
@@ -612,14 +617,19 @@ obbyMiner.mineAPlace = function()
     elseif item.name== ITM_CBBLE then
       t.digDown()
     end
-    -- TODO mineAPlace() no re-insert
+
     if isWanted then
-      local square = Locus.new(
-        dr.place.x, dr.place.y,
-        dr.place.z )
-
-      table.insert(squareStack, square)
-
+    
+      if isEligible then
+        local square = Locus.new(
+            dr.place.x, dr.place.y,
+            dr.place.z )
+  
+        table.insert( squareStack, 
+            square )
+      
+      end
+      
       -- If lower layer not yet
       -- found, this probes below
       if lowerLayerLocus== nil then
@@ -629,11 +639,11 @@ obbyMiner.mineAPlace = function()
         if ok then
 
           if item.name== ITM_LAVA and
-            item.state.level== 0 then
+              item.state.level== 0 then
             
             lowerLayerLocus= Locus.new(
-              dr.place.x, dr.place.y,
-              dr.place.z )
+                dr.place.x, dr.place.y,
+                dr.place.z )
 
           end -- lava below
 
@@ -660,10 +670,10 @@ obbyMiner.mineASquare = function()
   }
 
   local square= table.remove(
-    squareStack )
+      squareStack )
 
   local maxOfSequence =
-    table.maxn(places)
+      table.maxn(places)
 
   for ix=1, maxOfSequence do
     local x= square.x+ places[ix][1]
@@ -672,11 +682,16 @@ obbyMiner.mineASquare = function()
     if not om.isChecked(x, z) then
 
       local isAble, whyNot =
-        om.moveToPlace(x, dr.place.y,
+          om.moveToPlace(x, dr.place.y,
           z )
 
       if isAble then
-        om.mineAPlace()
+        -- The first location {0,0} was
+        -- already a square location
+        -- list entry, so shouldn't be
+        -- considered eligible to be
+        -- added
+        om.mineAPlace( ix > 1 )
       end
     end
 
@@ -699,7 +714,7 @@ obbyMiner.mineALayer= function()
   layerPlacesChecked = {}
 
   while om.checkPrereqs() and
-    (not om.isLayerFinished() ) do
+      (not om.isLayerFinished() ) do
     om.mineASquare()
   end
 
