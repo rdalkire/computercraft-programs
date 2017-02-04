@@ -71,9 +71,9 @@ local dr = deadReckoner
 
 ensureDep("getopt.lua", "2.0" )
 
---- A collection of squares, which are
--- 9x9 areas, each defined by a place
--- just above its central block.
+--- A collection of squares, each 
+-- defined by a place just above its 
+-- central block.
 local squareStack = {}
 
 local function initOptions( args )

@@ -147,8 +147,9 @@ turtle.inspect = function()
 end
 turtle.inspectDown = function()
   local itm = {}
-  itm.name = "minecraft:log"
+  itm.name = "minecraft:lava"
   itm.state= {}
+  itm.state.level= 1
   
   return true, itm
 end
@@ -328,7 +329,7 @@ turtle.init = function()
       nw.count = slts[i]
       itms[i] = nw
     else
-      itms[i] = {}
+      itms[i] = nil
     end 
   end
   
