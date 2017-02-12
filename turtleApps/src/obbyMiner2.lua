@@ -88,12 +88,12 @@ local function initOptions( args )
   }
 
   local tbl= getopt.init(
-    "Obsidian Miner 2",
-    "Mines obby. "..
+    "obbyMiner2",
+    "Obsidian Miner 2, Version 0.0.9"..
+    " mines obby. "..
     "Give it a water bucket, fuel"..
-    " it, place it at edge of "..
-    "lava pit and run it. Use -h "..
-    "to see other options",
+    " it, point it at a "..
+    "lava pit, and run it.",
     someOptions, args )
 
   if tbl == nil then
@@ -315,9 +315,9 @@ obbyMiner.getToIt=function(isFromStart)
       if dr.howFarFromHome() >=
           fwdLmt then
 
-        print("Too far from home.")
         keepGoing= false
         isAble= false
+        whynot= "Too far from home."
       elseif isThng == false then
         print("Nothing; descending.")
         isAble, whynot=dr.move(dr.DOWN)
@@ -758,7 +758,8 @@ obbyMiner.main= function( args )
 
     countLayers= countLayers+ 1
     if g_layerlimit > 0 and
-      countLayers>= g_layerlimit then
+        countLayers>= g_layerlimit then
+        
       keepGoing = false
     end
 
