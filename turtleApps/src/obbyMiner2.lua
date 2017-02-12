@@ -89,7 +89,7 @@ local function initOptions( args )
 
   local tbl= getopt.init(
     "obbyMiner2",
-    "Obsidian Miner 2, Version 0.0.9"..
+    "Obsidian Miner 2, Version 0.5.9"..
     " mines obby. "..
     "Give it a water bucket, fuel"..
     " it, point it at a "..
@@ -272,11 +272,20 @@ obbyMiner.moveToPlace=function(x, y, z)
 
 end
 
-obbyMiner.isLavaMinable=function()
-  -- TODO check for lava/flowing_lava
-  -- that's mine-able, in a separate
-  -- function
-  
+--- Checks for lava/flowing_lava
+-- that's mine-able
+-- @param what the thing inspected
+-- @return true if minable
+obbyMiner.isLavaMinable=function(what)
+  -- TODO test isLavaMinable()
+  local rslt= false
+  if (what.name== ITM_LAVA or
+      what.name== ITM_LAVA_FLW ) and
+      what.state.level == 0 then
+      
+    rslt= true
+  end
+  return rslt
 end
 
 ---
