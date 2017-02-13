@@ -279,8 +279,8 @@ end
 obbyMiner.isLavaMinable=function(what)
   -- TODO test isLavaMinable()
   local rslt= false
-  if (what.name== ITM_LAVA or
-      what.name== ITM_LAVA_FLW ) and
+  if ( what.name== ITM_LAVA_FLW or
+       what.name== ITM_LAVA ) and
       what.state.level == 0 then
       
     rslt= true
@@ -331,8 +331,7 @@ obbyMiner.getToIt=function(isFromStart)
         print("Nothing; descending.")
         isAble, whynot=dr.move(dr.DOWN)
       elseif what.name== ITM_OBBY or
-          (what.name== ITM_LAVA and
-          what.state.level == 0) then
+          om.isLavaMinable(what) then
 
         print(what.name,
             what.state.level)
@@ -606,8 +605,7 @@ obbyMiner.mineAPlace = function(
 
   if ok then
 
-    if item.name== ITM_LAVA and
-      item.state.level == 0 then
+    if om.isLavaMinable(item) then
       isWanted = true
 
       -- Makes room for water below
@@ -646,9 +644,9 @@ obbyMiner.mineAPlace = function(
         ok, item= dr.inspect(dr.DOWN)
 
         if ok then
-
-          if item.name== ITM_LAVA and
-              item.state.level== 0 then
+          -- TODO maybe also check for
+          -- obsidian
+          if om.isLavaMinable(item) then
             
             lowerLayerLocus= Locus.new(
                 dr.place.x, dr.place.y,
