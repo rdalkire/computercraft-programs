@@ -119,6 +119,7 @@ local function initOptions( args )
 end
 
 -- constants for the 3 materials
+local ITM_BEDROCK= "minecraft:bedrock"
 local ITM_OBBY = "minecraft:obsidian"
 local ITM_CBBLE="minecraft:cobblestone"
 local ITM_LAVA="minecraft:lava"
@@ -195,8 +196,8 @@ obbyMiner.moveVector= function( way,
 
     if not isAble then
 
-      if whynot=="Movement obstructed"
-      then
+      if whynot== "Movement obstructed"
+          then
         dr.dig( way )
         isAble, whynot= dr.move( way )
       end -- obstructed
@@ -277,7 +278,6 @@ end
 -- @param what the thing inspected
 -- @return true if minable
 obbyMiner.isLavaMinable=function(what)
-  -- TODO test isLavaMinable()
   local rslt= false
   if ( what.name== ITM_LAVA_FLW or
        what.name== ITM_LAVA ) and
@@ -414,6 +414,11 @@ function()
   return true
 end
 
+--- Checks for sufficient fuel,
+-- inventory space and a water bucket
+-- (forward declaration)
+obbyMiner.checkPrereqs = nil
+
 --- Comes back to starting (home)
 -- position, requests action from user,
 -- and if applicable, goes back to
@@ -437,12 +442,14 @@ obbyMiner.comeHomeWaitAndGoBack=
     "or any other key to quit." )
 
   local event, key= os.pullEvent("key")
-  if key == keys.c then
-    isToContinue =
-      whatsTheMatter.callback()
+  if key == keys.c and
+      whatsTheMatter.callback() and
+      om.checkPrereqs() then
 
+    isToContinue = true
+    
     om.moveToPlace(returnPlace.x,
-      returnPlace.y, returnPlace.z)
+        returnPlace.y, returnPlace.z)
   end
 
   return isToContinue
@@ -588,6 +595,8 @@ obbyMiner.setChecked = function(x, z)
       x, z ) ] = true
 end
 
+local g_istToStopProbing = false
+
 --- Inspects down. Full lava blocks
 -- get turned to obby and mined. Obby
 -- and cobble are mined. If full lava
@@ -623,6 +632,9 @@ obbyMiner.mineAPlace = function(
       t.digDown()
     elseif item.name== ITM_CBBLE then
       t.digDown()
+    elseif item.name==ITM_BEDROCK then
+      g_istToStopProbing= true
+      lowerLayerLocus= nil
     end
 
     if isWanted then
@@ -639,14 +651,16 @@ obbyMiner.mineAPlace = function(
       
       -- If lower layer not yet
       -- found, this probes below
-      if lowerLayerLocus== nil then
+      if lowerLayerLocus== nil and
+          not g_istToStopProbing then
+
         om.moveVector(dr.DOWN, 1)
         ok, item= dr.inspect(dr.DOWN)
 
         if ok then
-          -- TODO maybe also check for
-          -- obsidian
-          if om.isLavaMinable(item) then
+
+          if om.isLavaMinable(item) or 
+              item.name== ITM_OBBY then
             
             lowerLayerLocus= Locus.new(
                 dr.place.x, dr.place.y,
@@ -734,6 +748,7 @@ end
 
 --- Checks for sufficient fuel,
 -- inventory space and a water bucket
+-- (forward declared previously)
 obbyMiner.checkPrereqs= function()
 
   return om.isFuelOKForSquare() and
@@ -764,10 +779,18 @@ obbyMiner.main= function( args )
     end
 
     countLayers= countLayers+ 1
-    if g_layerlimit > 0 and
-        countLayers>= g_layerlimit then
         
-      keepGoing = false
+    if g_layerlimit > 0 then
+    
+      if countLayers >= 
+          g_layerlimit-1 then
+        g_istToStopProbing= true
+      end
+      
+      if countLayers>= g_layerlimit then
+        keepGoing = false
+      end
+      
     end
 
   end
