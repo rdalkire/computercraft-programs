@@ -297,7 +297,8 @@ end
 -- constraints or whatever
 obbyMiner.getToIt=function(isFromStart)
 
-  local isAble, whynot
+  local isAble= true 
+  local whynot= "(shrugs)"
 
   print("isFromStart:", isFromStart)
 
@@ -595,7 +596,7 @@ obbyMiner.setChecked = function(x, z)
       x, z ) ] = true
 end
 
-local g_istToStopProbing = false
+local g_isToStopProbing = false
 
 --- Inspects down. Full lava blocks
 -- get turned to obby and mined. Obby
@@ -633,7 +634,7 @@ obbyMiner.mineAPlace = function(
     elseif item.name== ITM_CBBLE then
       t.digDown()
     elseif item.name==ITM_BEDROCK then
-      g_istToStopProbing= true
+      g_isToStopProbing= true
       lowerLayerLocus= nil
     end
 
@@ -652,7 +653,7 @@ obbyMiner.mineAPlace = function(
       -- If lower layer not yet
       -- found, this probes below
       if lowerLayerLocus== nil and
-          not g_istToStopProbing then
+          not g_isToStopProbing then
 
         om.moveVector(dr.DOWN, 1)
         ok, item= dr.inspect(dr.DOWN)
@@ -784,7 +785,7 @@ obbyMiner.main= function( args )
     
       if countLayers >= 
           g_layerlimit-1 then
-        g_istToStopProbing= true
+        g_isToStopProbing= true
       end
       
       if countLayers>= g_layerlimit then
