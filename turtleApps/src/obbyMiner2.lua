@@ -504,7 +504,7 @@ obbyMiner.isFuelOKForSquare= function()
 end
 
 obbyMiner.isInventorySpaceAvail =
-function()
+    function()
   -- XXX move to common API- this is
   -- in large part copied from
   -- veinMiner
@@ -534,9 +534,11 @@ function()
     isAvail = true
   else
 
-    -- TODO maybe instead come back &
+    -- TODO maybe come back & try to
     -- dump inventory into a chest a la
-    -- excavate
+    -- excavate.  If chest isn't there
+    -- ask user to place chest or clear
+    -- inventory
 
     problemWithInventory.message=
       "Please clear inventory "..
