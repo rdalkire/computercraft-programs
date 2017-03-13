@@ -1,15 +1,16 @@
--- Have a wide monitor on top
--- Works well as "startup"
+-- One could also find this at:
+-- http://pastebin.com/ZZD2Nr6R
 
-local m = peripheral.wrap("top")
-m.setTextScale(0.5)
-term.redirect(m)
+local mon= peripheral.wrap("top")
+mon.setTextScale(1.0)
+term.redirect(mon)
 
 while true do 
+  local tme= os.time()
+  local txt= textutils.formatTime(tme,
+      true )
+      
   term.clear()
-  shell.run("time")
-  print("TODOs:")
-  print("- function to craft X number of ladders")
-  print("- one to place them down the wall below")
-  os.sleep(5)
+  print(txt)
+  os.sleep(0.8)
 end

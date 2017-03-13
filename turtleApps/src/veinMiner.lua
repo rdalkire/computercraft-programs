@@ -175,6 +175,10 @@ end
 -- one last cube and move back to the
 -- original place.
 veinMiner.isFuelOK4Cube = function()
+  -- TODO for both 'isFuelOK' funcs,
+  -- go back to user for more fuel
+  -- instead of simply giving up
+
   local isOK = false
   local fuel = t.getFuelLevel()
   if fuel == "unlimited" then
@@ -466,6 +470,11 @@ end
 -- of target material
 veinMiner.isInvtrySpaceAvail=function()
   
+  -- TODO clear the inventory if there
+  -- isn't enough room.  go back to 
+  -- start and dump to chest, or get
+  -- user to clear it
+  
   local isAvail = false
   local frSpace = 0
   for i = 1, 16 do
@@ -539,6 +548,9 @@ end
 -- has been explored, the fuel is gone
 -- or there isn't any more room.
 veinMiner.mine= function( args )
+
+  -- TODO normalize options usage with
+  -- getopt library
 
   local isRectangle = false
   local isArgOK = true
