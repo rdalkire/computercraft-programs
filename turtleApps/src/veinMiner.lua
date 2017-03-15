@@ -253,6 +253,7 @@ veinMiner.check= function(way)
     ok, item= dr.inspect(way)
     
     if ok then
+      -- TODO deal w/ redstone
       if item.name==vm.targetBlockName 
           then
         isWanted = true
@@ -485,7 +486,8 @@ veinMiner.isInvtrySpaceAvail=function()
     else
       local slName= 
           t.getItemDetail(i).name
-          
+
+      -- TODO deal w/ redstone scene
       if slName==
           vm.targetBlockName then
         frSpace= frSpace+ 64- itmCount
