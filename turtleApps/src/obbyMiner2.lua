@@ -388,18 +388,16 @@ problemWithFuel.message = ""
 -- selected slot and indicates they
 -- want to continue
 problemWithFuel.callback = function()
+  
+  local slt= 1
+  local isRefueled= false
+  while slt<= 16 and not isRefueled do
+    t.select(slt)
+    isRefueled= t.refuel()
+    slt= slt+ 1
+  end
 
-  -- TODO maybe in fueling callback:
-  -- loop through all slots to find the
-  -- fuel instead of relying on user
-  -- to pick the *selected* slot.
-  --
-  -- Also, after refueling, check the
-  -- slot just used to see if it's a
-  -- plain bucket. If so, make sure
-  -- there's also a water bucket
-
-  return t.refuel()
+  return isRefueled
 
 end
 
@@ -490,7 +488,7 @@ obbyMiner.isFuelOKForSquare= function()
       problemWithFuel.message =
         string.format(
           "Please place fuel into "..
-          "the SELECTED slot. Be "..
+          "turtle's inventory & be "..
           "generous. At very "..
           "minimum, %d units.",
           dif )
