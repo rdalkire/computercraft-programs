@@ -408,7 +408,8 @@ problemWithInventory = {}
 problemWithInventory.message = ""
 
 problemWithInventory.callback=
-function()
+    function()
+  
   -- Assuming user took care of it
   return true
 end
@@ -427,6 +428,7 @@ obbyMiner.checkPrereqs = nil
 -- @return true if it could continue
 obbyMiner.comeHomeWaitAndGoBack=
     function( whatsTheMatter )
+    
   local isToContinue = false
 
   local returnPlace = Locus.new(
@@ -501,6 +503,47 @@ obbyMiner.isFuelOKForSquare= function()
   return isOK
 end
 
+--- 
+-- Comes back to home and tries to
+-- dump inventory into a chest a la
+-- excavate.
+-- @return true if there was a chest
+-- to dump to
+obbyMiner.dumpToChest = function()
+  
+  local isHappy = false
+
+  local returnPlace = Locus.new(
+    dr.place.x, dr.place.y,
+    dr.place.z)
+
+  om.moveToPlace(0, 0, 0)
+  
+  local isItm, itm= dr.inspect(dr.AFT)
+  if isItm and 
+      itm.name=="minecraft:chest" then
+
+    -- dump everything except w. bucket
+    for i= 1, 16 do
+      local thg= t.getItemDetail(slot)
+      if thg ~= nil and 
+          thg.name ~= ITM_WTR_BCKT then
+        t.drop() 
+      end
+    end
+    
+    -- and go back to where working
+    om.moveToPlace(returnPlace.x,
+        returnPlace.y, returnPlace.z)
+    
+    isHappy = true
+    
+  end
+    
+  return isHappy
+
+end
+
 obbyMiner.isInventorySpaceAvail =
     function()
   -- XXX move to common API- this is
@@ -532,18 +575,20 @@ obbyMiner.isInventorySpaceAvail =
     isAvail = true
   else
 
-    -- TODO maybe come back & try to
-    -- dump inventory into a chest a la
-    -- excavate.  If chest isn't there
+    local isOK= om.dumpToChest()
+
+    -- If chest isn't there
     -- ask user to place chest or clear
     -- inventory
-
-    problemWithInventory.message=
-      "Please clear inventory "..
-      "space for obsidian."
-
-    isAvail= om.comeHomeWaitAndGoBack(
-      problemWithInventory )
+    if not isOK then
+      problemWithInventory.message=
+        "Please clear inventory "..
+        "space for obsidian or place"..
+        " a chest."
+  
+      isAvail=om.comeHomeWaitAndGoBack(
+        problemWithInventory )
+    end
   end
 
   return isAvail
