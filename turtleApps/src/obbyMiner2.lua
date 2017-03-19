@@ -525,9 +525,10 @@ obbyMiner.dumpToChest = function()
 
     -- dump everything except w. bucket
     for i= 1, 16 do
-      local thg= t.getItemDetail(slot)
+      local thg= t.getItemDetail(i)
       if thg ~= nil and 
           thg.name ~= ITM_WTR_BCKT then
+        t.select(i)
         t.drop() 
       end
     end
