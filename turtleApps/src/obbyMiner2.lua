@@ -430,11 +430,16 @@ obbyMiner.comeHomeWaitAndGoBack=
     function( whatsTheMatter )
     
   local isToContinue = false
-
-  local returnPlace = Locus.new(
-    dr.place.x, dr.place.y,
-    dr.place.z)
-
+  
+  local returnPlace = whatsTheMatter.
+      returnPlace
+  
+  if returnPlace== nil then
+    returnPlace= Locus.new(
+        dr.place.x, dr.place.y,
+        dr.place.z)
+  end
+  
   om.moveToPlace(0, 0, 0)
   
   term.clear()
@@ -507,15 +512,19 @@ end
 -- Comes back to home and tries to
 -- dump inventory into a chest a la
 -- excavate.
--- @return true if there was a chest
--- to dump to
+-- @return isChest true if there was a 
+-- chest to dump to
+-- @return returnPlace in case
+-- caller needs to know how to get
+-- back to work.  Applicable when
+-- isChest is false
 obbyMiner.dumpToChest = function()
   
   local isHappy = false
 
   local returnPlace = Locus.new(
-    dr.place.x, dr.place.y,
-    dr.place.z)
+      dr.place.x, dr.place.y,
+      dr.place.z)
 
   om.moveToPlace(0, 0, 0)
   
@@ -537,11 +546,12 @@ obbyMiner.dumpToChest = function()
     om.moveToPlace(returnPlace.x,
         returnPlace.y, returnPlace.z)
     
+    returnPlace = nil
     isHappy = true
     
   end
     
-  return isHappy
+  return isHappy, returnPlace
 
 end
 
@@ -552,6 +562,7 @@ obbyMiner.isInventorySpaceAvail =
   -- veinMiner
 
   local isAvail = false
+  -- Counts free spaces for Obbsidian
   local frSpace = 0
   for i = 1, 16 do
     local itmCount = t.getItemCount(i)
@@ -575,17 +586,23 @@ obbyMiner.isInventorySpaceAvail =
   if frSpace >= 9 then
     isAvail = true
   else
+    local returnPlace= nil
+    
+    isAvail, returnPlace= 
+        om.dumpToChest()
 
-    isAvail= om.dumpToChest()
-
+    problemWithInventory.returnPlace=
+        returnPlace
+    
     -- If chest isn't there
     -- ask user to place chest or clear
     -- inventory
     if not isAvail then
+
       problemWithInventory.message=
-        "Please clear inventory "..
-        "space for obsidian or place"..
-        " a chest."
+          "Please clear inventory "..
+          "space for obsidian or "..
+          "place a chest."
   
       isAvail=om.comeHomeWaitAndGoBack(
         problemWithInventory )
