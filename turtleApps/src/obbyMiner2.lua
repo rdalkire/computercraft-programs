@@ -576,12 +576,12 @@ obbyMiner.isInventorySpaceAvail =
     isAvail = true
   else
 
-    local isOK= om.dumpToChest()
+    isAvail= om.dumpToChest()
 
     -- If chest isn't there
     -- ask user to place chest or clear
     -- inventory
-    if not isOK then
+    if not isAvail then
       problemWithInventory.message=
         "Please clear inventory "..
         "space for obsidian or place"..
