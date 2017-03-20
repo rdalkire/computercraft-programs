@@ -30,3 +30,7 @@ os.pullEvent= function(evntNme)
   end
   return evntNme, rtnKey
 end
+
+os.wait= function(seconds)
+  print("pretending to wait")
+end
