@@ -11,11 +11,11 @@ at http://opensource.org/licenses/MIT)
 ]]
 
 -- NOTE remember to update this
-local MY_BRANCH= "dalkire-obsidian2"
+local MY_BRANCH= "ialkire-sugarcane"
 
 local MY_BASE = "https://"..
   "raw.githubusercontent.com/"..
-  "rdalkire/"..
+  "ialkire/"..
   "computercraft-programs/"..
   MY_BRANCH ..
   "/turtleApps/src/"
