@@ -37,6 +37,10 @@ local D_BASE = "https://"..
     "computercraft-programs/".. 
     "dalkire-obsidian2/turtleApps/src/"
 
+local ITM_REDSTONE="minecraft:redstone"
+local SBSTRNG_REDSTONE_ORE=
+    "redstone_ore"
+
 --- Ensures dependency exists.
 local function ensureDep(depNme,depVer)
 
@@ -134,6 +138,10 @@ veinMiner.inspectSelfAvoidance = 0
 -- don't match the target blocks.
 veinMiner.isAll = false
 
+--- true if target block is redstone
+-- ore, whether lit or not
+veinMiner.isRedstone = false
+
 --- Count of goLookAt calls skipped due
 -- to logic within inspectACube,
 -- therefore avoiding extra movements
@@ -222,6 +230,35 @@ veinMiner.isFuelOK4Dest=
   return isOK
 end
 
+--- Determines whether given item
+-- is what you're looking for
+-- @param name of item you're checking
+-- @return true if it matches.  If 
+-- isRedStone, then the match will 
+-- succeed for redstone ore, lit red-
+-- stone ore, or simple redstone.
+veinMiner.isTargetMatch= 
+    function(itmName)
+
+  local isMatch= false
+  
+  if vm.isRedstone then
+    
+    if string.find( itmName, 
+        SBSTRNG_REDSTONE_ORE, 11, 
+        true ) or 
+        itmName== ITM_REDSTONE then
+      isMatch= true
+    end
+    
+  elseif itmName == 
+      vm.targetBlockName then
+    isMatch = true 
+  end
+  
+  return isMatch
+end
+
 --- If the target has not already been 
 -- inspected it gets checked here.
 -- If so it gets added to the inspected
@@ -253,9 +290,9 @@ veinMiner.check= function(way)
     ok, item= dr.inspect(way)
     
     if ok then
-      -- TODO deal w/ redstone
-      if item.name==vm.targetBlockName 
-          then
+      if vm.isTargetMatch( 
+          item.name ) then
+
         isWanted = true
         local locus= Locus.new( ix, 
             iy, iz)
@@ -487,9 +524,7 @@ veinMiner.isInvtrySpaceAvail=function()
       local slName= 
           t.getItemDetail(i).name
 
-      -- TODO deal w/ redstone scene
-      if slName==
-          vm.targetBlockName then
+      if vm.isTargetMatch( slName ) then
         frSpace= frSpace+ 64- itmCount
       end -- match
       
@@ -582,6 +617,13 @@ veinMiner.mine= function( args )
     
     veinMiner.targetBlockName = 
         block.name
+    
+    if string.find(block.name, 
+        SBSTRNG_REDSTONE_ORE, 11, 
+        true) then
+      vm.isRedstone = true
+    end
+    
     print("target block: ".. 
         block.name)
     

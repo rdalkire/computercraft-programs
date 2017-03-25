@@ -120,6 +120,7 @@ end
 
 -- constants for the 3 materials
 local ITM_BEDROCK= "minecraft:bedrock"
+local ITM_CHEST= "minecraft:chest"
 local ITM_OBBY = "minecraft:obsidian"
 local ITM_CBBLE="minecraft:cobblestone"
 local ITM_LAVA="minecraft:lava"
@@ -530,7 +531,7 @@ obbyMiner.dumpToChest = function()
   
   local isItm, itm= dr.inspect(dr.AFT)
   if isItm and 
-      itm.name=="minecraft:chest" then
+      itm.name== ITM_CHEST then
 
     -- dump everything except w. bucket
     for i= 1, 16 do
