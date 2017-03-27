@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.ldt.debug.core.lualocaldebug">
+<booleanAttribute key="enableBreakOnFirstLine" value="false"/>
+<booleanAttribute key="enableDbgpLogging" value="false"/>
+<stringAttribute key="mainScript" value="src/veinMiner.lua"/>
+<stringAttribute key="nature" value="org.eclipse.ldt.nature"/>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
+<listEntry value="/turtleApps/src/veinMiner.lua"/>
+</listAttribute>
+<listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
+<listEntry value="1"/>
+</listAttribute>
+<stringAttribute key="org.eclipse.dltk.launching.INTERPRETER_CONTAINER" value="org.eclipse.dltk.launching.INTERPRETER_CONTAINER/org.eclipse.ldt.support.lua51.JNLua51InterpreterInstallType/Lua 5.1 on JNLua"/>
+<booleanAttribute key="org.eclipse.dltk.launching.debugConsole" value="true"/>
+<stringAttribute key="process_factory_id" value="org.eclipse.dltk.launching.scriptProcessFactory"/>
+<stringAttribute key="project" value="turtleApps"/>
+<stringAttribute key="workingDir" value="${workspace_loc:turtleApps/src}"/>
+</launchConfiguration>

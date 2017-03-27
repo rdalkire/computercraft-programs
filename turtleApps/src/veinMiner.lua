@@ -41,6 +41,13 @@ local ITM_REDSTONE="minecraft:redstone"
 local SBSTRNG_REDSTONE_ORE=
     "redstone_ore"
 
+local lf = loadfile( "mockTurtle.lua")
+if lf ~= nil then   lf()
+  lf= loadfile("mockMiscellaneous.lua")
+  lf()
+end
+local t = turtle
+
 --- Ensures dependency exists.
 local function ensureDep(depNme,depVer)
 
@@ -74,13 +81,6 @@ end
 
 ensureDep("deadReckoner.lua", "1.1.1" )
 local dr = deadReckoner
-
-local lf = loadfile( "mockTurtle.lua")
-if lf ~= nil then   lf()
-  lf= loadfile("mockMiscellaneous.lua")
-  lf()
-end
-local t = turtle
 
 local veinMiner = {}
 local vm = veinMiner
@@ -185,12 +185,14 @@ end
 --- Message and solution for fuel
 problemWithFuel = {}
 problemWithFuel.needMin= 0
-problemWithFuel.message= string.format(
+problemWithFuel.getMessage= function()
+  return string.format(
           "Please place fuel into "..
           "turtle's inventory & be "..
           "generous. At very "..
           "minimum, %d units.",
           problemWithFuel.needMin )
+end
 
 --- To be called if user puts fuel into
 -- selected slot and indicates they
@@ -233,7 +235,7 @@ veinMiner.comeHomeWaitAndGoBack=
   vm.exploreTo( Locus.new(0,0,0) )
   
   term.clear()
-  print( whatsTheMatter.message )
+  print( whatsTheMatter.getMessage() )
   print( "Then press c to continue "..
     "or any other key to quit." )
 
