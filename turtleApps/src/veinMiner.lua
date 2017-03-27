@@ -76,7 +76,10 @@ ensureDep("deadReckoner.lua", "1.1.1" )
 local dr = deadReckoner
 
 local lf = loadfile( "mockTurtle.lua")
-if lf ~= nil then lf() end
+if lf ~= nil then   lf()
+  lf= loadfile("mockMiscellaneous.lua")
+  lf()
+end
 local t = turtle
 
 local veinMiner = {}
@@ -179,20 +182,85 @@ veinMiner.isVeinExplored= function()
   return isExplored
 end
 
+--- Message and solution for fuel
+problemWithFuel = {}
+problemWithFuel.needMin= 0
+problemWithFuel.message= string.format(
+          "Please place fuel into "..
+          "turtle's inventory & be "..
+          "generous. At very "..
+          "minimum, %d units.",
+          problemWithFuel.needMin )
+
+--- To be called if user puts fuel into
+-- selected slot and indicates they
+-- want to continue
+problemWithFuel.callback = function()
+  
+  local slt= 1
+  local isRefueled= false
+  while slt<= 16 and not isRefueled do
+    t.select(slt)
+    isRefueled= t.refuel()
+    slt= slt+ 1
+  end
+
+  return isRefueled
+
+end
+
+--- Comes back to starting (home)
+-- position, requests action from user,
+-- and if applicable, goes back to
+-- where it left off.
+-- @param whatsTheMatter with message
+-- and callback
+-- @return true if it could continue
+veinMiner.comeHomeWaitAndGoBack=
+    function( whatsTheMatter )
+    
+  local isToContinue = false
+  
+  local returnPlace = whatsTheMatter.
+      returnPlace
+  
+  if returnPlace== nil then
+    returnPlace= Locus.new(
+        dr.place.x, dr.place.y,
+        dr.place.z)
+  end
+  
+  vm.exploreTo( Locus.new(0,0,0) )
+  
+  term.clear()
+  print( whatsTheMatter.message )
+  print( "Then press c to continue "..
+    "or any other key to quit." )
+
+  local event, key= os.pullEvent("key")
+  if key == keys.c and
+      whatsTheMatter.callback() then
+
+    isToContinue = true
+    
+    vm.exploreTo(returnPlace)
+  end
+
+  return isToContinue
+end
+
 --- If there's enough fuel to explore
 -- one last cube and move back to the
 -- original place.
 veinMiner.isFuelOK4Cube = function()
-  -- TODO for both 'isFuelOK' funcs,
-  -- go back to user for more fuel
-  -- instead of simply giving up
 
   local isOK = false
   local fuel = t.getFuelLevel()
+  local fuelNeed= 0
   if fuel == "unlimited" then
     isOK = true
   else
-    local fuelNeed = 
+    fuelNeed = 
         veinMiner.previousDistance +
         dr.howFarFromHome() +
         vm.MOVESPERCUBE
@@ -202,6 +270,19 @@ veinMiner.isFuelOK4Cube = function()
       print("Fuel too low: ".. fuel )
     end
   end
+  
+  -- try to get more fuel from user
+  if not isOK then
+    -- more fuel for getting fuel
+    fuelNeed= fuelNeed+ dr.
+        howFarFromHome()
+        
+    problemWithFuel.needMin= fuelNeed
+    
+    isOK= vm.comeHomeWaitAndGoBack(
+        problemWithFuel )
+  end
+  
   return isOK
 end
 
@@ -213,12 +294,14 @@ veinMiner.isFuelOK4Dest=
     function(x, y, z) 
   local isOK = false
   local fuel = t.getFuelLevel()
+  local fuelNeed= 0
+  
   if fuel == "unlimited" then
     isOK = true
   else
     local destToHome = math.abs(x)+
         math.abs(y)+ math.abs(z)
-    local fuelNeed =
+    fuelNeed =
         dr.howFarFrom(x,y,z)+
         destToHome+ vm.previousDistance
     if fuel >= fuelNeed then
@@ -227,6 +310,19 @@ veinMiner.isFuelOK4Dest=
       print("Not enough fuel:".. fuel)
     end
   end
+  
+  -- try to get more fuel from user
+  if not isOK then
+    -- more fuel for getting fuel
+    fuelNeed= fuelNeed+ dr.
+        howFarFromHome()
+        
+    problemWithFuel.needMin= fuelNeed
+    
+    isOK= vm.comeHomeWaitAndGoBack(
+        problemWithFuel )
+  end
+  
   return isOK
 end
 
