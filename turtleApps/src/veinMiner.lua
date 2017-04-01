@@ -182,15 +182,20 @@ veinMiner.isVeinExplored= function()
   return isExplored
 end
 
+-- XXX Generalize and externalize the 
+-- fuel and inventory solutions, to be
+-- shared with obbyMiner2
+
 --- Message and solution for fuel
 problemWithFuel = {}
 problemWithFuel.needMin= 0
 problemWithFuel.getMessage= function()
   return string.format(
-          "Please place fuel into "..
-          "turtle's inventory & be "..
-          "generous. At very "..
-          "minimum, %d units.",
+          "Fuel please. At very "..
+          "minimum, %d units. But "..
+          "as a general rule, 800."..
+          " For instance a block of "..
+          "coal would be nice",
           problemWithFuel.needMin )
 end
 
@@ -622,7 +627,7 @@ veinMiner.isInvtrySpaceAvail=function()
       local slName= 
           t.getItemDetail(i).name
 
-      if vm.isTargetMatch( slName ) then
+      if vm.isTargetMatch(slName) then
         frSpace= frSpace+ 64- itmCount
       end -- match
       
