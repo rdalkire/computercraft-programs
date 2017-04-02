@@ -29,20 +29,26 @@ Distributed under the MIT License.
 at http://opensource.org/licenses/MIT)
 ]]
 
--- TODO remember to update D_BASE
+-- TODO centralize dpndcy mngmnt 
+
+--NOTE on turtle copy, update MY_BRANCH
+local MY_BRANCH= "master/"
+
 --- Base URL for dependencies
 local D_BASE = "https://".. 
     "raw.githubusercontent.com/".. 
     "rdalkire/"..
     "computercraft-programs/".. 
-    "dalkire-obsidian2/turtleApps/src/"
+    MY_BRANCH..
+    "turtleApps/src/"
 
 local ITM_REDSTONE="minecraft:redstone"
 local SBSTRNG_REDSTONE_ORE=
     "redstone_ore"
 
 local lf = loadfile( "mockTurtle.lua")
-if lf ~= nil then   lf()
+if lf ~= nil then
+  lf()
   lf= loadfile("mockMiscellaneous.lua")
   lf()
 end

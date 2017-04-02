@@ -13,13 +13,15 @@ Distributed under the MIT License.
 at http://opensource.org/licenses/MIT)
 ]]
 
--- TODO remember to update D_BASE
+--NOTE on turtle copy, update MY_BRANCH
+local MY_BRANCH= "master/"
+
 --- Base URL for dependencies
 local D_BASE = "https://".. 
     "raw.githubusercontent.com/".. 
     "rdalkire/"..
     "computercraft-programs/".. 
-    "dalkire-obsidian2/"..
+    MY_BRANCH..
     "turtleApps/src/"
 
 --- Ensures dependency exists.

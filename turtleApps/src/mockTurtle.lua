@@ -65,7 +65,6 @@ local function checkAndDecrementFuel()
   if fuelLevel ~= "unlimited" then
     if fuelLevel <= 0 then
       rtrn = false
-      -- TODO find out real message
       whyNot = "Out of fuel"
     else
       fuelLevel = fuelLevel - 1

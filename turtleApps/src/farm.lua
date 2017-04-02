@@ -770,8 +770,8 @@ local function main( tArgs )
       widthFromUsr = tonumber(widthFromUsr)
     end
    
-   -- TODO get usr's row count limit
-   -- and use it
+   -- Get usr's row count limit and 
+   -- use it
   if argCount > 1 then
     rowsFromUsr = tArgs[2]
     if tonumber(rowsFromUsr)==nil then
@@ -813,7 +813,7 @@ end
  
 local tArgs = {...}
 
--- TODO for TEST comment-out main()
+-- NOTE for TEST, comment-out main()
 main(tArgs)
 
 return frm

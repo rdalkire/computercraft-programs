@@ -10,15 +10,15 @@ Distributed under the MIT License.
 at http://opensource.org/licenses/MIT)
 ]]
 
--- NOTE remember to update this
-local MY_BRANCH= "ialkire-sugarcane"
+-- NOTE on turtle copy, update branch
+local MY_BRANCH= "master/"
 
 local MY_BASE = "https://"..
   "raw.githubusercontent.com/"..
-  "ialkire/"..
+  "rdalkire/"..
   "computercraft-programs/"..
   MY_BRANCH ..
-  "/turtleApps/src/"
+  "turtleApps/src/"
 
 local args= {...}
 local lclFile= args[1]

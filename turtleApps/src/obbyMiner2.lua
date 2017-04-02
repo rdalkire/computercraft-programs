@@ -16,14 +16,16 @@ local g_layerlimit = 0
 -- and forward to find the lava
 local FINDING_LIMIT = 128
 
--- NOTE remember to update D_BASE
---- Base URL for dependencies
-local D_BASE = "https://"..
-  "raw.githubusercontent.com/"..
-  "rdalkire/"..
-  "computercraft-programs/"..
-  "dalkire-obsidian2/turtleApps/src/"
+--NOTE on turtle copy, update MY_BRANCH
+local MY_BRANCH= "master/"
 
+--- Base URL for dependencies
+local D_BASE = "https://".. 
+    "raw.githubusercontent.com/".. 
+    "rdalkire/"..
+    "computercraft-programs/".. 
+    MY_BRANCH..
+    "turtleApps/src/"
 
 local lf = loadfile( "mockTurtle.lua")
 if lf ~= nil then 
