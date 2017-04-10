@@ -32,19 +32,20 @@ at http://opensource.org/licenses/MIT)
 -- TODO centralize dpndcy mngmnt 
 
 --NOTE on turtle copy, update MY_BRANCH
-local MY_BRANCH= "master/"
+MY_BRANCH= "master/"
 
 --- Base URL for dependencies
-local D_BASE = "https://".. 
+local getDependencyBase= function()
+
+  return
+    "https://".. 
     "raw.githubusercontent.com/".. 
     "rdalkire/"..
     "computercraft-programs/".. 
     MY_BRANCH..
     "turtleApps/src/"
 
-local ITM_REDSTONE="minecraft:redstone"
-local SBSTRNG_REDSTONE_ORE=
-    "redstone_ore"
+end
 
 local lf = loadfile( "mockTurtle.lua")
 if lf ~= nil then
@@ -76,20 +77,33 @@ local function ensureDep(depNme,depVer)
   end
   
   if isGood== false then
+  
     print("getting latest version")
+
     shell.run("wget", 
-        D_BASE.. depNme, depNme )
+        getDependencyBase().. depNme, 
+        depNme )
+    
     drFile= loadfile(depNme)
     drFile()
   end
   
 end
 
+ensureDep("getMy.lua", "1.1")
+print("After loading getMy.lua, "..
+    "branch = ".. MY_BRANCH )
+
 ensureDep("deadReckoner.lua", "1.1.1" )
 local dr = deadReckoner
 
 local veinMiner = {}
 local vm = veinMiner
+
+
+local ITM_REDSTONE="minecraft:redstone"
+local SBSTRNG_REDSTONE_ORE=
+    "redstone_ore"
 
 --- For estimating fuel need
 veinMiner.MOVESPERCUBE = 15
