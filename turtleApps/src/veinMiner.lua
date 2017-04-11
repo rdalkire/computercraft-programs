@@ -29,20 +29,20 @@ Distributed under the MIT License.
 at http://opensource.org/licenses/MIT)
 ]]
 
--- TODO centralize dpndcy mngmnt 
-
---NOTE on turtle copy, update MY_BRANCH
-MY_BRANCH= "master/"
-
 --- Base URL for dependencies
 local getDependencyBase= function()
-
+  local myBranch = "master/"
+  
+  if MY_BRANCH then
+    myBranch = MY_BRANCH 
+  end
+  
   return
     "https://".. 
     "raw.githubusercontent.com/".. 
     "rdalkire/"..
     "computercraft-programs/".. 
-    MY_BRANCH..
+    myBranch..
     "turtleApps/src/"
 
 end
