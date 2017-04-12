@@ -22,12 +22,24 @@ veins of ore.
    if not present, so HTTP must be 
    available.
 
-Copyright (c) 2015 - 2016
-Robert David Alkire II, IGN ian_xw
+Copyright (c) 2015 - 2017
+Robert David Alkire II, IGN goatsbuster
+FKA ian_xw
 Distributed under the MIT License.
 (See accompanying file LICENSE or copy
 at http://opensource.org/licenses/MIT)
 ]]
+
+-- BEGIN BOILERPLATE
+-- XXX My apologies for the stink
+
+local lf = loadfile( "mockTurtle.lua")
+if lf ~= nil then
+  lf()
+  lf= loadfile("mockMiscellaneous.lua")
+  lf()
+end
+local t = turtle
 
 --- Base URL for dependencies
 local getDependencyBase= function()
@@ -46,14 +58,6 @@ local getDependencyBase= function()
     "turtleApps/src/"
 
 end
-
-local lf = loadfile( "mockTurtle.lua")
-if lf ~= nil then
-  lf()
-  lf= loadfile("mockMiscellaneous.lua")
-  lf()
-end
-local t = turtle
 
 --- Ensures dependency exists.
 local function ensureDep(depNme,depVer)
@@ -91,8 +95,7 @@ local function ensureDep(depNme,depVer)
 end
 
 ensureDep("getMy.lua", "1.1")
-print("After loading getMy.lua, "..
-    "branch = ".. MY_BRANCH )
+-- END BOILERPLATE
 
 ensureDep("deadReckoner.lua", "1.1.1" )
 local dr = deadReckoner

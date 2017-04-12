@@ -16,57 +16,72 @@ local g_layerlimit = 0
 -- and forward to find the lava
 local FINDING_LIMIT = 128
 
---NOTE on turtle copy, update MY_BRANCH
-local MY_BRANCH= "master/"
-
---- Base URL for dependencies
-local D_BASE = "https://".. 
-    "raw.githubusercontent.com/".. 
-    "rdalkire/"..
-    "computercraft-programs/".. 
-    MY_BRANCH..
-    "turtleApps/src/"
+-- BEGIN BOILERPLATE
+-- XXX My apologies for the stink
 
 local lf = loadfile( "mockTurtle.lua")
-if lf ~= nil then 
+if lf ~= nil then
   lf()
   lf= loadfile("mockMiscellaneous.lua")
   lf()
 end
 local t = turtle
 
+--- Base URL for dependencies
+local getDependencyBase= function()
+  local myBranch = "master/"
+  
+  if MY_BRANCH then
+    myBranch = MY_BRANCH 
+  end
+  
+  return
+    "https://".. 
+    "raw.githubusercontent.com/".. 
+    "rdalkire/"..
+    "computercraft-programs/".. 
+    myBranch..
+    "turtleApps/src/"
+
+end
+
 --- Ensures dependency exists.
 local function ensureDep(depNme,depVer)
 
   print("Ensuring presence of "..
-    depNme.. " ".. depVer)
-
+      depNme.. " ".. depVer)
+      
   local drFile= loadfile( depNme )
   local isGood = false
-
+  
   if drFile ~= nil then
     drFile()
     if depVer == DEP_VERSION then
       isGood = true
     else
-      print("existing version: "..
-        DEP_VERSION)
-
-      shell.run("rename", depNme,
-        depNme.."_".. DEP_VERSION )
-
+      print("existing version: ".. 
+          DEP_VERSION)
+      shell.run("rename", depNme, 
+          depNme.."_".. DEP_VERSION )
     end
   end
-
+  
   if isGood== false then
+  
     print("getting latest version")
-    shell.run("wget",
-      D_BASE.. depNme, depNme )
+
+    shell.run("wget", 
+        getDependencyBase().. depNme, 
+        depNme )
+    
     drFile= loadfile(depNme)
     drFile()
   end
-
+  
 end
+
+ensureDep("getMy.lua", "1.1")
+-- END BOILERPLATE
 
 ensureDep("deadReckoner.lua", "1.1.1" )
 local dr = deadReckoner

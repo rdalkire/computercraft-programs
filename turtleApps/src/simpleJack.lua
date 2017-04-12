@@ -1,5 +1,7 @@
 -- For trees, straight up, no branches
 
+DEP_VERSION = "1.1"
+
 local isBlck, blck =
     turtle.inspect()
 

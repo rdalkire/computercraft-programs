@@ -13,23 +13,41 @@ Distributed under the MIT License.
 at http://opensource.org/licenses/MIT)
 ]]
 
---NOTE on turtle copy, update MY_BRANCH
-local MY_BRANCH= "master/"
+-- BEGIN BOILERPLATE
+-- XXX My apologies for the stink
+
+local lf = loadfile( "mockTurtle.lua")
+if lf ~= nil then
+  lf()
+  lf= loadfile("mockMiscellaneous.lua")
+  lf()
+end
+local t = turtle
 
 --- Base URL for dependencies
-local D_BASE = "https://".. 
+local getDependencyBase= function()
+  local myBranch = "master/"
+  
+  if MY_BRANCH then
+    myBranch = MY_BRANCH 
+  end
+  
+  return
+    "https://".. 
     "raw.githubusercontent.com/".. 
     "rdalkire/"..
     "computercraft-programs/".. 
-    MY_BRANCH..
+    myBranch..
     "turtleApps/src/"
+
+end
 
 --- Ensures dependency exists.
 local function ensureDep(depNme,depVer)
 
   print("Ensuring presence of "..
       depNme.. " ".. depVer)
-  
+      
   local drFile= loadfile( depNme )
   local isGood = false
   
@@ -46,24 +64,26 @@ local function ensureDep(depNme,depVer)
   end
   
   if isGood== false then
+  
     print("getting latest version")
+
     shell.run("wget", 
-        D_BASE.. depNme,
+        getDependencyBase().. depNme, 
         depNme )
+    
     drFile= loadfile(depNme)
     drFile()
   end
   
 end
 
+ensureDep("getMy.lua", "1.1")
+-- END BOILERPLATE
+
 ensureDep("deadReckoner.lua", "1.1.1" )
 local dr = deadReckoner
 
 ensureDep("getopt.lua", "2.0" )
-
-local lf = loadfile( "mockTurtle.lua")
-if lf ~= nil then lf() end
-local t = turtle
 
 local FILL_MIN = 12
 local ITM_FILL="minecraft:cobblestone"
