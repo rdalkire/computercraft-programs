@@ -103,7 +103,7 @@ local dr = deadReckoner
 local veinMiner = {}
 local vm = veinMiner
 
-
+local ITM_CHEST= "minecraft:chest"
 local ITM_REDSTONE="minecraft:redstone"
 local SBSTRNG_REDSTONE_ORE=
     "redstone_ore"
@@ -629,10 +629,73 @@ veinMiner.inspectACube= function()
   end
 end
 
+--- Message and solution for inventory
+-- or other problems that have an empty
+-- callback function
+problemWithInventory = {}
+problemWithInventory.message = ""
+
+problemWithInventory.callback=
+    function()
+  
+  -- Assuming user took care of it
+  return true
+end
+
+--- 
+-- Comes back to home and tries to
+-- dump inventory into a chest a la
+-- excavate.
+-- @return isChest true if there was a 
+-- chest to dump to
+-- @return returnPlace in case
+-- caller needs to know how to get
+-- back to work.  Applicable *only* 
+-- when isChest is false
+veinMiner.dumpToChest = function()
+
+-- XXX Centralize dumpToChest()
+
+  local isHappy = false
+
+  local returnPlace = Locus.new(
+      dr.place.x, dr.place.y,
+      dr.place.z)
+
+  vm.exploreTo( Locus.new(0,0,0) )
+  
+  local isItm, itm= dr.inspect(dr.AFT)
+  if isItm and 
+      itm.name== ITM_CHEST then
+
+    -- dump everything except w. bucket
+    for i= 1, 16 do
+      local thg= t.getItemDetail(i)
+      if thg ~= nil then
+        t.select(i)
+        t.drop() 
+      end
+    end
+    
+    -- and go back to where working
+    vm.exploreTo(returnPlace)
+    
+    returnPlace = nil
+    isHappy = true
+    
+  end
+    
+  return isHappy, returnPlace
+
+end
+
+
 --- Sees if there's enough space in
 -- the inventory for another cube
 -- of target material
 veinMiner.isInvtrySpaceAvail=function()
+  
+  -- XXX move (and mod) to common API
   
   -- TODO clear the inventory if there
   -- isn't enough room.  go back to 
@@ -663,10 +726,29 @@ veinMiner.isInvtrySpaceAvail=function()
   if frSpace >= 25 then
     isAvail = true
   else
-    print( "There might not be ".. 
-    "enough inventory \nspace to ".. 
-    "hold the target material" )
+    local returnPlace= nil
+    
+    isAvail, returnPlace= 
+        vm.dumpToChest()
+
+    problemWithInventory.returnPlace=
+        returnPlace
+    
+    -- If chest isn't there
+    -- ask user to place chest or clear
+    -- inventory
+    if not isAvail then
+
+      problemWithInventory.message=
+          "Please clear inventory "..
+          "space for obsidian or "..
+          "place a chest."
+  
+      isAvail=vm.comeHomeWaitAndGoBack(
+          problemWithInventory )
+    end
   end
+  
   return isAvail
 end
 
@@ -794,6 +876,6 @@ veinMiner.mine= function( args )
   end
 end
 
-vm.mine({...})
+vm.mine( {...} )
 
 return veinMiner

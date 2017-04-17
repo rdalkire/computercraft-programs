@@ -537,7 +537,9 @@ end
 -- back to work.  Applicable when
 -- isChest is false
 obbyMiner.dumpToChest = function()
-  
+
+-- XXX Centralize
+
   local isHappy = false
 
   local returnPlace = Locus.new(
