@@ -677,6 +677,9 @@ veinMiner.dumpToChest = function()
   if isItm and 
       itm.name== ITM_CHEST then
 
+    -- TODO mark chest as untouchable
+    -- (if tenable), Or forget chest.
+    
     -- dump everything except w. bucket
     for i= 1, 16 do
       local thg= t.getItemDetail(i)
@@ -751,7 +754,8 @@ veinMiner.isInvtrySpaceAvail=function()
       problemWithInventory.message=
           "Please clear inventory "..
           "space for obsidian or "..
-          "place a chest."
+          "place a chest behind "..
+          "the turtle's home position"
   
       isAvail=vm.comeHomeWaitAndGoBack(
           problemWithInventory )
