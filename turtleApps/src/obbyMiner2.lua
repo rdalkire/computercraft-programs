@@ -446,7 +446,9 @@ obbyMiner.checkPrereqs = nil
 -- @return true if it could continue
 obbyMiner.comeHomeWaitAndGoBack=
     function( whatsTheMatter )
-    
+  
+  -- XXX cntrlze comeHomeWaitAndGoBack
+  
   local isToContinue = false
   
   local returnPlace = whatsTheMatter.

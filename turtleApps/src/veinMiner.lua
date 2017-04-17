@@ -249,6 +249,7 @@ end
 veinMiner.comeHomeWaitAndGoBack=
     function( whatsTheMatter )
     
+  -- XXX cntrlze comeHomeWaitAndGoBack
   local isToContinue = false
   
   local returnPlace = whatsTheMatter.
@@ -269,7 +270,9 @@ veinMiner.comeHomeWaitAndGoBack=
 
   local event, key= os.pullEvent("key")
   if key == keys.c and
-      whatsTheMatter.callback() then
+      whatsTheMatter.callback() and 
+      vm.isFuelOK4Cube() and
+      vm.isInvtrySpaceAvail() then
 
     isToContinue = true
     
