@@ -100,7 +100,7 @@ ensureDep("getMy.lua", "1.1")
 ensureDep("deadReckoner.lua", "1.1.1" )
 local dr = deadReckoner
 
-local veinMiner = {}
+veinMiner = {}
 local vm = veinMiner
 
 local ITM_CHEST= "minecraft:chest"
@@ -634,6 +634,12 @@ end
 -- callback function
 problemWithInventory = {}
 problemWithInventory.message = ""
+
+problemWithInventory.getMessage= 
+    function()
+    
+  return problemWithInventory.message
+end
 
 problemWithInventory.callback=
     function()
