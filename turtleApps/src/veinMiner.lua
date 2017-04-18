@@ -276,7 +276,9 @@ veinMiner.comeHomeWaitAndGoBack=
 
     isToContinue = true
     
-    vm.exploreTo(returnPlace)
+    vm.exploreTo( returnPlace )
+    
+    whatsTheMatter.returnPlace = nil
   end
 
   return isToContinue
@@ -651,68 +653,12 @@ problemWithInventory.callback=
   return true
 end
 
---- 
--- Comes back to home and tries to
--- dump inventory into a chest a la
--- excavate.
--- @return isChest true if there was a 
--- chest to dump to
--- @return returnPlace in case
--- caller needs to know how to get
--- back to work.  Applicable *only* 
--- when isChest is false
-veinMiner.dumpToChest = function()
-
--- XXX Centralize dumpToChest()
-
-  local isHappy = false
-
-  local returnPlace = Locus.new(
-      dr.place.x, dr.place.y,
-      dr.place.z)
-
-  vm.exploreTo( Locus.new(0,0,0) )
-  
-  local isItm, itm= dr.inspect(dr.AFT)
-  if isItm and 
-      itm.name== ITM_CHEST then
-
-    -- TODO mark chest as untouchable
-    -- (if tenable), Or forget chest.
-    
-    -- dump everything except w. bucket
-    for i= 1, 16 do
-      local thg= t.getItemDetail(i)
-      if thg ~= nil then
-        t.select(i)
-        t.drop() 
-      end
-    end
-    
-    -- and go back to where working
-    vm.exploreTo(returnPlace)
-    
-    returnPlace = nil
-    isHappy = true
-    
-  end
-    
-  return isHappy, returnPlace
-
-end
-
-
 --- Sees if there's enough space in
 -- the inventory for another cube
 -- of target material
 veinMiner.isInvtrySpaceAvail=function()
   
   -- XXX move (and mod) to common API
-  
-  -- TODO clear the inventory if there
-  -- isn't enough room.  go back to 
-  -- start and dump to chest, or get
-  -- user to clear it
   
   local isAvail = false
   local frSpace = 0
@@ -738,28 +684,26 @@ veinMiner.isInvtrySpaceAvail=function()
   if frSpace >= 25 then
     isAvail = true
   else
-    local returnPlace= nil
-    
-    isAvail, returnPlace= 
-        vm.dumpToChest()
+    local rp = 
+       problemWithInventory.returnPlace
 
-    problemWithInventory.returnPlace=
-        returnPlace
+    if rp == nil then
     
-    -- If chest isn't there
-    -- ask user to place chest or clear
-    -- inventory
-    if not isAvail then
-
-      problemWithInventory.message=
-          "Please clear inventory "..
-          "space for obsidian or "..
-          "place a chest behind "..
-          "the turtle's home position"
-  
-      isAvail=vm.comeHomeWaitAndGoBack(
-          problemWithInventory )
+      problemWithInventory.returnPlace=
+          Locus.new( dr.place.x, 
+              dr.place.y, dr.place.z )
+      
     end
+    
+    -- Ask user to clear some inventory
+    problemWithInventory.message=
+        "Please clear inventory "..
+        "space for ".. 
+        vm.targetBlockName        
+
+    isAvail=vm.comeHomeWaitAndGoBack(
+        problemWithInventory )
+
   end
   
   return isAvail
