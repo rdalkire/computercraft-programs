@@ -218,7 +218,7 @@ problemWithFuel.getMessage= function()
           "minimum, %d units. But "..
           "as a general rule, 800."..
           " For instance a block of "..
-          "coal would be nice",
+          "coal would be nice.",
           problemWithFuel.needMin )
 end
 
@@ -235,7 +235,8 @@ problemWithFuel.callback = function()
     slt= slt+ 1
   end
 
-  return isRefueled
+  -- assume OK here so caller rechecks
+  return true
 
 end
 
