@@ -52,6 +52,7 @@ local function ensureDep(depNme,depVer)
   local isGood = false
   
   if drFile ~= nil then
+    DEP_VERSION = nil
     drFile()
     if depVer == DEP_VERSION then
       isGood = true
