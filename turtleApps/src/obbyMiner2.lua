@@ -1,7 +1,8 @@
 --[[ Obsidian Miner 2
 
 Copyright (c) 2016-2017
-Robert David Alkire II, IGN ian_xw
+Robert David Alkire II, IGN 
+goatsbuster, FKA ian_xw
 Distributed under the MIT License.
 (See accompanying file LICENSE or copy
 at http://opensource.org/licenses/MIT)

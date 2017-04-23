@@ -3,9 +3,9 @@
 -- downward so you can climb safetly
 
 --[[ wallSherpa
-Copyright (c) 2016
+Copyright (c) 2016 - 2017
 Robert David Alkire II, AKA rdalkire, 
-IGN ian_xw
+IGN goatsbuster, FKA ian_xw,
 (some parts contributed by others. I 
 credit them at the top of those parts)
 Distributed under the MIT License.
