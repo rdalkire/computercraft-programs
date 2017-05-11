@@ -7,12 +7,16 @@ Distributed under the MIT License.
 at http://opensource.org/licenses/MIT)
 ]]
 
--- Set by users (l)imit option, so
+--- Set by users (l)imit option, so
 -- if they want to do only a few layers
 -- at a time. 0 means no limit
 local g_layerlimit = 0
 
--- The initial limit for going down
+--- How long to wait for water to 
+-- spread
+local g_waterWait = 0.5
+
+--- The initial limit for going down
 -- and forward to find the lava
 local FINDING_LIMIT = 128
 
@@ -98,10 +102,14 @@ local function initOptions( args )
   local isOK = true
 
   local someOptions = {
-
       ["limit"] = {
         "(l)imit how many lava layers",
-        "l", "<num>" }
+        "l", "<num>" },
+      ["w"] = {
+        "wait time before "..
+        "retrieving water bucket "..
+        "just placed.  Defaults "..
+        "to 0.5", "w", "<num>"}
   }
 
   local tbl= getopt.init(
@@ -120,11 +128,23 @@ local function initOptions( args )
 
     if tbl["limit"] then
       g_layerlimit= tonumber(
-        tbl["limit"] )
+          tbl["limit"] )
+        
       if g_layerlimit== nil then
         isOK= false
         print("The (l)imit option "..
           "requires a number.")
+      end
+    end
+
+    if tbl["wait"] then
+      g_waterWait = tonumber(
+          tbl["wait"] )
+        
+      if g_waterWait == nil then
+        isOK= false
+        print("The (w)ait option "..
+            "requires a number.")
       end
 
     end
@@ -709,6 +729,7 @@ obbyMiner.mineAPlace = function(
       -- Makes obby below
       selectSltWthItm(ITM_WTR_BCKT)
       t.placeDown()
+      os.sleep( g_waterWait )
       t.placeDown()
 
       om.moveVector(dr.DOWN, 1)

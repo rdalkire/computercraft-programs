@@ -18,6 +18,13 @@ os.pullEvent= function(evntNme)
   end
   return evntNme, rtnKey
 end
+
+os.sleep= function(seconds)
+  print( string.format( 
+      "pretending to sleep %d seconds",
+      seconds ) )
+end
+
 os.wait= function(seconds)
   print("pretending to wait")
 end
