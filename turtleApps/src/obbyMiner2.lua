@@ -8,6 +8,8 @@ Distributed under the MIT License.
 at http://opensource.org/licenses/MIT)
 ]]
 
+local VERSION = "2.0.2"
+
 --- Set by users (l)imit option, so
 -- if they want to do only a few layers
 -- at a time. 0 means no limit
@@ -116,8 +118,8 @@ local function initOptions( args )
 
   local tbl= getopt.init(
     "obbyMiner2",
-    "Obsidian Miner 2, Version 0.5.9"..
-    " mines obby. "..
+    "Obsidian Miner, Version "..  
+    VERSION.." mines obby. "..
     "Give it a water bucket, fuel"..
     " it, point it at a "..
     "lava pit, and run it.",

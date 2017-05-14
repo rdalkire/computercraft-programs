@@ -1,26 +1,5 @@
---[[ 
-Mines a contiguous aggregation of
-resource blocks. Meant for trees or 
-veins of ore.
-1  Place the turtle so it faces the 
-   material you want.
-2  Refuel the turtle if applicable.
-3  Run this script.  
-3a Note, if you want it to dig *all* 
-   blocks around any matching one, to 
-   give the spaces a neater 
-   appearance, use 'a' as an argument.
-   For example, if the script is 
-   called vMiner: 
-   vMiner a
-3b Even neater but using more time 
-   and more fuel: To dig out the whole
-   rectangular prism surrounding the 
-   vein, use 'r' argument:
-   vMiner r
-4  NOTE: Dynamically pulls dependencies
-   if not present, so HTTP must be 
-   available.
+--[[  Mines "veins" of blocks. Use "-h" 
+option for details
 
 Copyright (c) 2015 - 2017
 Robert David Alkire II, IGN goatsbuster
@@ -29,6 +8,8 @@ Distributed under the MIT License.
 (See accompanying file LICENSE or copy
 at http://opensource.org/licenses/MIT)
 ]]
+
+local VERSION = "1.5.0"
 
 -- BEGIN BOILERPLATE
 -- XXX My apologies for the stink
@@ -97,6 +78,8 @@ end
 
 ensureDep("getMy.lua", "1.1")
 -- END BOILERPLATE
+
+ensureDep("getopt.lua", "2.0" )
 
 ensureDep("deadReckoner.lua", "1.1.1" )
 local dr = deadReckoner
@@ -745,6 +728,46 @@ veinMiner.clearRectangle= function()
   
 end
 
+local function initOptions( args )
+
+  local isRectangle = false
+  local isArgOK = true
+
+  local someOptions = {
+    ["all"] = {
+      "dig (a)ll blocks around any "..
+      "matching one", "a", nil},
+    ["room"] = {
+      "dig a cuboid (r)oom around "..
+      "the vein", "r", nil }
+  }
+
+  local tbl = getopt.init("veinMiner",
+    "Vein Miner, Version ".. VERSION..
+    " Mines a contiguous ".. 
+    "aggregation (vein) of resource ".. 
+    "blocks. Meant for trees or ".. 
+    "veins of ore, targeting the ".. 
+    "block that it's facing when ".. 
+    "it starts",
+    someOptions, args)
+
+  if tbl == nil then
+    -- this is for the -h option
+    isArgOK= false
+  else
+    if tbl["all"] then
+      vm.isAll = true
+    elseif tbl["room"] then
+      vm.isAll = true
+      isRectangle = true
+    end
+  end
+
+  return isArgOK, isRectangle
+
+end
+
 --- The main function: Inspects the 
 -- block in front of it and sets its
 -- name of that as the target material,
@@ -753,26 +776,8 @@ end
 -- or there isn't any more room.
 veinMiner.mine= function( args )
 
-  -- TODO normalize options usage with
-  -- getopt library
-
-  local isRectangle = false
-  local isArgOK = true
-  if table.getn( args ) > 0 then
-    if args[1] == "a" then
-      vm.isAll = true
-    elseif args[1] == "r" then
-      vm.isAll = true
-      isRectangle = true
-    else
-      print( "Unknown argument: \"" ..
-        args[1] .. "\". \n"..
-        "Acceptable arguments are "..
-        "a or r.  \n"..
-        "Edit script for details." )
-      isArgOK = false
-    end
-  end
+  local isRectangle, isArgOK = 
+      initOptions(args)
   
   local isBlockOK = false
   local block = {}
