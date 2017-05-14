@@ -752,7 +752,7 @@ local function initOptions( args )
     "it starts",
     someOptions, args)
 
-  if tbl == nil then
+  if tbl== nil then
     -- this is for the -h option
     isArgOK= false
   else
@@ -761,6 +761,9 @@ local function initOptions( args )
     elseif tbl["room"] then
       vm.isAll = true
       isRectangle = true
+    else
+      isArgOK = false
+      print("Invalid option(s)")
     end
   end
 
@@ -776,7 +779,7 @@ end
 -- or there isn't any more room.
 veinMiner.mine= function( args )
 
-  local isRectangle, isArgOK = 
+  local isArgOK, isRectangle = 
       initOptions(args)
   
   local isBlockOK = false
