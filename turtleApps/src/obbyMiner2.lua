@@ -94,7 +94,7 @@ ensureDep("getMy.lua", "1.1")
 ensureDep("deadReckoner.lua", "1.1.1" )
 local dr = deadReckoner
 
-ensureDep("getopt.lua", "2.0" )
+ensureDep("getopt.lua", "2.1" )
 
 --- A collection of squares, each 
 -- defined by a place just above its 

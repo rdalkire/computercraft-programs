@@ -84,7 +84,7 @@ ensureDep("getMy.lua", "1.1")
 ensureDep("deadReckoner.lua", "1.1.1" )
 local dr = deadReckoner
 
-ensureDep("getopt.lua", "2.0" )
+ensureDep("getopt.lua", "2.1" )
 
 local FILL_MIN = 12
 local ITM_FILL="minecraft:cobblestone"

@@ -79,7 +79,7 @@ end
 ensureDep("getMy.lua", "1.1")
 -- END BOILERPLATE
 
-ensureDep("getopt.lua", "2.0" )
+ensureDep("getopt.lua", "2.1" )
 
 ensureDep("deadReckoner.lua", "1.1.1" )
 local dr = deadReckoner
@@ -743,11 +743,11 @@ local function initOptions( args )
   }
 
   local tbl = getopt.init("veinMiner",
-    "Vein Miner, Version ".. VERSION..
-    " Mines a contiguous ".. 
+    "version ".. VERSION.. " "..
+    "mines a contiguous ".. 
     "aggregation (vein) of resource ".. 
     "blocks. Meant for trees or ".. 
-    "veins of ore, targeting the ".. 
+    "ore, targeting the ".. 
     "block that it's facing when ".. 
     "it starts",
     someOptions, args)
