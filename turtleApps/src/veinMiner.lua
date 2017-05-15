@@ -761,9 +761,11 @@ local function initOptions( args )
     elseif tbl["room"] then
       vm.isAll = true
       isRectangle = true
-    else
+    elseif #args > 0 then
       isArgOK = false
-      print("Invalid option(s)")
+      term.clear()
+      print("Invalid option(s). ".. 
+          "Use -h for usage info.")
     end
   end
 
