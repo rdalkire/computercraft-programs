@@ -711,6 +711,7 @@ obbyMiner.mineAPlace = function(
       -- Makes obby below
       selectSltWthItm(ITM_WTR_BCKT)
       t.placeDown()
+      os.sleep(2)
       t.placeDown()
 
       om.moveVector(dr.DOWN, 1)
