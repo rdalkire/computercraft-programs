@@ -43,7 +43,9 @@ local t = turtle
 
 --- Base URL for dependencies
 local getDependencyBase= function()
-  local myBranch = "master/"
+  -- TODO update myBranch if ready
+  local myBranch = 
+      "rdalkire-exploreAndMine/"
   
   if MY_BRANCH then
     myBranch = MY_BRANCH 
@@ -100,6 +102,8 @@ ensureDep("getMy.lua", "1.1")
 
 ensureDep("deadReckoner.lua", "1.1.1" )
 local dr = deadReckoner
+
+ensureDep("getopt.lua", "2.0" )
 
 veinMiner = {}
 local vm = veinMiner
@@ -164,6 +168,10 @@ veinMiner.inspectSelfAvoidance = 0
 -- the target block, even the ones that
 -- don't match the target blocks.
 veinMiner.isAll = false
+
+--- If true, a rectangular "room" is 
+-- dug around the vein.
+veinMiner.isRectangle = false
 
 --- true if target block is redstone
 -- ore, whether lit or not
@@ -745,6 +753,43 @@ veinMiner.clearRectangle= function()
   
 end
 
+
+veinMiner.initOptions= function(args)
+
+  local isOK = true
+
+  local someOptions = {
+      ["all"] = {
+        "dig (a)ll blocks around"..
+        "each matching target block",
+        "a", nil },
+      ["room"] = {
+        "dig (r)oom around vein",
+        "r", nil }
+  }
+  
+  local tbl= getopt.init(
+    "veinMiner",
+    "Vein Miner",
+    someOptions, args )
+  
+  if tbl == nil then
+    -- this is for the -h option
+    isOK= false
+  else
+    if tbl["all"] then
+      vm.isAll = true
+    end
+    if tbl["room"] then
+      vm.isAll = true
+      vm.isRectangle = true
+    end
+  end
+  
+  return isOK
+  
+end
+
 --- The main function: Inspects the 
 -- block in front of it and sets its
 -- name of that as the target material,
@@ -753,26 +798,28 @@ end
 -- or there isn't any more room.
 veinMiner.mine= function( args )
 
-  -- TODO normalize options usage with
-  -- getopt library
+  -- TODO Test and fix docs:
+  -- normalize options usage with
+  -- getopt library.  See initOptions
 
-  local isRectangle = false
-  local isArgOK = true
-  if table.getn( args ) > 0 then
-    if args[1] == "a" then
-      vm.isAll = true
-    elseif args[1] == "r" then
-      vm.isAll = true
-      isRectangle = true
-    else
-      print( "Unknown argument: \"" ..
-        args[1] .. "\". \n"..
-        "Acceptable arguments are "..
-        "a or r.  \n"..
-        "Edit script for details." )
-      isArgOK = false
-    end
-  end
+  -- local isRectangle = false
+--  if table.getn( args ) > 0 then
+--    if args[1] == "a" then
+--      vm.isAll = true
+--    elseif args[1] == "r" then
+--      vm.isAll = true
+--      isRectangle = true
+--    else
+--      print( "Unknown argument: \"" ..
+--        args[1] .. "\". \n"..
+--        "Acceptable arguments are "..
+--        "a or r.  \n"..
+--        "Edit script for details." )
+--      isArgOK = false
+--    end
+--  end
+  
+  local isArgOK= vm.initOptions(args)
   
   local isBlockOK = false
   local block = {}
@@ -802,7 +849,7 @@ veinMiner.mine= function( args )
       vm.inspectACube()
     end
     
-    if isRectangle then
+    if vm.isRectangle then
       vm.clearRectangle()
     end
     
