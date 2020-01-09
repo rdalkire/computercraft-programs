@@ -733,11 +733,7 @@ obbyMiner.mineAPlace = function(
       -- Makes obby below
       selectSltWthItm(ITM_WTR_BCKT)
       t.placeDown()
-<<<<<<< HEAD
       os.sleep( g_waterWait )
-=======
-      os.sleep(2)
->>>>>>> refs/heads/master
       t.placeDown()
 
       om.moveVector(dr.DOWN, 1)
