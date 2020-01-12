@@ -1,19 +1,26 @@
 --[[ Obsidian Miner 2
 
 Copyright (c) 2016-2017
-Robert David Alkire II, IGN 
-goatsbuster, FKA ian_xw
+Robert David Alkire II, 
+IGN Hephaestus_Page 
+FKA goatsbuster, ian_xw
 Distributed under the MIT License.
 (See accompanying file LICENSE or copy
 at http://opensource.org/licenses/MIT)
 ]]
 
--- Set by users (l)imit option, so
+local VERSION = "2.0.2"
+
+--- Set by users (l)imit option, so
 -- if they want to do only a few layers
 -- at a time. 0 means no limit
 local g_layerlimit = 0
 
--- The initial limit for going down
+--- How long to wait for water to 
+-- spread
+local g_waterWait = 0.5
+
+--- The initial limit for going down
 -- and forward to find the lava
 local FINDING_LIMIT = 128
 
@@ -88,7 +95,7 @@ ensureDep("getMy.lua", "1.1")
 ensureDep("deadReckoner.lua", "1.1.1" )
 local dr = deadReckoner
 
-ensureDep("getopt.lua", "2.0" )
+ensureDep("getopt.lua", "2.1" )
 
 --- A collection of squares, each 
 -- defined by a place just above its 
@@ -100,16 +107,20 @@ local function initOptions( args )
   local isOK = true
 
   local someOptions = {
-
       ["limit"] = {
         "(l)imit how many lava layers",
-        "l", "<num>" }
+        "l", "<num>" },
+      ["w"] = {
+        "wait time before "..
+        "retrieving water bucket "..
+        "just placed.  Defaults "..
+        "to 0.5", "w", "<num>"}
   }
 
   local tbl= getopt.init(
     "obbyMiner2",
-    "Obsidian Miner 2, Version 0.5.9"..
-    " mines obby. "..
+    "Obsidian Miner, Version "..  
+    VERSION.." mines obby. "..
     "Give it a water bucket, fuel"..
     " it, point it at a "..
     "lava pit, and run it.",
@@ -122,11 +133,23 @@ local function initOptions( args )
 
     if tbl["limit"] then
       g_layerlimit= tonumber(
-        tbl["limit"] )
+          tbl["limit"] )
+        
       if g_layerlimit== nil then
         isOK= false
         print("The (l)imit option "..
           "requires a number.")
+      end
+    end
+
+    if tbl["wait"] then
+      g_waterWait = tonumber(
+          tbl["wait"] )
+        
+      if g_waterWait == nil then
+        isOK= false
+        print("The (w)ait option "..
+            "requires a number.")
       end
 
     end
@@ -711,7 +734,7 @@ obbyMiner.mineAPlace = function(
       -- Makes obby below
       selectSltWthItm(ITM_WTR_BCKT)
       t.placeDown()
-      os.sleep(2)
+      os.sleep( g_waterWait )
       t.placeDown()
 
       om.moveVector(dr.DOWN, 1)

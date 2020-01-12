@@ -16,7 +16,7 @@ at http://opensource.org/licenses/MIT)
 
 --- To ensure this is the version
 -- you're looking for
-DEP_VERSION="2.0"
+DEP_VERSION="2.1"
 
 getopt = {}
 
@@ -43,7 +43,8 @@ getopt.help= function()
     
     help= help.. ": ".. val[1].. "\n"
   end
-
+  
+  term.clear()
   if textutils then
     textutils.pagedPrint(help)
   else

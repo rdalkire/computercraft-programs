@@ -5,7 +5,8 @@
 --[[ wallSherpa
 Copyright (c) 2016 - 2017
 Robert David Alkire II, AKA rdalkire, 
-IGN goatsbuster, FKA ian_xw,
+IGN Hephaestus_Page 
+FKA goatsbuster, ian_xw
 (some parts contributed by others. I 
 credit them at the top of those parts)
 Distributed under the MIT License.
@@ -84,7 +85,7 @@ ensureDep("getMy.lua", "1.1")
 ensureDep("deadReckoner.lua", "1.1.1" )
 local dr = deadReckoner
 
-ensureDep("getopt.lua", "2.0" )
+ensureDep("getopt.lua", "2.1" )
 
 local FILL_MIN = 12
 local ITM_FILL="minecraft:cobblestone"

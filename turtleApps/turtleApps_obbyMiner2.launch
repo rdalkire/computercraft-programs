@@ -14,6 +14,6 @@
 <booleanAttribute key="org.eclipse.dltk.launching.debugConsole" value="true"/>
 <stringAttribute key="process_factory_id" value="org.eclipse.dltk.launching.scriptProcessFactory"/>
 <stringAttribute key="project" value="turtleApps"/>
-<stringAttribute key="scriptArguments" value="-h"/>
+<stringAttribute key="scriptArguments" value="-w"/>
 <stringAttribute key="workingDir" value="${workspace_loc:turtleApps/src}"/>
 </launchConfiguration>
