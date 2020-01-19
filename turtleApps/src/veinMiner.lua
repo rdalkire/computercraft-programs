@@ -227,11 +227,14 @@ veinMiner.comeHomeWaitAndGoBack=
   print( "Then press c to continue "..
     "or q to quit." )
 
-  local event, key= os.pullEvent("key")
+  local event = ""
+  local key = keys.x
   
   while not ( key == keys.c or 
       key == keys.q ) do
-  
+      
+    event, key= os.pullEvent("key")
+      
     if key == keys.c and
         whatsTheMatter.callback() and 
         vm.isFuelOK4Cube() and
