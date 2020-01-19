@@ -9,7 +9,7 @@ Distributed under the MIT License.
 at http://opensource.org/licenses/MIT)
 ]]
 
-local VERSION = "2.0.3"
+local VERSION = "2.0.4"
 
 --- Set by users (l)imit option, so
 -- if they want to do only a few layers
@@ -457,19 +457,29 @@ obbyMiner.comeHomeWaitAndGoBack=
   term.clear()
   print( whatsTheMatter.getMessage() )
   print( "Then press c to continue "..
-    "or any other key to quit." )
+    "or q to quit." )
 
-  local event, key= os.pullEvent("key")
-  if key == keys.c and
-      whatsTheMatter.callback() and
-      om.checkPrereqs() then
+  local event = ""
+  local key = keys.x
 
-    isToContinue = true
+  while not ( key == keys.c or 
+      key == keys.q ) do
+
+    event, key= os.pullEvent("key")
     
-    om.moveToPlace(returnPlace.x,
-        returnPlace.y, returnPlace.z)
+    if key == keys.c and
+        whatsTheMatter.callback() and
+        om.checkPrereqs() then
+  
+      isToContinue = true
+      
+      om.moveToPlace(returnPlace.x,
+          returnPlace.y, returnPlace.z)
+          
+    end
+    
   end
-
+  
   return isToContinue
 end
 
@@ -565,9 +575,6 @@ end
 
 obbyMiner.isInventorySpaceAvail =
     function()
-  -- XXX move to common API- this is
-  -- in large part copied from
-  -- veinMiner
 
   local isAvail = false
   -- Counts free spaces for Obbsidian
