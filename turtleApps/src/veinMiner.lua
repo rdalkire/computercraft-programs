@@ -10,7 +10,7 @@ Distributed under the MIT License.
 at http://opensource.org/licenses/MIT)
 ]]
 
-local VERSION = "1.6.0"
+local VERSION = "1.5.2"
 
 -- BEGIN BOILERPLATE
 -- XXX My apologies for the stink
@@ -86,7 +86,7 @@ ensureDep("deadReckoner.lua", "1.1.1")
 local dr = deadReckoner
 
 ensureDep(
-    "fuelAndInventoryProblems.lua", 
+    "fuelAndInventory.lua", 
     "0.8" )
 
 veinMiner = {}
@@ -225,21 +225,25 @@ veinMiner.comeHomeWaitAndGoBack=
   term.clear()
   print( whatsTheMatter.getMessage() )
   print( "Then press c to continue "..
-    "or any other key to quit." )
+    "or q to quit." )
 
   local event, key= os.pullEvent("key")
-  if key == keys.c and
-      whatsTheMatter.callback() and 
-      vm.isFuelOK4Cube() and
-      vm.isInvtrySpaceAvail() then
-
-    isToContinue = true
+  
+  while not ( key == keys.c or 
+      key == keys.q ) do
+  
+    if key == keys.c and
+        whatsTheMatter.callback() and 
+        vm.isFuelOK4Cube() and
+        vm.isInvtrySpaceAvail() then
+  
+      isToContinue = true
+      vm.exploreTo( returnPlace )
+      whatsTheMatter.returnPlace = nil
+    end
     
-    vm.exploreTo( returnPlace )
-    
-    whatsTheMatter.returnPlace = nil
   end
-
+  
   return isToContinue
 end
 
