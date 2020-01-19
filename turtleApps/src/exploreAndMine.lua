@@ -6,6 +6,9 @@
 --  a chest behind it, and launch 
 -- "exploreAndMine". 
 
+
+
+
 -- The turtle looks 
 -- fore, up, down, left and right, but 
 
@@ -32,8 +35,11 @@
 
 -- it runs Veinminer and 
 -- creates a nice rectangular room, 
-local SCRIPT = {"veinMiner", "-r"}
-shell.run( unpack(SCRIPT) )
+
+
+-- TODO clean out (replace)
+-- local SCRIPT = {"veinMiner", "-r"}
+-- shell.run( unpack(SCRIPT) )
 
 -- leaves a torch on the floor 
 
