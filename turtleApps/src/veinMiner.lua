@@ -10,7 +10,7 @@ Distributed under the MIT License.
 at http://opensource.org/licenses/MIT)
 ]]
 
-local VERSION = "1.5.0"
+local VERSION = "1.6.0"
 
 -- BEGIN BOILERPLATE
 -- XXX My apologies for the stink
@@ -80,10 +80,14 @@ end
 ensureDep("getMy.lua", "1.1")
 -- END BOILERPLATE
 
-ensureDep("getopt.lua", "2.1" )
+ensureDep("getopt.lua", "2.1")
 
-ensureDep("deadReckoner.lua", "1.1.1" )
+ensureDep("deadReckoner.lua", "1.1.1")
 local dr = deadReckoner
+
+ensureDep(
+    "fuelAndInventoryProblems.lua", 
+    "0.8" )
 
 veinMiner = {}
 local vm = veinMiner
@@ -190,40 +194,9 @@ veinMiner.isVeinExplored= function()
   return isExplored
 end
 
--- XXX Generalize and externalize the 
--- fuel and inventory solutions, to be
--- shared with obbyMiner2
-
---- Message and solution for fuel
-problemWithFuel = {}
-problemWithFuel.needMin= 0
-problemWithFuel.getMessage= function()
-  return string.format(
-          "Fuel please. At very "..
-          "minimum, %d units. But "..
-          "as a general rule, 800."..
-          " For instance a block of "..
-          "coal would be nice.",
-          problemWithFuel.needMin )
-end
-
---- To be called if user puts fuel into
--- selected slot and indicates they
--- want to continue
-problemWithFuel.callback = function()
-  
-  local slt= 1
-  local isRefueled= false
-  while slt<= 16 and not isRefueled do
-    t.select(slt)
-    isRefueled= t.refuel()
-    slt= slt+ 1
-  end
-
-  -- assume OK here so caller rechecks
-  return true
-
-end
+-- XXX Generalize the fuel and invntry 
+-- solutions, to be shared with 
+-- obbyMiner2
 
 --- Comes back to starting (home)
 -- position, requests action from user,
@@ -620,25 +593,6 @@ veinMiner.inspectACube= function()
   end
 end
 
---- Message and solution for inventory
--- or other problems that have an empty
--- callback function
-problemWithInventory = {}
-problemWithInventory.message = ""
-
-problemWithInventory.getMessage= 
-    function()
-    
-  return problemWithInventory.message
-end
-
-problemWithInventory.callback=
-    function()
-  
-  -- Assuming user took care of it
-  return true
-end
-
 --- Sees if there's enough space in
 -- the inventory for another cube
 -- of target material
@@ -780,10 +734,8 @@ end
 -- then mines for that until the vein
 -- has been explored, the fuel is gone
 -- or there isn't any more room.
-veinMiner.mine= function( args )
-
-  local isArgOK, isRectangle = 
-      initOptions(args)
+veinMiner.mine= function( isArgOK, 
+    isRectangle )
   
   local isBlockOK = false
   local block = {}
@@ -846,6 +798,9 @@ veinMiner.mine= function( args )
   end
 end
 
-vm.mine( {...} )
+local isArgOK, isRectangle = 
+      initOptions( {...} )
+
+vm.mine( isArgOK, isRectangle )
 
 return veinMiner
