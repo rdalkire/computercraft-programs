@@ -10,7 +10,7 @@ Distributed under the MIT License.
 at http://opensource.org/licenses/MIT)
 ]]
 
-local VERSION = "1.5.2"
+local VERSION = "1.5.3"
 
 -- BEGIN BOILERPLATE
 -- XXX My apologies for the stink
@@ -194,10 +194,6 @@ veinMiner.isVeinExplored= function()
   return isExplored
 end
 
--- XXX Generalize the fuel and invntry 
--- solutions, to be shared with 
--- obbyMiner2
-
 --- Comes back to starting (home)
 -- position, requests action from user,
 -- and if applicable, goes back to
@@ -208,7 +204,6 @@ end
 veinMiner.comeHomeWaitAndGoBack=
     function( whatsTheMatter )
     
-  -- XXX cntrlze comeHomeWaitAndGoBack
   local isToContinue = false
   
   local returnPlace = whatsTheMatter.
@@ -604,8 +599,6 @@ end
 -- the inventory for another cube
 -- of target material
 veinMiner.isInvtrySpaceAvail=function()
-  
-  -- XXX move (and mod) to common API
   
   local isAvail = false
   local frSpace = 0

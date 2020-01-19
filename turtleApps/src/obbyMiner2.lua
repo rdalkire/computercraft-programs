@@ -9,7 +9,7 @@ Distributed under the MIT License.
 at http://opensource.org/licenses/MIT)
 ]]
 
-local VERSION = "2.0.2"
+local VERSION = "2.0.3"
 
 --- Set by users (l)imit option, so
 -- if they want to do only a few layers
@@ -25,7 +25,6 @@ local g_waterWait = 0.5
 local FINDING_LIMIT = 128
 
 -- BEGIN BOILERPLATE
--- XXX My apologies for the stink
 
 local lf = loadfile( "mockTurtle.lua")
 if lf ~= nil then
@@ -96,6 +95,10 @@ ensureDep("deadReckoner.lua", "1.1.1" )
 local dr = deadReckoner
 
 ensureDep("getopt.lua", "2.1" )
+
+ensureDep(
+    "fuelAndInventory.lua", 
+    "0.8" )
 
 --- A collection of squares, each 
 -- defined by a place just above its 
@@ -423,40 +426,6 @@ obbyMiner.getToIt=function(isFromStart)
   return isAble
 end
 
---- Message and solution for fuel
-problemWithFuel = {}
-problemWithFuel.message = ""
-
---- To be called if user puts fuel into
--- selected slot and indicates they
--- want to continue
-problemWithFuel.callback = function()
-  
-  local slt= 1
-  local isRefueled= false
-  while slt<= 16 and not isRefueled do
-    t.select(slt)
-    isRefueled= t.refuel()
-    slt= slt+ 1
-  end
-
-  return isRefueled
-
-end
-
---- Message and solution for inventory
--- or other problems that have an empty
--- callback function
-problemWithInventory = {}
-problemWithInventory.message = ""
-
-problemWithInventory.callback=
-    function()
-  
-  -- Assuming user took care of it
-  return true
-end
-
 --- Checks for sufficient fuel,
 -- inventory space and a water bucket
 -- (forward declaration)
@@ -472,8 +441,6 @@ obbyMiner.checkPrereqs = nil
 obbyMiner.comeHomeWaitAndGoBack=
     function( whatsTheMatter )
   
-  -- XXX cntrlze comeHomeWaitAndGoBack
-  
   local isToContinue = false
   
   local returnPlace = whatsTheMatter.
@@ -488,7 +455,7 @@ obbyMiner.comeHomeWaitAndGoBack=
   om.moveToPlace(0, 0, 0)
   
   term.clear()
-  print( whatsTheMatter.message )
+  print( whatsTheMatter.getMessage() )
   print( "Then press c to continue "..
     "or any other key to quit." )
 
@@ -537,13 +504,7 @@ obbyMiner.isFuelOKForSquare= function()
   
       local dif= fuelNeed- fuel
   
-      problemWithFuel.message =
-        string.format(
-          "Please place fuel into "..
-          "turtle's inventory & be "..
-          "generous. At very "..
-          "minimum, %d units.",
-          dif )
+      problemWithFuel.needMin= dif
   
       isOK = om.comeHomeWaitAndGoBack(
           problemWithFuel )
