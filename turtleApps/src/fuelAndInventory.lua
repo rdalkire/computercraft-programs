@@ -22,8 +22,8 @@ problemWithFuel.callback = function()
   local slt= 1
   local isRefueled= false
   while slt<= 16 and not isRefueled do
-    t.select(slt)
-    isRefueled= t.refuel()
+    turtle.select(slt)
+    isRefueled= turtle.refuel()
     slt= slt+ 1
   end
 
