@@ -10,7 +10,7 @@ Distributed under the MIT License.
 at http://opensource.org/licenses/MIT)
 ]]
 
-local VERSION = "1.5.3"
+local VERSION = "1.5.4"
 
 -- BEGIN BOILERPLATE
 -- XXX My apologies for the stink
@@ -82,8 +82,9 @@ ensureDep("getMy.lua", "1.1")
 
 ensureDep("getopt.lua", "2.1")
 
-ensureDep("deadReckoner.lua", "1.1.1")
-local dr = deadReckoner
+ensureDep("deadReckoner.lua", "1.1.6")
+
+local dr = nil
 
 ensureDep(
     "fuelAndInventory.lua", 
@@ -739,6 +740,8 @@ veinMiner.mine= function( isArgOK,
   
   local isBlockOK = false
   local block = {}
+  
+  dr = deadReckoner.new()
   
   isBlockOK, block = 
       dr.inspect( dr.AHEAD )

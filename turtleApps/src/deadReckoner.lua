@@ -11,7 +11,7 @@ at http://opensource.org/licenses/MIT)
 
 --- To ensure this is the version
 -- you're looking for
-DEP_VERSION="1.1.1"
+DEP_VERSION="1.1.6"
 
 --- assigns fake/real turtle
 local t
@@ -37,7 +37,15 @@ Locus.new= function( x, y, z )
 end
 
 deadReckoner = {}
-local dr = deadReckoner
+deadReckoner.__index = deadReckoner
+
+deadReckoner.new= function()
+  local self = setmetatable( {}, 
+      deadReckoner )
+  self.heading=self.FORE
+  
+  return self
+end
 
 --- relative to turtle heading at start 
 deadReckoner.FORE = 0
@@ -47,11 +55,14 @@ deadReckoner.PORT = 3
 
 
 deadReckoner.WAYS = {}
-dr.WAYS[deadReckoner.FORE] = "FORE"
-dr.WAYS[deadReckoner.STARBOARD]= 
-    "STARBOARD"
-dr.WAYS[deadReckoner.AFT] = "AFT"
-dr.WAYS[deadReckoner.PORT] = "PORT"
+deadReckoner.WAYS[deadReckoner.FORE] = 
+    "FORE"
+deadReckoner.WAYS[
+    deadReckoner.STARBOARD]="STARBOARD"
+deadReckoner.WAYS[deadReckoner.AFT] = 
+    "AFT"
+deadReckoner.WAYS[deadReckoner.PORT] = 
+    "PORT"
   
 deadReckoner.heading=deadReckoner.FORE
 
@@ -79,10 +90,10 @@ deadReckoner.BACK = 7
 -- target direction indicated
 -- @param target must be dr.FORE, 
 -- dr.STARBOARD, dr.AFT, or dr.PORT
-deadReckoner.bearTo= function(target)
+function deadReckoner:bearTo(target)
 
   local trnsRght = 
-      target - deadReckoner.heading
+      target - self.heading
   
   local trns = math.abs( trnsRght )
   if trns ~= 0 then
@@ -103,7 +114,7 @@ deadReckoner.bearTo= function(target)
     end -- turn loop
   end -- there were any turns
   
-  deadReckoner.heading = target
+  self.heading = target
 end
 
 --- If way is fore, starboard, aft or
@@ -124,27 +135,28 @@ end
 -- param. If isForMovement, and the
 -- turtle is facing opposite way, then
 -- this will return BACK
-deadReckoner.correctHeading=
-    function(way, isForMovement)
+function deadReckoner:correctHeading(
+    way, isForMovement )
     
   if way < 4 then
     if isForMovement and 
-        way ~= dr.heading and 
-        (way - dr.heading) % 2== 0 then
-      way = dr.BACK
+        way ~= self.heading and 
+        (way - self.heading) % 2== 0 
+        then
+      way = self.BACK
     else
-      dr.bearTo( way )
-      way = dr.AHEAD
+      self.bearTo( way )
+      way = self.AHEAD
     end
-  elseif way== dr.BACK and 
+  elseif way== self.BACK and 
       not isForMovement then
     -- This means it's digging or 
     -- inspecting something behind, so
     -- it needs to turn around
-    way = dr.heading + 2
+    way = self.heading + 2
     way = way % 4
-    dr.bearTo(way)
-    way = dr.AHEAD
+    self.bearTo(way)
+    way = self.AHEAD
   end
   
   return way
@@ -153,24 +165,24 @@ end
 
 --- Adjusts placeMAX and placeMIN as
 -- applicable.
-deadReckoner.setMaxMin=function(x,y,z)
+function deadReckoner:setMaxMin(x,y,z)
 
-  if x > dr.placeMAX.x then
-    dr.placeMAX.x = x
-  elseif x < dr.placeMIN.x then
-    dr.placeMIN.x = x
+  if x > self.placeMAX.x then
+    self.placeMAX.x = x
+  elseif x < self.placeMIN.x then
+    self.placeMIN.x = x
   end
   
-  if y > dr.placeMAX.y then
-    dr.placeMAX.y = y
-  elseif y < dr.placeMIN.y then
-    dr.placeMIN.y = y
+  if y > self.placeMAX.y then
+    self.placeMAX.y = y
+  elseif y < self.placeMIN.y then
+    self.placeMIN.y = y
   end
   
-  if z > dr.placeMAX.z then
-    dr.placeMAX.z = z
-  elseif z < dr.placeMIN.z then
-    dr.placeMIN.z = z
+  if z > self.placeMAX.z then
+    self.placeMAX.z = z
+  elseif z < self.placeMIN.z then
+    self.placeMIN.z = z
   end
   
 end
@@ -184,28 +196,28 @@ end
 -- UP, DOWN or AHEAD.
 -- @return x, y, z coordinates of the 
 -- adjacent block.
-deadReckoner.getTargetCoords=
-    function(way)
+function deadReckoner:getTargetCoords(
+    way )
   
-  local ix = dr.place.x
-  local iy = dr.place.y
-  local iz = dr.place.z
+  local ix = self.place.x
+  local iy = self.place.y
+  local iz = self.place.z
   
-  if way == dr.AHEAD then
-    way = dr.heading
+  if way == self.AHEAD then
+    way = self.heading
   end
   
-  if way== dr.AFT then
+  if way== self.AFT then
     iz= iz - 1
-  elseif way== dr.FORE then
+  elseif way== self.FORE then
     iz= iz + 1
-  elseif way== dr.PORT then
+  elseif way== self.PORT then
     ix= ix- 1
-  elseif way== dr.STARBOARD then
+  elseif way== self.STARBOARD then
     ix= ix+ 1
-  elseif way== dr.UP then
+  elseif way== self.UP then
     iy= iy + 1
-  elseif way== dr.DOWN then
+  elseif way== self.DOWN then
     iy= iy - 1
   end
   
@@ -220,10 +232,10 @@ end
 -- @param x, y, z are the coords of
 -- the other place
 -- @return the distance
-deadReckoner.howFarFrom=function(x,y,z)
-  local dx= math.abs( dr.place.x- x )
-  local dy= math.abs( dr.place.y- y )
-  local dz= math.abs( dr.place.z- z )
+function deadReckoner:howFarFrom(x,y,z)
+  local dx= math.abs( self.place.x- x )
+  local dy= math.abs( self.place.y- y )
+  local dz= math.abs( self.place.z- z )
   return dx + dy + dz
 end
 
@@ -232,10 +244,10 @@ end
 -- do not move diagonally in their 
 -- present form.
 -- @return number of moves to get back
-deadReckoner.howFarFromHome=function()
-  return math.abs(dr.place.x)+ 
-      math.abs(dr.place.y)+ 
-      math.abs(dr.place.z)
+function deadReckoner:howFarFromHome()
+  return math.abs(self.place.x)+ 
+      math.abs(self.place.y)+ 
+      math.abs(self.place.z)
 end
 
 --- Inspects the given direction, and
@@ -244,22 +256,22 @@ end
 -- @param way FORE, UP, AHEAD etc
 -- @return boolean success, table 
 -- data/string error message
-deadReckoner.inspect= function(way)
+function deadReckoner:inspect(way)
 
-  way = dr.correctHeading(way)
+  way = self.correctHeading(way)
   local ok, item
-  if way== dr.AHEAD then
+  if way== self.AHEAD then
     ok, item= t.inspect()
-  elseif way== dr.UP then
+  elseif way== self.UP then
     ok, item= t.inspectUp()
   else
     ok, item= t.inspectDown()
   end
   
   local ix, iy, iz = 
-      dr.getTargetCoords(way)
+      self.getTargetCoords(way)
   
-  dr.setMaxMin(ix, iy, iz)
+  self.setMaxMin(ix, iy, iz)
   return ok, item
 end
 
@@ -271,17 +283,17 @@ end
 -- was able to dig
 -- @return whyNot if isAble, nil. Else,
 -- reason why not.
-deadReckoner.dig= function( way )
+function deadReckoner:dig( way )
 
-  way = dr.correctHeading( way )
+  way = self.correctHeading( way )
   
   local dug= false
   local whyNot
-  if way== dr.AHEAD then
+  if way== self.AHEAD then
     dug, whyNot= t.dig()
-  elseif way== dr.UP then
+  elseif way== self.UP then
     dug, whyNot= t.digUp()
-  elseif way== dr.DOWN then
+  elseif way== self.DOWN then
     dug, whyNot= t.digDown()
   end
   
@@ -299,15 +311,17 @@ end
 -- dr.AFT, dr.PORT, dr.AHEAD, dr.UP 
 -- or dr.DOWN, where dr is deadReckoner
 -- @return isAble, whyNot
-deadReckoner.move= function( way )
+function deadReckoner:move( way )
   
-  way = dr.correctHeading(way, true)
+  way = self.correctHeading(way, true)
   
-  -- where way is dr.AHEAD, UP or DOWN
+  -- where way is self.AHEAD, UP or DOWN
   local isAble, whynot
-  if way==dr.AHEAD or way==dr.BACK then
+  if way==self.AHEAD or 
+      way==self.BACK then
+
     local forwardness = 1
-    if way== dr.AHEAD then
+    if way== self.AHEAD then
       isAble, whynot = t.forward()
     else
       isAble, whynot = t.back()
@@ -315,36 +329,38 @@ deadReckoner.move= function( way )
     end
     
     if isAble then
-      if dr.heading== dr.AFT then
-        dr.place.z= 
-            dr.place.z - forwardness
-      elseif dr.heading== dr.FORE then
-        dr.place.z= 
-            dr.place.z + forwardness
-      elseif dr.heading== dr.PORT then
-        dr.place.x= 
-            dr.place.x- forwardness
+      if self.heading== self.AFT then
+        self.place.z= 
+            self.place.z - forwardness
+      elseif self.heading== self.FORE 
+          then
+        self.place.z= 
+            self.place.z + forwardness
+      elseif self.heading== self.PORT 
+          then
+        self.place.x= 
+            self.place.x- forwardness
       else
-        dr.place.x= 
-            dr.place.x+ forwardness
+        self.place.x= 
+            self.place.x+ forwardness
       end
       
     end -- isAble
-  elseif way== dr.UP then
+  elseif way== self.UP then
     isAble, whynot = t.up()
     if isAble then
-      dr.place.y = dr.place.y + 1
+      self.place.y = self.place.y + 1
     end
-  elseif way== dr.DOWN then
+  elseif way== self.DOWN then
     isAble, whynot = t.down()
     if isAble then
-      dr.place.y = dr.place.y - 1
+      self.place.y = self.place.y - 1
     end
   end -- AHEAD, UP or DOWN
   
   if isAble then
-    dr.setMaxMin( dr.place.x, 
-        dr.place.y, dr.place.z )
+    self.setMaxMin( self.place.x, 
+        self.place.y, self.place.z )
   end
   
   return isAble, whynot
@@ -358,17 +374,17 @@ end
 -- was able to place the item
 -- @return whyNot if isAble, nil. Else,
 -- reason why not.
-deadReckoner.placeItem = function(way)
+function deadReckoner:placeItem(way)
   
-  way = dr.correctHeading( way )
+  way = self.correctHeading( way )
   
   local placed= false
   local whyNot
-  if way== dr.AHEAD then
+  if way== self.AHEAD then
     placed, whyNot= t.place()
-  elseif way== dr.UP then
+  elseif way== self.UP then
     placed, whyNot= t.placeUp()
-  elseif way== dr.DOWN then
+  elseif way== self.DOWN then
     placed, whyNot= t.placeDown()
   end
   
@@ -384,37 +400,36 @@ end
 -- @return direction: up, down, fore, 
 -- aft, port or starboard
 -- @return distance
-deadReckoner.furthestWay = 
-    function(dest)
+function deadReckoner:furthestWay(dest)
   
   -- Dest - Current: +Srbrd -Port
   local direction = 0
-  local dist = dest.x - dr.place.x
+  local dist = dest.x - self.place.x
   if dist >= 0 then
-    direction= dr.STARBOARD
+    direction= self.STARBOARD
   else
-    direction= dr.PORT
+    direction= self.PORT
   end
   
   -- Find Z diff +fore -aft
-  local zDist = dest.z - dr.place.z
+  local zDist = dest.z - self.place.z
   if math.abs(zDist)>math.abs(dist)then
     dist= zDist
     if dist >= 0 then
-      direction= dr.FORE
+      direction= self.FORE
     else
-      direction= dr.AFT
+      direction= self.AFT
     end
   end
   
   -- Y:  +up -down
-  local yDist = dest.y - dr.place.y
+  local yDist = dest.y - self.place.y
   if math.abs(yDist)>math.abs(dist)then
     dist= yDist
     if dist >= 0 then
-      direction= dr.UP
+      direction= self.UP
     else
-      direction= dr.DOWN
+      direction= self.DOWN
     end
   end
   
