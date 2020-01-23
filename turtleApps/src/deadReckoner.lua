@@ -42,6 +42,7 @@ deadReckoner.__index = deadReckoner
 deadReckoner.new= function()
   local self = setmetatable( {}, 
       deadReckoner )
+      
   self.heading=self.FORE
   
   return self
@@ -258,7 +259,10 @@ end
 -- data/string error message
 function deadReckoner:inspect(way)
 
+  -- FIXME: attempt to index local 
+  -- 'self' (a number value)
   way = self.correctHeading(way)
+  
   local ok, item
   if way== self.AHEAD then
     ok, item= t.inspect()

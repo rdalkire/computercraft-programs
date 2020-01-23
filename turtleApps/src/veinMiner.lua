@@ -259,7 +259,7 @@ veinMiner.isFuelOK4Cube = function()
   else
     fuelNeed = 
         veinMiner.previousDistance +
-        dr.howFarFromHome() +
+        dr:howFarFromHome() +
         vm.MOVESPERCUBE
     if fuel > fuelNeed then
       isOK = true
@@ -271,7 +271,7 @@ veinMiner.isFuelOK4Cube = function()
   -- try to get more fuel from user
   if not isOK then
     -- more fuel for getting fuel
-    fuelNeed= fuelNeed+ dr.
+    fuelNeed= fuelNeed+ dr:
         howFarFromHome()
         
     problemWithFuel.needMin= fuelNeed
@@ -299,7 +299,7 @@ veinMiner.isFuelOK4Dest=
     local destToHome = math.abs(x)+
         math.abs(y)+ math.abs(z)
     fuelNeed =
-        dr.howFarFrom(x,y,z)+
+        dr:howFarFrom(x,y,z)+
         destToHome+ vm.previousDistance
     if fuel >= fuelNeed then
       isOK = true
@@ -311,7 +311,7 @@ veinMiner.isFuelOK4Dest=
   -- try to get more fuel from user
   if not isOK then
     -- more fuel for getting fuel
-    fuelNeed= fuelNeed+ dr.
+    fuelNeed= fuelNeed+ dr:
         howFarFromHome()
         
     problemWithFuel.needMin= fuelNeed
@@ -370,9 +370,9 @@ veinMiner.check= function(way)
   local ix = 0
   local iy = 0
   local iz = 0
-  ix, iy, iz= dr.getTargetCoords(way)
+  ix, iy, iz= dr:getTargetCoords(way)
   
-  way = dr.correctHeading(way)
+  way = dr:correctHeading(way)
   
   -- If it still needs to be inspected,
   if vm.isInspected(ix,iy,iz) then
@@ -380,7 +380,7 @@ veinMiner.check= function(way)
         vm.inspectedSkipped + 1
   else
     local ok, item
-    ok, item= dr.inspect(way)
+    ok, item= dr:inspect(way)
     
     if ok then
       if vm.isTargetMatch( 
@@ -414,12 +414,12 @@ end
 -- reason why not.
 veinMiner.explore= function(way, moves)
   
-  way = dr.correctHeading(way)
+  way = dr:correctHeading(way)
   
   local isAble, whynot
   
   for i = 1, moves do
-    isAble, whynot = dr.move(way)
+    isAble, whynot = dr:move(way)
     
     -- if cannot, because obstructed
     if not isAble then
@@ -427,8 +427,8 @@ veinMiner.explore= function(way, moves)
       if whynot=="Movement obstructed"
           then
         vm.check( way )
-        isAble, whynot = dr.dig( way )
-        isAble, whynot= dr.move( way )
+        isAble, whynot = dr:dig( way )
+        isAble, whynot= dr:move( way )
       else
         print( "Stuck. ".. whynot )
       end
@@ -529,7 +529,7 @@ veinMiner.goLookAt= function(x, y, z)
   if nzCount > 2 then
     -- Explore the farthest way
     direction, dist= 
-        dr.furthestWay(dest)
+        dr:furthestWay(dest)
     vm.explore(direction, dist)    
   end
   
@@ -538,7 +538,7 @@ veinMiner.goLookAt= function(x, y, z)
     -- Explore (what is now) the 
     -- farthest way
     direction, dist= 
-        dr.furthestWay(dest)
+        dr:furthestWay(dest)
     vm.explore(direction, dist)
   end
   
@@ -546,7 +546,7 @@ veinMiner.goLookAt= function(x, y, z)
   if nzCount > 0 then
     -- Explore *Up To* dest, farthest
     direction, dist= 
-        dr.furthestWay(dest)
+        dr:furthestWay(dest)
     dist = dist - 1
     vm.explore(direction, dist)
     -- Check it
@@ -555,7 +555,7 @@ veinMiner.goLookAt= function(x, y, z)
     end
     if vm.check(direction) or 
         vm.isAll then
-      dr.dig(direction)
+      dr:dig(direction)
     end
   else -- Coords were turtle's place
     vm.inspectSelfAvoidance= 
@@ -744,7 +744,7 @@ veinMiner.mine= function( isArgOK,
   dr = deadReckoner.new()
   
   isBlockOK, block = 
-      dr.inspect( dr.AHEAD )
+      dr:inspect( dr.AHEAD )
   
   if isBlockOK and isArgOK then
     
@@ -774,7 +774,7 @@ veinMiner.mine= function( isArgOK,
     
     -- Comes back and faces forward
     vm.exploreTo( Locus.new(0,0,0) )
-    dr.bearTo( dr.FORE )
+    dr:bearTo( dr.FORE )
     
     print( "inspected count: ".. 
         vm.inspectedCount )
