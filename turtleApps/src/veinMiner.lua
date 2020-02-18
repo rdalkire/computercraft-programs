@@ -16,11 +16,14 @@ local VERSION = "1.5.4"
 -- XXX My apologies for the stink
 
 local lf = loadfile( "mockTurtle.lua")
+
+-- TODO Delete this "if" block maybe
 if lf ~= nil then
   lf()
   lf= loadfile("mockMiscellaneous.lua")
   lf()
 end
+
 local t = turtle
 
 --- Base URL for dependencies
@@ -72,7 +75,12 @@ local function ensureDep(depNme,depVer)
         depNme )
     
     drFile= loadfile(depNme)
-    drFile()
+    
+    if drFile ~= nil then
+      drFile()
+    else
+      print(depNme.. " does not exist")
+    end
   end
   
 end
@@ -82,7 +90,7 @@ ensureDep("getMy.lua", "1.1")
 
 ensureDep("getopt.lua", "2.1")
 
-ensureDep("deadReckoner.lua", "1.1.6")
+ensureDep("deadReckoner.lua", "1.2.0")
 
 local dr = nil
 
@@ -372,7 +380,7 @@ veinMiner.check= function(way)
   local iz = 0
   ix, iy, iz= dr:getTargetCoords(way)
   
-  way = dr:correctHeading(way)
+  way = dr:fixHeadingNoMove(way)
   
   -- If it still needs to be inspected,
   if vm.isInspected(ix,iy,iz) then
@@ -414,16 +422,17 @@ end
 -- reason why not.
 veinMiner.explore= function(way, moves)
   
-  way = dr:correctHeading(way)
+  way = dr:fixHeadingNoMove(way)
   
   local isAble, whynot
+  isAble = true
+  local i = 1
+  while i <= moves and isAble do
   
-  for i = 1, moves do
     isAble, whynot = dr:move(way)
     
     -- if cannot, because obstructed
     if not isAble then
-    
       if whynot=="Movement obstructed"
           then
         vm.check( way )
@@ -432,9 +441,8 @@ veinMiner.explore= function(way, moves)
       else
         print( "Stuck. ".. whynot )
       end
-      
     end
-    
+    i = i + 1
   end -- end moves loop
   
   return isAble, whynot

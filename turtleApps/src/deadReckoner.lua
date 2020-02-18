@@ -11,7 +11,7 @@ at http://opensource.org/licenses/MIT)
 
 --- To ensure this is the version
 -- you're looking for
-DEP_VERSION="1.1.6"
+DEP_VERSION="1.2.0"
 
 --- assigns fake/real turtle
 local t
@@ -53,7 +53,6 @@ deadReckoner.FORE = 0
 deadReckoner.STARBOARD = 1
 deadReckoner.AFT = 2
 deadReckoner.PORT = 3
-
 
 deadReckoner.WAYS = {}
 deadReckoner.WAYS[deadReckoner.FORE] = 
@@ -119,49 +118,58 @@ function deadReckoner:bearTo(target)
 end
 
 --- If way is fore, starboard, aft or
--- port, then bear to that direction,
--- unless this is called for movement
--- purposes and turtle was facing the
--- opposite way to begin with.
+-- port, then bear to that direction
 -- @param way can any of the heading
 -- constants: FORE, STARBOARD, AFT,
 -- PORT, UP, DOWN or even AHEAD
--- @param [isForMovement] true if the 
--- caller is using this in order to 
--- move.
 -- @return way is AHEAD if the param 
 -- had been a horizontal direction 
 -- (FORE, AFT, PORT, STARBOARD). 
 -- Otherwise it's the same as the input
--- param. If isForMovement, and the
--- turtle is facing opposite way, then
--- this will return BACK
-function deadReckoner:correctHeading(
-    way, isForMovement )
-    
+-- param.
+function deadReckoner:fixHeadingNoMove( 
+    way )
+  
+  local returnWay = way
+  
+  -- if way is FORE, STARBOARD, etc
   if way < 4 then
-    if isForMovement and 
-        way ~= self.heading and 
-        (way - self.heading) % 2== 0 
-        then
-      way = self.BACK
-    else
-      self.bearTo( way )
-      way = self.AHEAD
-    end
-  elseif way== self.BACK and 
-      not isForMovement then
+    self:bearTo( way )
+    returnWay = self.AHEAD
+  elseif way== self.BACK then
     -- This means it's digging or 
     -- inspecting something behind, so
     -- it needs to turn around
-    way = self.heading + 2
-    way = way % 4
-    self.bearTo(way)
-    way = self.AHEAD
+    returnWay = self.heading + 2
+    returnWay = returnWay % 4
+    self:bearTo(returnWay)
+    returnWay = self.AHEAD
   end
   
-  return way
+  return returnWay
   
+end
+
+function deadReckoner:fixHeadingToMove(
+    way)
+
+  local returnWay = way
+  
+  -- If way is FORE, STARBOARD, etc
+  if way < 4 then
+    -- If way is opposite direction
+    if way ~= self.heading and 
+        (way - self.heading) % 2== 0 
+        then
+      returnWay = self.BACK
+    else
+      self:bearTo( way )
+      returnWay = self.AHEAD
+    end
+  end
+  
+  return returnWay
+ 
 end
 
 --- Adjusts placeMAX and placeMIN as
@@ -226,7 +234,6 @@ function deadReckoner:getTargetCoords(
   
 end
 
-
 --- Finds the distance between the
 -- current location and some other
 -- place, without diagonal travel
@@ -259,9 +266,7 @@ end
 -- data/string error message
 function deadReckoner:inspect(way)
 
-  -- FIXME: attempt to index local 
-  -- 'self' (a number value)
-  way = self.correctHeading(way)
+  way = self:fixHeadingNoMove(way)
   
   local ok, item
   if way== self.AHEAD then
@@ -273,9 +278,9 @@ function deadReckoner:inspect(way)
   end
   
   local ix, iy, iz = 
-      self.getTargetCoords(way)
+      self:getTargetCoords(way)
   
-  self.setMaxMin(ix, iy, iz)
+  self:setMaxMin(ix, iy, iz)
   return ok, item
 end
 
@@ -289,7 +294,7 @@ end
 -- reason why not.
 function deadReckoner:dig( way )
 
-  way = self.correctHeading( way )
+  way = self:fixHeadingNoMove(way)
   
   local dug= false
   local whyNot
@@ -317,7 +322,7 @@ end
 -- @return isAble, whyNot
 function deadReckoner:move( way )
   
-  way = self.correctHeading(way, true)
+  way = self:fixHeadingToMove( way )
   
   -- where way is self.AHEAD, UP or DOWN
   local isAble, whynot
@@ -363,7 +368,7 @@ function deadReckoner:move( way )
   end -- AHEAD, UP or DOWN
   
   if isAble then
-    self.setMaxMin( self.place.x, 
+    self:setMaxMin( self.place.x, 
         self.place.y, self.place.z )
   end
   
@@ -380,7 +385,7 @@ end
 -- reason why not.
 function deadReckoner:placeItem(way)
   
-  way = self.correctHeading( way )
+  way = self:fixHeadingNoMove(way)
   
   local placed= false
   local whyNot

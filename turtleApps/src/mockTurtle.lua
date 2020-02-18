@@ -104,6 +104,10 @@ turtle.getFuelLevel= function()
   return fuelLevel
 end
 
+turtle.refuel= function()
+  fuelLevel = fuelLevel + 1000
+end
+
 turtle.getItemCount = 
     function( slotNum )
   local rtrn = 0
