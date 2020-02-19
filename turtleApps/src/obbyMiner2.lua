@@ -91,7 +91,7 @@ end
 ensureDep("getMy.lua", "1.1")
 -- END BOILERPLATE
 
-ensureDep("deadReckoner.lua", "1.1.1" )
+ensureDep("deadReckoner.lua", "1.2.0" )
 local dr = deadReckoner
 
 ensureDep("getopt.lua", "2.1" )
@@ -238,14 +238,14 @@ obbyMiner.moveVector= function( way,
   local whynot = nil
 
   for i = 1, moves do
-    isAble, whynot = dr.move(way)
+    isAble, whynot = dr:move(way)
 
     if not isAble then
 
       if whynot== "Movement obstructed"
           then
-        dr.dig( way )
-        isAble, whynot= dr.move( way )
+        dr:dig( way )
+        isAble, whynot= dr:move( way )
       end -- obstructed
 
     end -- if not isAble
@@ -368,7 +368,7 @@ obbyMiner.getToIt=function(isFromStart)
       local isThng, what=
           t.inspectDown()
 
-      if dr.howFarFromHome() >=
+      if dr:howFarFromHome() >=
           fwdLmt then
 
         keepGoing= false
@@ -376,7 +376,7 @@ obbyMiner.getToIt=function(isFromStart)
         whynot= "Too far from home."
       elseif isThng == false then
         print("Nothing; descending.")
-        isAble, whynot=dr.move(dr.DOWN)
+        isAble, whynot=dr:move(dr.DOWN)
       elseif what.name== ITM_OBBY or
           om.isLavaMinable(what) then
 
@@ -389,7 +389,7 @@ obbyMiner.getToIt=function(isFromStart)
         print(what.name,
             what.state.level)
 
-        isAble, whynot=dr.move(dr.FORE)
+        isAble, whynot=dr:move(dr.FORE)
         keepGoing= isAble
       end
 
@@ -497,7 +497,7 @@ obbyMiner.isFuelOKForSquare= function()
   if fuel == "unlimited" then
     isOK = true
   else
-    local fuelNeed=dr.howFarFromHome()+
+    local fuelNeed=dr:howFarFromHome()+
       10 + -- For traversing a square
       18 + -- possible mine up-downs
       18   -- max probing up-downs
@@ -507,7 +507,7 @@ obbyMiner.isFuelOKForSquare= function()
     else
   
       local xtraFuelForFueling =
-          dr.howFarFromHome() * 2
+          dr:howFarFromHome() * 2
   
       fuelNeed = fuelNeed +
           xtraFuelForFueling
@@ -546,7 +546,7 @@ obbyMiner.dumpToChest = function()
 
   om.moveToPlace(0, 0, 0)
   
-  local isItm, itm= dr.inspect(dr.AFT)
+  local isItm, itm= dr:inspect(dr.AFT)
   if isItm and 
       itm.name== ITM_CHEST then
 
@@ -688,7 +688,7 @@ obbyMiner.mineAPlace = function(
     isEligible )
   
   local isWanted = false
-  local ok, item= dr.inspect(dr.DOWN)
+  local ok, item= dr:inspect(dr.DOWN)
   om.setChecked(dr.place.x, dr.place.z)
 
   if ok then
@@ -735,7 +735,7 @@ obbyMiner.mineAPlace = function(
           not g_isToStopProbing then
 
         om.moveVector(dr.DOWN, 1)
-        ok, item= dr.inspect(dr.DOWN)
+        ok, item= dr:inspect(dr.DOWN)
 
         if ok then
 
@@ -877,7 +877,7 @@ obbyMiner.main= function( args )
 
   -- comes back
   om.moveToPlace( 0, 0, 0 )
-  dr.bearTo(dr.FORE)
+  dr:bearTo(dr.FORE)
 
 end
  
