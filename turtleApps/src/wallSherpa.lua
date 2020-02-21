@@ -82,7 +82,7 @@ end
 ensureDep("getMy.lua", "1.1")
 -- END BOILERPLATE
 
-ensureDep("deadReckoner.lua", "1.1.1" )
+ensureDep("deadReckoner.lua", "1.2.0" )
 local dr = deadReckoner
 
 ensureDep("getopt.lua", "2.1" )
@@ -484,14 +484,14 @@ local function placeItem( itmName )
   end
   if isAble then
     
-    dr.dig(way)
-    isAble, whyNt=dr.placeItem(way)
+    dr:dig(way)
+    isAble, whyNt=dr:placeItem(way)
   
     if not isAble and not g_gap then
       
       -- go back and place filler
       
-      isAble, whyNt = dr.move(way)
+      isAble, whyNt = dr:move(way)
       
       if isAble then
         isAble = selectSltWthItm(
@@ -500,16 +500,16 @@ local function placeItem( itmName )
         if isAble then
           -- Could be abandoned mine
           -- with fencing or cobweb
-          dr.dig(way)
+          dr:dig(way)
           
-          isAble, whyNt = dr.placeItem( 
+          isAble, whyNt = dr:placeItem( 
               way )
 
-          dr.move(dr.BACK)
+          dr:move(dr.BACK)
           
           -- try again
           selectSltWthItm(itmName)
-          isAble, whyNt = dr.placeItem(
+          isAble, whyNt = dr:placeItem(
               way )
         else
           -- TODO parse fill item
@@ -539,9 +539,9 @@ end
 local function placeNthTrchStrbrd(d)
   local rtrn = true
   if d % g_torchInterval == 0 then
-    dr.move(dr.STARBOARD)
+    dr:move(dr.STARBOARD)
     rtrn = placeItem(ITM_TORCH)
-    dr.move(dr.PORT)
+    dr:move(dr.PORT)
   end
   return rtrn
 end
@@ -571,7 +571,7 @@ local function goPlaceThings()
     if isFirstGoingUp then
       isFirstGoingUp = false
     else
-      keepGoing = dr.move(vert)
+      keepGoing = dr:move(vert)
     end
     
     if keepGoing then
@@ -580,7 +580,7 @@ local function goPlaceThings()
         
         keepGoing =
             placeItem( ITM_LADDER) and
-            dr.move(dr.STARBOARD ) and
+            dr:move(dr.STARBOARD ) and
             placeItem( ITM_LADDER) and
             placeNthTrchStrbrd(actlDst)
         
@@ -590,7 +590,7 @@ local function goPlaceThings()
             placeNthTrchStrbrd(actlDst)
             and
             placeItem( ITM_LADDER) and
-            dr.move(dr.PORT) and
+            dr:move(dr.PORT) and
             placeItem( ITM_LADDER )
         
       end -- even/odd
@@ -611,12 +611,12 @@ local function comeBack()
   if x < 0 then
     -- move right abs x places
     for m = 1, math.abs(x) do
-      dr.move(dr.STARBOARD)
+      dr:move(dr.STARBOARD)
     end
   elseif x > 0 then
     -- move left x times
     for m = 1, x do
-      dr.move(dr.PORT)
+      dr:move(dr.PORT)
     end
   end
   
@@ -624,11 +624,11 @@ local function comeBack()
   local y = dr.place.y
   if y < 0 then
     for m = 1, math.abs(y) do
-      dr.move(dr.UP)
+      dr:move(dr.UP)
     end
   elseif y > 0 then
     for m = 1, y do
-      dr.move(dr.DOWN)
+      dr:move(dr.DOWN)
     end
   end
   
@@ -636,11 +636,11 @@ local function comeBack()
   local z = dr.place.z
   if z < 0 then
     for m = 1, math.abs(z) do
-      dr.move(dr.FORE)
+      dr:move(dr.FORE)
     end
   elseif z > 0 then
     for m = 1, z do
-      dr.move(dr.AFT)
+      dr:move(dr.AFT)
     end
   end
 end
@@ -651,17 +651,17 @@ local function adjStartLocation()
     -- If up against wall, back up
     -- so that a ladder can be placed
     if t.inspect() then
-      dr.move(dr.BACK)
+      dr:move(dr.BACK)
     end
   else
     -- so turtle can start 1 from edge
     -- afterward, trtl is 1 away from 
     -- wall, giving room to place
     if t.inspectDown() then
-      dr.move(dr.AHEAD)
+      dr:move(dr.AHEAD)
     end
-    dr.move(dr.AHEAD)
-    dr.bearTo(dr.AFT);
+    dr:move(dr.AHEAD)
+    dr:bearTo(dr.AFT);
   end
 end
 
@@ -680,7 +680,7 @@ local function main( targs )
       comeBack()
     end
     
-    dr.bearTo(dr.FORE)
+    dr:bearTo(dr.FORE)
     
   end
 
